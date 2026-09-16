@@ -12,7 +12,10 @@ to NCBI E-utilities `esearch` directly from the browser: the strategy, and the s
 extra `("meta-analysis")` arm. Both counts, PubMed warnings, and a snapshot of the arms are
 saved as a history row in browser storage. Rows can be loaded back, copied, and deleted.
 
-Technical approach: Vite + React + TypeScript static app on Vercel. Pure TypeScript core
+Delivery: Constitution Phase A (local test version, run with the Vite dev server or local
+preview). Hosting on Vercel with Supabase accounts is Phase B, a later feature.
+
+Technical approach: Vite + React + TypeScript single-page app. Pure TypeScript core
 (`src/core`) holds term quoting, query building, and run rules with no UI or network
 dependency. A small PubMed client (`src/pubmed`) wraps `esearch` with throttling and typed
 errors. A storage adapter (`src/storage`) uses `localStorage` now and is the seam for Supabase
@@ -32,7 +35,8 @@ JSON schema (see data-model.md). Temporary until the accounts feature.
 (components), Playwright (end-to-end flows with PubMed mocked; one opt-in live smoke test).
 
 **Target Platform**: Current evergreen browsers (Chrome, Edge, Firefox, Safari), desktop first,
-usable at tablet width. Hosted on Vercel as static files.
+usable at tablet width. Runs locally (`npm run dev` / `npm run preview`); no hosting in this
+feature.
 
 **Project Type**: Web application, frontend only (no backend in this feature).
 
@@ -40,7 +44,7 @@ usable at tablet width. Hosted on Vercel as static files.
 arm edits feel instant (under 50 ms).
 
 **Constraints**: NCBI policy of 3 requests/s per IP without key; `tool` and `email` params on
-every call; no secrets in client; no telemetry; UI text in a translatable catalog (FR-018).
+every call (`VITE_NCBI_CONTACT_EMAIL` required; dev server and build fail without it); no secrets in client; no telemetry; UI text in a translatable catalog (FR-018).
 
 **Scale/Scope**: One page, one user per browser, history up to about 1,000 rows (well under
 `localStorage` limits; see research.md R5).
@@ -49,31 +53,31 @@ every call; no secrets in client; no telemetry; UI text in a translatable catalo
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Source: `.specify/memory/constitution.md` (v2.0.0). Mark each gate PASS, N/A, or VIOLATION.
+Source: `.specify/memory/constitution.md` (v2.1.0). Mark each gate PASS, N/A, or VIOLATION.
 Violations MUST be justified in Complexity Tracking.
 
 - [x] **I. Researcher owns strategy**: PASS. The only automatic change is quoting multi-word
   terms, which the researcher requested, is visible in the box, and is reversible with one
   click (FR-005a/b). What is shown is what is sent (FR-005e).
-- [ ] **II. Hosted, private by default**: VIOLATION (temporary). Hosted web app: yes. Accounts,
-  Supabase storage, RLS, account deletion, project file export: deferred to the accounts
-  feature by operator decision. No server secrets exist in this feature. Justified below.
+- [x] **II. Hosted, private by default**: PASS for Delivery Phase A (local test version). Accounts,
+  RLS, account deletion, and file export apply from Phase B. No server secrets exist; storage
+  sits behind interfaces for the Supabase move.
 - [x] **III. Free core, AI deferred**: PASS. No AI, no user keys, free.
 - [x] **IV. Real PubMed evidence**: PASS for counts. Counts come from `esearch`; errors never
   shown as numbers; query text, timestamp, counts, and PubMed warnings recorded; calls
-  throttled with `tool`/`email`. Found / Not found / Unresolved belongs to the later
+  throttled; `tool` and `email` always sent (contact email required at startup). Found / Not found / Unresolved belongs to the later
   study-check feature (N/A here).
 - [x] **V. Deterministic translation**: N/A (no translation). Query builder is deterministic and
   fixture-tested.
-- [ ] **VI. Saved work**: PARTIAL. Runs appended, never overwritten; strategies reloadable. File
-  export deferred (operator chose per-row copy). Justified below.
+- [x] **VI. Saved work**: PASS for Phase A. Runs appended, never overwritten; strategies
+  reloadable; per-row copy (file export required from Phase B).
 - [x] **VII. Modularity**: PASS. `core` (no UI, no network), `pubmed` client, `storage` adapter,
   and `ui` are separate; storage interface is ready for Supabase.
 - [x] **VIII. Simplicity**: PASS. Static Vite app, no backend, no extra services; the only runtime
   dependency is React.
 
 **Post-design re-check (after Phase 1)**: Unchanged. Design adds no server, secrets, or
-services. Principle II and VI deviations stay temporary and bounded to this feature.
+services. Phase A scope confirmed; no deviations remain.
 
 ## Project Structure
 
@@ -100,7 +104,6 @@ index.html
 package.json
 vite.config.ts
 tsconfig.json
-vercel.json
 README.md
 CLAUDE.md
 src/
@@ -141,8 +144,8 @@ README.md and CLAUDE.md are created in this feature (constitution follow-up).
 
 ## Complexity Tracking
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| Principle II: no accounts, Supabase, or RLS; history in browser storage | Operator decision (2026-09-16): ship arm builder and history first, accounts next | Auth now delays validating the core search UX; the storage adapter makes the Supabase move a drop-in change |
-| Principle VI: no file export of history | Operator chose per-row copy for this feature | Export is meaningful with named projects in the accounts feature; copy covers reporting a single strategy now |
-| Principle IV note: PubMed called from each browser, not a server | No server needed; each user gets their own NCBI quota by IP | A server proxy needs a shared-quota queue and a secret NCBI key with no benefit for count-only queries |
+No constitution violations for Phase A (constitution v2.1.0).
+
+| Decision | Why Needed | Simpler Alternative Rejected Because |
+|----------|------------|-------------------------------------|
+| PubMed called from the browser, not a server | No server needed in Phase A; NCBI allows browser calls | A proxy needs a shared-quota queue and a secret NCBI key with no benefit for count-only queries |

@@ -15,7 +15,7 @@ Never throws. Always resolves to a `CountOutcome` (see data-model.md).
 | retmode | `json` |
 | retmax | `0` |
 | tool | `ssHelper` |
-| email | `VITE_NCBI_CONTACT_EMAIL` if set, else omitted |
+| email | `VITE_NCBI_CONTACT_EMAIL` (required; startup fails if missing) |
 
 All calls pass through the throttle queue: at least 350 ms between request starts, 15 s timeout.
 
@@ -36,14 +36,8 @@ All calls pass through the throttle queue: at least 350 ms between request start
 |------|---------|
 | `count-ok.json` | Normal response with count and translation set |
 | `quoted-phrase-not-found.json` | Count 0 with `quotedphrasesnotfound` warning |
-| `rate-limited.json` | `{"error":"API rate limit exceeded", ...}` served with HTTP 429 |
+| `rate-limited.json` | Synthetic, matching NCBI's documented body `{"error":"API rate limit exceeded", ...}`, served with HTTP 429 |
 | `malformed.txt` | Non-JSON body |
 
-## Run orchestration (`runSearch`)
 
-1. Commit pending text in all arms; validate; if issues, stop (no requests).
-2. `query = buildQuery(...)`; if `null`, stop.
-3. `result = await countQuery(query)`, then `metaResult = await countQuery(withMetaAnalysisArm(query))`.
-4. If both are `error`, return failure (no row). Otherwise create a `SearchRun` and add it to
-   history.
-5. One run at a time; Search is disabled while running.
+Search orchestration (`runSearch`) is specified in [run.md](./run.md).

@@ -1,30 +1,28 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.0.0 -> 2.0.0
-Bump rationale: MAJOR. Delivery redefined from local-only tool to hosted public web application
-with accounts (Supabase) at first release; AI synonym expansion removed from the free scope and
-deferred to a future premium tier. (1.0.0: initial ratification, 2026-09-16.)
+Version change: 2.0.0 -> 2.1.0
+Bump rationale: MINOR. Adds a Delivery Phases section: a local test phase (no accounts, no
+hosting, browser storage) precedes the hosted phase (Vercel + Supabase). Principle II account,
+RLS, deletion, and file-export duties apply from the hosted phase. No principle removed.
+(2.0.0: hosted web app with accounts, AI premium deferred, 2026-09-16. 1.0.0: initial, 2026-09-16.)
 
 Modified principles:
-  II.   Local-First, No Account Required -> Hosted Web App, Private by Default
-  III.  AI Is Optional and Bring-Your-Own-Key -> Free Core, AI Deferred to Premium
-  IV.   Validation Uses Real Database Evidence (shared NCBI quota for server calls)
-  VII.  Modularity (synonym providers, auth, storage)
-  VIII. No Unjustified Complexity (Vercel + Supabase baseline)
+  II. Hosted Web App, Private by Default (scoped to the hosted phase)
+  VI. Saved and Reproducible Work (file export scoped to the hosted phase)
 
 Added sections:
-  - Product Goals and Clarifications (Session 2026-09-16)
+  - Delivery Phases
 
 Removed sections: none
 
 Templates and dependent files:
   ✅ .specify/memory/constitution.md          (amended)
-  ✅ .specify/templates/plan-template.md       (gates II, III, IV, VII, VIII updated)
-  ✅ .specify/templates/tasks-template.md      (RLS, secret, deletion tasks replace key tasks)
+  ✅ .specify/templates/plan-template.md       (gate II notes delivery phase)
+  ✅ specs/001-pubmed-arm-search/plan.md       (Constitution Check re-evaluated for local phase)
   ✅ .specify/templates/spec-template.md       (reviewed; no change needed)
-  ✅ .specify/templates/checklist-template.md  (reviewed; no change needed)
-  ⚠ README.md / CLAUDE.md                      (not yet created; create at first feature)
+  ✅ .specify/templates/tasks-template.md      (reviewed; no change needed)
+  ⚠ README.md / CLAUDE.md                      (not yet created; tasks T044, T045 in feature 001)
 
 Deferred TODOs:
   - TODO(PREMIUM_TIER): pricing, usage limits, and AI provider for premium synonyms; requires
@@ -56,6 +54,18 @@ does not replace the searcher's or an information specialist's judgment.
 - Q: Does the free launch include synonym help? -> A: Yes, non-AI: MeSH term and entry-term
   lookup via NCBI plus manual terms per concept.
 
+## Delivery Phases
+
+- **Phase A, local test version (current)**: runs on the developer's machine through the local
+  development server for testing. No accounts, no hosting, no server secrets. Data is kept in
+  browser storage behind the storage interfaces required by Principle VII. Principle II account,
+  row-level security, account deletion, and project file export duties do not yet apply; all
+  other principles apply in full.
+- **Phase B, hosted version**: deployed on Vercel with Supabase. Principle II applies in full.
+  Moving from Phase A to Phase B MUST replace browser storage with Supabase behind the same
+  interfaces, add accounts and row-level security, and offer import of Phase A data.
+- A feature plan MUST state which phase it targets in its Constitution Check.
+
 ## Core Principles
 
 ### I. Researcher Owns the Strategy
@@ -71,8 +81,8 @@ stays accountable for every term and operator.
 
 ### II. Hosted Web App, Private by Default
 
-- ssHelper MUST be delivered as a hosted web application. No downloadable or local build is
-  offered to users.
+- ssHelper MUST be delivered to users as a hosted web application (Phase B). No downloadable
+  build is offered to users. The Phase A local version is for development and testing only.
 - Users sign in to an account (Supabase Auth). Projects (strategies, synonym lists, validation
   study sets, results) are stored in Supabase and are private to their owner by default.
 - Access control MUST be enforced in the database (row-level security), not only in the UI. A
@@ -138,7 +148,8 @@ Rationale: A wrong translation that looks right is worse than no translation.
 - Validation runs MUST be appended, not overwritten, so strategy iterations can be compared
   (which studies each version found).
 - Exports MUST include enough to report the search: strategy text per database, date, hit
-  counts, and validation results.
+  counts, and validation results. File export is required from Phase B; Phase A MAY offer copy
+  only.
 - Researcher-initiated deletion of a project, or of the account and all its data, is always
   permitted.
 
@@ -210,4 +221,4 @@ Rationale: A small team must be able to run and afford a free public tool.
 - Compliance review: every spec, plan, task list, and code review MUST check alignment with
   these principles. Violations MUST be fixed or justified in Complexity Tracking.
 
-**Version**: 2.0.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-16
+**Version**: 2.1.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-16

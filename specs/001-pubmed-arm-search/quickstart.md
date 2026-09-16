@@ -5,7 +5,8 @@ Validation guide proving the feature works end to end.
 ## Prerequisites
 
 - Node 20+ and npm.
-- Optional: `VITE_NCBI_CONTACT_EMAIL` in `.env.local` (project contact address).
+- Required: `.env.local` at the repository root containing `VITE_NCBI_CONTACT_EMAIL=<contact
+  address>` (gitignored). No NCBI account is needed.
 
 ## Setup and run
 
@@ -21,7 +22,7 @@ npm run typecheck
 npm test                          # Vitest: core fixtures, pubmed client fixtures, storage
 npm run test:e2e                  # Playwright, PubMed mocked
 LIVE_PUBMED=1 npm run test:live   # optional, calls real PubMed
-npm run build                     # static build for Vercel
+npm run build && npm run preview  # local production build (Phase A; Vercel comes in Phase B)
 ```
 
 ## Manual scenarios
@@ -48,6 +49,7 @@ npm run build                     # static build for Vercel
 
 - Rules: [contracts/query-builder.md](./contracts/query-builder.md)
 - PubMed calls: [contracts/pubmed-client.md](./contracts/pubmed-client.md)
+- Search run: [contracts/run.md](./contracts/run.md)
 - Storage: [contracts/storage.md](./contracts/storage.md)
 - UI behaviour: [contracts/ui.md](./contracts/ui.md)
 - Entities: [data-model.md](./data-model.md)

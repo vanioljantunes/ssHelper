@@ -40,12 +40,12 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Source: `.specify/memory/constitution.md` (v2.0.0). Mark each gate PASS, N/A, or VIOLATION.
+Source: `.specify/memory/constitution.md` (v2.1.0). Mark each gate PASS, N/A, or VIOLATION.
 Violations MUST be justified in Complexity Tracking.
 
 - [ ] **I. Researcher owns strategy**: No silent strategy changes; suggestions and translations
   are proposals, visibly distinct until accepted.
-- [ ] **II. Hosted, private by default**: Web app only; Supabase Auth; RLS on all user data;
+- [ ] **II. Hosted, private by default**: State delivery phase (A local test / B hosted). Phase B: web app; Supabase Auth; RLS on all user data;
   export/import and account deletion covered; server secrets never reach client.
 - [ ] **III. Free core, AI deferred**: Free features work without premium; no user AI keys; no AI
   in validation or translation; premium work only after amendment.

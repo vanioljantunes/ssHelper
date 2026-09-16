@@ -32,6 +32,8 @@ same strategy with one extra arm containing only 'meta-analysis'."
   automatically with the same quoting rule, then included in the search.
 - Q: Interface language at launch? → A: English, with all interface text kept translatable so
   other languages (e.g. Portuguese) can be added later.
+- Q: Where does this version run? → A: Locally only, for testing (Constitution Delivery Phase
+  A). Hosting on Vercel with Supabase accounts is the next phase.
 - Q: Is history exportable in this feature? → A: Copy row only. Each history row has a button
   that copies its strategy text to the clipboard; no file export in this feature.
 
@@ -105,7 +107,8 @@ confirm the rows are still there.
 3. **Given** a search where one of the two counts failed, **When** the row is saved, **Then** the
    failed count shows "Error" and never a number such as 0.
 4. **Given** a history row, **When** the researcher chooses "Load", **Then** the arms are
-   replaced with that row's arms and terms so the strategy can be edited and re-run.
+   replaced with that row's arms and terms so the strategy can be edited and re-run; if the
+   current arms already contain terms, the researcher confirms first.
 5. **Given** a history row, **When** the researcher presses its "Copy" button, **Then** the
    exact query text of that row is copied to the clipboard and a brief confirmation is shown.
 
@@ -113,8 +116,8 @@ confirm the rows are still there.
 
 ### Edge Cases
 
-- All arms empty: "Search" is disabled and a hint says at least one term is needed. No PubMed
-  call is made and no history row is added.
+- All arms empty (no committed terms and no typed text in any arm): "Search" is disabled and a
+  hint says at least one term is needed. No PubMed call is made and no history row is added.
 - Only one non-empty arm: the query is that arm alone, without any "AND".
 - Blank or whitespace-only terms are ignored; leading and trailing spaces are trimmed before
   the space rule is checked, so `diabetes ` stays unquoted.
@@ -128,9 +131,10 @@ confirm the rows are still there.
 - Duplicate terms in the same arm are kept as entered (the researcher owns the strategy).
 - Apart from automatic quoting, terms containing PubMed syntax (field tags like `[tiab]` or
   `[Mesh]`, truncation `*`) are sent as shown in the box.
-- Terms containing "AND", "OR", "NOT", or parentheses are sent as typed inside their arm's
-  parentheses; if PubMed reports a syntax problem, the message is shown and no count is saved
-  as valid.
+- Terms containing "AND", "OR", or "NOT" are sent as typed inside their arm's parentheses.
+- A term with unbalanced parentheses or an odd number of quotation marks is marked as invalid
+  and Search is disabled until it is fixed, because PubMed silently repairs such input and would
+  count a different query than the one shown.
 - PubMed returns 0 results: 0 is shown and saved as a real result, distinct from "Error".
 - PubMed unavailable, rate limited, or offline: a clear message is shown; the row is saved with
   "Error" for the affected count, or not saved if both counts failed.
@@ -194,6 +198,8 @@ confirm the rows are still there.
 - **FR-019**: Each history row MUST have a "Copy" button that copies its exact query text to
   the clipboard and shows a brief confirmation. File export of history is out of scope for this
   feature.
+- **FR-020**: Search MUST be disabled while any term has unbalanced parentheses or an odd number
+  of quotation marks, and the invalid term MUST be marked with an explanation.
 
 ### Key Entities
 
@@ -222,10 +228,9 @@ confirm the rows are still there.
 
 ## Assumptions
 
-- Accounts are out of scope for this feature (decided 2026-09-16). History is kept on the
-  researcher's device and browser as a temporary measure; the next feature adds accounts and
-  moves existing history into the signed-in account, per Constitution Principle II. This
-  deviation is to be recorded in the plan's Complexity Tracking.
+- This feature targets Constitution Delivery Phase A: a local version for testing, with no
+  accounts and no hosting. History is kept in the browser. Phase B (Vercel + Supabase accounts)
+  moves existing history into the signed-in account.
 - Checking whether specific studies (DOI or link) are retrieved is a separate, later feature
   of the retrieval check. This feature covers counts and history only.
 - Translation to other databases and synonym help are out of scope.

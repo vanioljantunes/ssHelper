@@ -31,8 +31,8 @@ Write each test task before its implementation task and confirm it fails first.
 - [ ] T002 Configure strict TypeScript in `tsconfig.json` (strict, noUncheckedIndexedAccess, noImplicitOverride, jsx react-jsx, types for vite/client and vitest/globals)
 - [ ] T003 [P] Configure Vitest with jsdom and React Testing Library: add dev dependencies vitest, jsdom, @testing-library/react, @testing-library/user-event, @testing-library/jest-dom; set `test` block in `vite.config.ts` (environment jsdom, setupFiles `tests/setup.ts`, exclude `tests/e2e/**` and `tests/live/**` from default run); create `tests/setup.ts` importing jest-dom matchers
 - [ ] T004 [P] Configure Playwright in `playwright.config.ts` (Chromium only, webServer `npm run dev` on port 5173, testDir `tests/e2e`); add @playwright/test dev dependency
-- [ ] T005 [P] Add ESLint and Prettier config in `eslint.config.js` and `.prettierrc` (typescript-eslint, react-hooks rules; import restriction forbidding `src/core/**` from importing `react`, `src/ui`, `src/pubmed`, `src/storage`)
-- [ ] T006 [P] Create `.gitignore` (node_modules, dist, .env*, playwright-report, test-results), `.env.example` with `VITE_NCBI_CONTACT_EMAIL=`, and `vercel.json` (framework vite, output `dist`, SPA rewrite to `/index.html`)
+- [ ] T005 [P] Add ESLint and Prettier config in `eslint.config.js` and `.prettierrc` (typescript-eslint, react-hooks rules; for `src/core/**`: `no-restricted-imports` forbidding `react`, `src/ui`, `src/pubmed`, `src/storage`, and `no-restricted-globals` forbidding `fetch`, `localStorage`, `window`, `document`)
+- [ ] T006 [P] Create `.gitignore` (node_modules, dist, .env*, !.env.example, playwright-report, test-results), `.env.example` with `VITE_NCBI_CONTACT_EMAIL=` and a comment that it is required and needs no NCBI account, and `.env.local` with the operator's contact address (never committed); in `vite.config.ts` use `loadEnv` and throw a clear error when `VITE_NCBI_CONTACT_EMAIL` is missing for `serve` and `build` (Constitution Principle IV). No `vercel.json` in Phase A
 - [ ] T007 [P] Create folder skeleton: `src/core/`, `src/pubmed/`, `src/storage/`, `src/i18n/`, `src/ui/`, `tests/unit/`, `tests/contract/`, `tests/component/`, `tests/e2e/`, `tests/live/`, `tests/fixtures/pubmed/`
 
 ---
@@ -47,7 +47,7 @@ Write each test task before its implementation task and confirm it fails first.
 - [ ] T009 [P] Create id helper `src/core/id.ts` exporting `newId()` using `crypto.randomUUID()`
 - [ ] T010 [P] Create English string catalog `src/i18n/en.ts` as a typed `const` object with every UI string from contracts/ui.md (title, purpose line, "Arm {n}", "Delete arm {n}", "AND", "OR", "Add arm", "Remove quotes", "Remove term", "Search", "Searching PubMed...", "Add at least one term.", issue messages, "Results", "Results + meta-analysis", "Error", error reason per kind, run-time notice (FR-017), history column headers, "Load", "Copy", "Copied", "Delete", "Clear history", confirmation texts, "No searches yet.", "History could not be saved in this browser."); export a `t` helper for `{n}` interpolation
 - [ ] T011 Create app shell `src/ui/App.tsx` with layout regions (header, arms editor, search panel, history) and a polite live region, rendered from `src/main.tsx`; base styles in `src/ui/app.css` (readable max width, wrapping rows, visible focus outlines, monospace query preview)
-- [ ] T012 [P] Record PubMed fixtures in `tests/fixtures/pubmed/`: `count-ok.json` (esearch JSON with count, querytranslation, translationset), `quoted-phrase-not-found.json` (count 0, `warninglist.quotedphrasesnotfound`, outputmessages "No items found."), `rate-limited.json` (`{"error":"API rate limit exceeded","api-key":"...","count":"4","limit":"3"}`), `malformed.txt` (non-JSON body); capture from the real API with `retmax=0` per research.md R2
+- [ ] T012 [P] Record PubMed fixtures in `tests/fixtures/pubmed/`: `count-ok.json` (esearch JSON with count, querytranslation, translationset), `quoted-phrase-not-found.json` (count 0, `warninglist.quotedphrasesnotfound`, outputmessages "No items found."), `rate-limited.json` (synthetic, labelled in a sibling `README.md`: `{"error":"API rate limit exceeded","api-key":"...","count":"4","limit":"3"}`), `malformed.txt` (non-JSON body); capture ok and not-found bodies from the real API with `retmax=0` per research.md R2
 
 **Checkpoint**: Foundation ready; user story phases can start
 
@@ -63,9 +63,9 @@ Write each test task before its implementation task and confirm it fails first.
 
 - [ ] T013 [P] [US1] Fixture tests for `commitTerm`, `unquoteTerm`, `validateTerm` covering every table row in contracts/query-builder.md in `tests/unit/term.test.ts`
 - [ ] T014 [P] [US1] Fixture tests for `buildQuery` and `withMetaAnalysisArm` (all table rows, plus determinism: same input twice gives identical output) in `tests/unit/query.test.ts`
-- [ ] T015 [P] [US1] Tests for strategy operations (default 3 empty arms; addArm appends empty arm; removeArm keeps order and terms; removing the last arm leaves one empty arm; add, edit, remove, unquote term; commit pending on all arms; validate returns issues) in `tests/unit/strategy.test.ts`
+- [ ] T015 [P] [US1] Tests for strategy operations (default 3 empty arms; addArm appends empty arm; removeArm keeps order and terms; removing the last arm leaves one empty arm; add, edit, remove, unquote term; commit pending on all arms; duplicate terms in one arm are kept; validate returns issues) in `tests/unit/strategy.test.ts`
 - [ ] T016 [P] [US1] Throttle tests with fake timers (request starts spaced at least 350 ms; order preserved) in `tests/unit/throttle.test.ts`
-- [ ] T017 [P] [US1] Contract tests for `countQuery` with mocked `fetch` and T012 fixtures: URL params (db, encoded term, retmode json, retmax 0, tool ssHelper, email only when env set); ok mapping with warnings excluding "No items found."; 429 retried twice then `rate_limited`; 5xx retried then `http`; 404 no retry `http`; network error and 15 s timeout give `network`; malformed body gives `invalid_response`; never throws; in `tests/contract/pubmed-client.test.ts`
+- [ ] T017 [P] [US1] Contract tests for `countQuery` with mocked `fetch` and T012 fixtures: URL params (db, encoded term, retmode json, retmax 0, tool ssHelper, email always present); ok mapping with warnings excluding "No items found."; 429 retried twice then `rate_limited`; 5xx retried then `http`; 404 no retry `http`; network error and 15 s timeout give `network`; malformed body gives `invalid_response`; never throws; in `tests/contract/pubmed-client.test.ts`
 - [ ] T018 [P] [US1] Tests for `runSearch` (commits pending text first; issues stop with no fetch; null query stops; counts query then metaQuery in order; both errors return failure with no run; one error still returns a run with that outcome as error; run has ISO `createdAt` and arm snapshot including empty arms) in `tests/unit/run.test.ts`
 - [ ] T019 [P] [US1] Component tests for term boxes per contracts/ui.md (Enter commits and quotes multi-word; single word unquoted; Enter on empty does nothing; clicking a quote mark unquotes without edit mode; clicking text enters edit mode; Enter re-applies rule; empty edit removes term; Escape cancels; x removes term and its OR; Backspace in empty input does nothing; OR labels not focusable) in `tests/component/TermBox.test.tsx`
 - [ ] T020 [P] [US1] Component tests for arms editor and search panel (3 arms and 2 AND labels on load; Add arm; deleting middle arm keeps one AND per gap; Search disabled with hint when all empty; Search disabled with issue message for `(heart`; pending text auto-committed on Search; loading state blocks duplicate run; counts with thousands separators; error shows "Error" and never a number; FR-017 notice visible) in `tests/component/ArmsEditor.test.tsx`
@@ -77,7 +77,7 @@ Write each test task before its implementation task and confirm it fails first.
 - [ ] T023 [US1] Implement immutable strategy operations in `src/core/strategy.ts`: `createDefaultStrategy()` (3 empty arms), `addArm`, `removeArm` (never zero arms), `setPending`, `commitPending(armId)`, `commitAllPending`, `editTerm` (re-applies `commitTerm`; empty removes), `removeTerm`, `unquoteTermById`, `validateStrategy`, `toArmTerms(strategy): string[][]`, `toDraft`, `fromDraft` (depends on T021, T022)
 - [ ] T024 [P] [US1] Implement request throttle in `src/pubmed/throttle.ts`: single FIFO queue, at least 350 ms between request starts, `schedule<T>(fn): Promise<T>`, injectable clock for tests
 - [ ] T025 [US1] Implement `countQuery(query, signal?)` in `src/pubmed/client.ts` per contracts/pubmed-client.md: esearch URL with `import.meta.env.VITE_NCBI_CONTACT_EMAIL`, 15 s timeout via AbortController, retries 429 and 5xx after 1 s and 3 s, maps to `CountOutcome`, flattens `warninglist` and `errorlist`, messages from `src/i18n/en.ts`, never throws (depends on T024)
-- [ ] T026 [US1] Implement `runSearch(strategy, deps: { countQuery; now; newId })` in `src/core/run.ts` returning `{ strategy, issues }`, `{ strategy, run }`, or `{ strategy, failure }` per contracts/pubmed-client.md orchestration; `countQuery` injected so core has no fetch (depends on T023)
+- [ ] T026 [US1] Implement `runSearch(strategy, deps: { countQuery; now; newId })` in `src/core/run.ts` returning `{ strategy, issues }`, `{ strategy, run }`, or `{ strategy, failure }` per contracts/run.md; `countQuery` injected so core has no fetch (depends on T023)
 - [ ] T027 [P] [US1] Implement `TermBox` in `src/ui/TermBox.tsx`: quoted term renders each quotation mark as a button ("Remove quotes") and the body as a button that enters edit mode; edit input handles Enter and Escape; remove button "Remove term"; invalid outline
 - [ ] T028 [US1] Implement `ArmRow` in `src/ui/ArmRow.tsx`: header "Arm N" with "Delete arm N" button; wrapping row of TermBox items separated by non-focusable "OR" text; trailing input always present; Enter commits pending; empty Enter and Backspace do nothing; issue messages under the arm (depends on T027)
 - [ ] T029 [US1] Implement `ArmsEditor` in `src/ui/ArmsEditor.tsx`: arms with non-focusable "AND" labels between them and an "Add arm" button; state via props and callbacks from App (depends on T028)
@@ -97,7 +97,7 @@ Write each test task before its implementation task and confirm it fails first.
 
 ### Tests for User Story 2 (write first, confirm failing)
 
-- [ ] T033 [P] [US2] Storage tests in `tests/unit/localStore.test.ts`: `list` newest first; `add` rejects duplicate id and never overwrites; `remove`; `clear`; draft round trip; corrupt JSON and unknown `schemaVersion` return empty or null and copy the raw value to `<key>:corrupt`; `QuotaExceededError` and access errors return `{ ok: false, reason }`; only `sshelper:v1:history`, `sshelper:v1:draft`, and `:corrupt` keys are written
+- [ ] T033 [P] [US2] Storage tests in `tests/unit/localStore.test.ts`: `list` newest first; `add` rejects duplicate id and never overwrites; `remove`; `clear`; draft round trip; corrupt JSON and unknown `schemaVersion` return empty or null and copy the raw value to `<key>:corrupt`; `QuotaExceededError` and access errors return `{ ok: false, reason }`; two runs with identical query text are both stored; only `sshelper:v1:history`, `sshelper:v1:draft`, and `:corrupt` keys are written
 - [ ] T034 [P] [US2] Component tests for `HistoryTable` in `tests/component/HistoryTable.test.tsx`: column order; local date and time to the minute; formatted counts; error outcome shows "Error" with reason as accessible description; Copy writes `query` to `navigator.clipboard` and shows "Copied"; Load calls handler; Delete removes row; Clear history requires confirmation; empty state "No searches yet."
 
 ### Implementation for User Story 2
@@ -116,14 +116,14 @@ Write each test task before its implementation task and confirm it fails first.
 
 **Purpose**: Constitution-driven checks, docs, and release readiness
 
-- [ ] T040 [P] Opt-in live PubMed smoke test (skipped unless `LIVE_PUBMED=1`): `countQuery` for `("heart failure") AND ("meta-analysis")` returns `ok` with count > 0, and a nonsense quoted phrase returns count 0 with a `quotedphrasesnotfound` warning, in `tests/live/pubmed-live.test.ts`
-- [ ] T041 [P] Secret leak check script `scripts/check-bundle.mjs`: scan `dist/` after build for `service_role`, `sk-`, `api_key=`, `SUPABASE_SERVICE` and fail if found; add `npm run check:bundle` (Constitution Principle II)
+- [ ] T040 [P] Opt-in live PubMed tests (skipped unless `LIVE_PUBMED=1`) in `tests/live/pubmed-live.test.ts`: (a) `countQuery` for `("heart failure") AND ("meta-analysis")` returns `ok` with count > 0; (b) a nonsense quoted phrase returns count 0 with a `quotedphrasesnotfound` warning; (c) SC-002: 20 fixed strategies from `tests/live/strategies.json` built with `buildQuery`, each count equals a direct esearch request for the same term; (d) SC-003: time 20 full runs (strategy + meta-analysis) through the throttle and assert the 95th percentile is under 5 s
+- [ ] T041 [P] Secret leak check script `scripts/check-bundle.mjs`: scan `dist/` after build with anchored patterns (`\bsk-[A-Za-z0-9_-]{20,}`, `service_role`, `SUPABASE_SERVICE_ROLE_KEY`, `api_key=[A-Za-z0-9]{16,}`) and fail if found; add `npm run check:bundle` (Constitution Principle II)
 - [ ] T042 [P] Accessibility pass on `src/ui/*.tsx`: keyboard-only walkthrough, visible focus, accessible names from contracts/ui.md, live region announcements; add `@axe-core/playwright` checks to `tests/e2e/us1-arms-search.spec.ts` and `tests/e2e/us2-history.spec.ts`
 - [ ] T043 [P] Review UI copy in `src/i18n/en.ts` against Constitution Principle I (counts described as PubMed results at run time; no claim the strategy is validated or complete); confirm no hardcoded user-facing strings remain in `src/ui/`
-- [ ] T044 [P] Create `README.md`: purpose, three planned functions, current feature scope, development commands from quickstart.md, Vercel deploy, `VITE_NCBI_CONTACT_EMAIL`, NCBI usage policy note, link to constitution
+- [ ] T044 [P] Create `README.md`: purpose, three planned functions, delivery phases (A local test now, B Vercel + Supabase next), development commands from quickstart.md, required `VITE_NCBI_CONTACT_EMAIL` in `.env.local`, NCBI usage policy note, link to constitution
 - [ ] T045 [P] Create `CLAUDE.md`: project context, stack, layering rule (`src/core` has no UI, network, or storage imports), commands, spec-kit workflow, commits and pushes inside this repository only
-- [ ] T046 Run full quickstart.md validation: `npm run typecheck`, `npm test`, `npm run build`, `npm run check:bundle`, `npm run test:e2e`, and manual scenarios 1-15; record deviations in `specs/001-pubmed-arm-search/quickstart.md`
-- [ ] T047 Update the Sync Impact Report in `.specify/memory/constitution.md` to mark README.md and CLAUDE.md as created
+- [ ] T046 Run full quickstart.md validation locally: `npm run typecheck`, `npm test`, `npm run build`, `npm run check:bundle`, `npm run test:e2e`, `LIVE_PUBMED=1 npm run test:live`, and manual scenarios 1-15 (including pasting 3 strategies into pubmed.ncbi.nlm.nih.gov to compare counts); record deviations in `specs/001-pubmed-arm-search/quickstart.md`
+- [ ] T047 [P] Component and unit tests for invalid terms (FR-020): `(heart` and `"heart failure` marked invalid with explanation and Search disabled, in `tests/component/ArmsEditor.test.tsx` and `tests/unit/term.test.ts`
 
 ---
 
@@ -189,14 +189,13 @@ T033 storage tests | T034 HistoryTable tests | T035 storage types
 
 1. Phase 1 Setup and Phase 2 Foundational
 2. Phase 3 US1: arms, quoting, both PubMed counts
-3. Stop and validate with quickstart scenarios 1-7 and 11-13; compare counts with PubMed website
-4. Optional Vercel preview deploy
+3. Stop and validate locally with quickstart scenarios 1-7 and 11-13; compare counts with PubMed website
 
 ### Incremental Delivery
 
 1. US2 history and persistence; validate scenarios 8-10 and 14-15
 2. Polish: live smoke, bundle check, accessibility, docs
-3. Next feature: accounts (Supabase) replacing `src/storage/localStore.ts` behind the same interfaces
+3. Next phase (Constitution Delivery Phase B): Vercel hosting and Supabase accounts replacing `src/storage/localStore.ts` behind the same interfaces
 
 ## Notes
 

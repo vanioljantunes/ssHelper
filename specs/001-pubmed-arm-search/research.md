@@ -36,7 +36,8 @@ All Technical Context unknowns are resolved below. Probes against NCBI were run 
 
 ## R4. Stack
 
-- **Decision**: Vite 6 + React 19 + TypeScript strict, static build deployed to Vercel.
+- **Decision**: Vite 6 + React 19 + TypeScript strict. Phase A runs locally; the same static
+  build deploys to Vercel in Phase B.
 - **Rationale**: Operator choice (2026-09-16). Matches triageHelper, so tooling and conventions
   are shared. No server needed (R1). Supabase JS client works in a SPA for the accounts feature.
 - **Alternatives considered**: Next.js (server routes not needed yet), SvelteKit (different
@@ -73,11 +74,15 @@ All Technical Context unknowns are resolved below. Probes against NCBI were run 
 
 ## R8. Contact parameters
 
-- **Decision**: `tool=ssHelper` and `email` set from a build-time env variable
-  `VITE_NCBI_CONTACT_EMAIL` (project contact address, not a user's). If unset, omit `email`.
+- **Decision**: `tool=ssHelper` and `email` from the required env variable
+  `VITE_NCBI_CONTACT_EMAIL`, set in `.env.local` (gitignored, so the address is not committed to
+  the public repository). `vite.config.ts` fails dev server start and build when it is missing.
+  No NCBI account is needed; a probe with `tool` and `email` returned HTTP 200 (2026-09-16).
 - **Rationale**: NCBI asks for tool and email to contact the developer about misuse. The email
   is public by nature (sent from the browser), so it is not a secret.
-- **Alternatives considered**: Hardcoding a personal email in source (avoided).
+- **Alternatives considered**: Omitting email when unset (rejected: Constitution Principle IV
+  requires it); hardcoding the address in source (rejected: public repository). An NCBI API key
+  (free NCBI account) raises the limit to 10 req/s; not needed in Phase A.
 
 ## R9. Term commit and quoting rules
 
