@@ -158,14 +158,15 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
 
-Constitution-driven tasks (include whenever the feature touches parsing, translation, validation, AI, or storage):
+Constitution-driven tasks (include whenever the feature touches parsing, translation, validation, auth, or storage):
 
 - [ ] TXXX [P] Parser/dialect fixture tests incl. expected warnings (Principle V)
 - [ ] TXXX [P] Translation determinism test (Principle V)
 - [ ] TXXX [P] Identifier resolution tests: DOI, doi.org, PubMed link, PMID, PMC, invalid -> Unresolved (Principle IV)
 - [ ] TXXX [P] PubMed client tests on recorded responses; rate limit and backoff (Principle IV)
-- [ ] TXXX [P] API key leak test across logs, exports, project files (Principle III)
-- [ ] TXXX [P] End-to-end run with no AI key configured (Principle III)
+- [ ] TXXX [P] Row-level security tests: no cross-user read/write (Principle II)
+- [ ] TXXX [P] Server secret leak test: client bundle, exports, logs (Principle II)
+- [ ] TXXX [P] Account deletion removes all user data (Principle II)
 - [ ] TXXX Verify project save/reopen and appended validation runs (Principle VI)
 - [ ] TXXX Review UI copy: suggestions/translations shown as drafts, PRESS notice present (Principle I)
 

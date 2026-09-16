@@ -40,23 +40,23 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Source: `.specify/memory/constitution.md` (v1.0.0). Mark each gate PASS, N/A, or VIOLATION.
+Source: `.specify/memory/constitution.md` (v2.0.0). Mark each gate PASS, N/A, or VIOLATION.
 Violations MUST be justified in Complexity Tracking.
 
 - [ ] **I. Researcher owns strategy**: No silent strategy changes; suggestions and translations
   are proposals, visibly distinct until accepted.
-- [ ] **II. Local-first**: Runs locally with no account; project data local and exportable;
-  storage behind adapter; no telemetry.
-- [ ] **III. AI optional / BYO key**: Feature works with no key; keys local only, never in logs or
-  exports; AI not used for validation or translation.
+- [ ] **II. Hosted, private by default**: Web app only; Supabase Auth; RLS on all user data;
+  export/import and account deletion covered; server secrets never reach client.
+- [ ] **III. Free core, AI deferred**: Free features work without premium; no user AI keys; no AI
+  in validation or translation; premium work only after amendment.
 - [ ] **IV. Real PubMed evidence**: Validation queries E-utilities; Found / Not found / Unresolved
-  kept distinct; query, date, hit count recorded; NCBI rate limits respected.
+  kept distinct; query, date, hit count recorded; shared NCBI quota throttled.
 - [ ] **V. Deterministic translation**: Parse -> structured form -> dialect render; untranslatable
   constructs flagged, never dropped; vocabulary not claimed equivalent.
 - [ ] **VI. Saved work**: Projects save/reopen; validation runs appended; exports reportable.
-- [ ] **VII. Modularity**: Parser, dialects, providers, PubMed client, storage, UI separate; core
-  runs without UI or AI.
-- [ ] **VIII. Simplicity**: No backend unless browser-only is blocked; new deps justified.
+- [ ] **VII. Modularity**: Parser, dialects, synonym providers, PubMed client, auth, storage, UI
+  separate; core runs without UI, database, or AI.
+- [ ] **VIII. Simplicity**: Vercel + Supabase baseline; extra services or deps justified.
 
 ## Project Structure
 
