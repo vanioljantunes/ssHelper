@@ -16,13 +16,33 @@ the number of results from PubMed and save in a history table with the date and 
 day), the search strategy, the number of results, and another column with the results of the
 same strategy with one extra arm containing only 'meta-analysis'."
 
+## Clarifications
+
+### Session 2026-09-16
+
+- Q: What exactly does the extra meta-analysis arm send to PubMed? → A: The quoted phrase
+  `"meta-analysis"` (with the double quotes), as its own arm joined with AND.
+- Q: How are terms entered inside an arm? → A: Each arm is a horizontal row of small term
+  boxes. The researcher types in the empty box and presses Enter; a term containing a space is
+  wrapped in quotation marks (single words are not); a new empty box appears to the right with a
+  non-editable "OR" between. A single click on a quotation mark removes the quotes (no edit
+  mode). Editing a term and pressing Enter re-applies the rule: space present -> quotes, no
+  space -> no quotes.
+- Q: Text typed but not committed with Enter when Search is pressed? → A: It is committed
+  automatically with the same quoting rule, then included in the search.
+- Q: Interface language at launch? → A: English, with all interface text kept translatable so
+  other languages (e.g. Portuguese) can be added later.
+- Q: Is history exportable in this feature? → A: Copy row only. Each history row has a button
+  that copies its strategy text to the clipboard; no file export in this feature.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Build a strategy with arms and get the PubMed count (Priority: P1)
 
 A researcher opens the search page and sees three empty arms stacked vertically, with an "AND"
-label between each pair. In each arm they enter terms; terms inside the same arm are combined
-with "OR", and the "OR" is shown between them. They add or remove arms as needed. They press
+label between each pair. In each arm they type a term in a small box and press Enter; multi-word terms
+are wrapped in quotation marks automatically, and a new empty box appears to the right after a
+fixed "OR" label. They add or remove arms as needed. They press
 "Search" and see how many PubMed records the strategy retrieves, plus how many it retrieves with
 an extra "meta-analysis" arm.
 
@@ -36,19 +56,29 @@ counts PubMed's own website shows for the same query text.
 
 1. **Given** the page is opened for the first time, **When** it loads, **Then** exactly 3 empty
    arms are shown with "AND" between consecutive arms.
-2. **Given** an arm, **When** the researcher adds terms "heart failure" and "cardiac failure",
-   **Then** the arm shows the terms separated by "OR".
-3. **Given** any number of arms, **When** the researcher presses "Add arm", **Then** a new empty
+2. **Given** an empty arm, **When** the researcher types `heart failure` and presses Enter,
+   **Then** the box shows `"heart failure"` (quoted), and a new empty box appears to its right
+   with a non-editable "OR" between them.
+3. **Given** a term box, **When** the researcher types `diabetes` (no space) and presses Enter,
+   **Then** the box shows `diabetes` without quotation marks.
+4. **Given** a quoted term `"heart failure"`, **When** the researcher clicks once on either
+   quotation mark, **Then** the quotes are removed and the box shows `heart failure`, without
+   entering edit mode.
+5. **Given** a committed term, **When** the researcher clicks the term text, edits it, and
+   presses Enter, **Then** quoting is re-applied: quotes if the edited text contains a space,
+   none if it does not.
+6. **Given** any number of arms, **When** the researcher presses "Add arm", **Then** a new empty
    arm appears at the end with "AND" before it.
-4. **Given** 3 arms, **When** the researcher deletes the middle arm, **Then** 2 arms remain,
+7. **Given** 3 arms, **When** the researcher deletes the middle arm, **Then** 2 arms remain,
    their terms are unchanged, and exactly one "AND" is shown between them.
-5. **Given** arms A = (heart failure OR cardiac failure), B = (empty), C = (sglt2 inhibitors),
-   **When** the researcher presses "Search", **Then** the empty arm is ignored, the query sent is
-   `(heart failure OR cardiac failure) AND (sglt2 inhibitors)`, and the result count is shown.
-6. **Given** the same strategy, **When** the search completes, **Then** a second count is shown
-   for the query with one extra arm containing only `meta-analysis`, i.e.
-   `(heart failure OR cardiac failure) AND (sglt2 inhibitors) AND (meta-analysis)`.
-7. **Given** the search is running, **When** results are not yet back, **Then** a loading state
+8. **Given** arms A = (`"heart failure"` OR `"cardiac failure"`), B = (empty), C =
+   (`"sglt2 inhibitors"`), **When** the researcher presses "Search", **Then** the empty arm is
+   ignored, the query sent is `("heart failure" OR "cardiac failure") AND ("sglt2 inhibitors")`,
+   and the result count is shown.
+9. **Given** the same strategy, **When** the search completes, **Then** a second count is shown
+   for the query with one extra arm containing only `"meta-analysis"` (with double quotes), i.e.
+   `("heart failure" OR "cardiac failure") AND ("sglt2 inhibitors") AND ("meta-analysis")`.
+10. **Given** the search is running, **When** results are not yet back, **Then** a loading state
    is shown and the "Search" button cannot trigger a duplicate run.
 
 ---
@@ -76,6 +106,8 @@ confirm the rows are still there.
    failed count shows "Error" and never a number such as 0.
 4. **Given** a history row, **When** the researcher chooses "Load", **Then** the arms are
    replaced with that row's arms and terms so the strategy can be edited and re-run.
+5. **Given** a history row, **When** the researcher presses its "Copy" button, **Then** the
+   exact query text of that row is copied to the clipboard and a brief confirmation is shown.
 
 ---
 
@@ -84,10 +116,18 @@ confirm the rows are still there.
 - All arms empty: "Search" is disabled and a hint says at least one term is needed. No PubMed
   call is made and no history row is added.
 - Only one non-empty arm: the query is that arm alone, without any "AND".
-- Blank or whitespace-only terms are ignored; leading and trailing spaces are trimmed.
+- Blank or whitespace-only terms are ignored; leading and trailing spaces are trimmed before
+  the space rule is checked, so `diabetes ` stays unquoted.
+- Pressing Enter in an empty box does nothing; no new box is created.
+- A term the researcher already typed with quotation marks is not quoted twice.
+- A multi-word term with a field tag (e.g. `heart failure[tiab]`) gets quotes around the words
+  only: `"heart failure"[tiab]`.
+- Quotes removed by click stay removed until the term is edited and Enter is pressed again.
+- Deleting a term (clear its text and press Enter, or its remove control) removes the box and
+  its neighbouring "OR"; the empty input box at the end always remains.
 - Duplicate terms in the same arm are kept as entered (the researcher owns the strategy).
-- Terms containing PubMed syntax (quotes, field tags like `[tiab]` or `[Mesh]`, truncation `*`)
-  are sent exactly as typed.
+- Apart from automatic quoting, terms containing PubMed syntax (field tags like `[tiab]` or
+  `[Mesh]`, truncation `*`) are sent as shown in the box.
 - Terms containing "AND", "OR", "NOT", or parentheses are sent as typed inside their arm's
   parentheses; if PubMed reports a syntax problem, the message is shown and no count is saved
   as valid.
@@ -110,7 +150,18 @@ confirm the rows are still there.
 - **FR-003**: Users MUST be able to delete any arm; at least one arm MUST always remain.
 - **FR-004**: The interface MUST display "AND" between consecutive arms and "OR" between terms
   within an arm. Users do not type these operators.
-- **FR-005**: Users MUST be able to add, edit, and remove individual terms within an arm.
+- **FR-005**: Each arm MUST show its terms as a horizontal row of small boxes ending with one
+  empty input box. Pressing Enter in the input box commits the term and creates a new empty box
+  to its right, separated by a non-editable "OR" label.
+- **FR-005a**: On commit, a term whose trimmed text contains a space MUST be wrapped in
+  quotation marks; a term without a space MUST NOT be quoted.
+- **FR-005b**: A single click on a quotation mark MUST remove that term's quotes without
+  entering edit mode.
+- **FR-005c**: Users MUST be able to edit a committed term (click its text) and remove it; on
+  Enter after editing, the quoting rule in FR-005a is re-applied.
+- **FR-005d**: Pressing "Search" MUST first commit any pending text in every arm's input box,
+  applying FR-005a, so the query matches what is on screen.
+- **FR-005e**: What is shown in the term box MUST be exactly what is sent to PubMed.
 - **FR-006**: Empty arms MUST be allowed on screen and MUST be ignored when building the query.
 - **FR-007**: The system MUST build the query as each non-empty arm wrapped in parentheses, with
   its terms joined by " OR ", and arms joined by " AND ". The query text MUST be visible to the
@@ -118,7 +169,8 @@ confirm the rows are still there.
 - **FR-008**: On "Search", the system MUST retrieve from PubMed the total number of records for
   the query.
 - **FR-009**: For the same run, the system MUST also retrieve the total for the query with one
-  additional arm containing only the term `meta-analysis` (sent as typed, with no field tag).
+  additional arm containing only `"meta-analysis"`, including the double quotes and with no
+  field tag, appended as `AND ("meta-analysis")`.
 - **FR-010**: Each completed run MUST add one history row containing: date and time of the run
   (day, month, year, hour and minute, in the researcher's local time), the exact query text,
   the result count, and the result count with the meta-analysis arm.
@@ -136,12 +188,19 @@ confirm the rows are still there.
   does not get blocked; if limited, the researcher sees a message to retry shortly.
 - **FR-017**: The page MUST state that counts come from PubMed at the time of the run and can
   change as PubMed is updated.
+- **FR-018**: All interface text MUST be in English and kept separate from logic so it can be
+  translated later. The AND and OR operators are always shown in English, since they are PubMed
+  syntax.
+- **FR-019**: Each history row MUST have a "Copy" button that copies its exact query text to
+  the clipboard and shows a brief confirmation. File export of history is out of scope for this
+  feature.
 
 ### Key Entities
 
 - **Arm**: An ordered block of the strategy. Holds an ordered list of terms combined with OR.
   May be empty.
-- **Term**: A text entry inside an arm, sent to PubMed as typed (after trimming).
+- **Term**: A committed text entry inside an arm, shown and sent exactly as displayed, with a
+  quoted or unquoted state.
 - **Strategy**: The ordered list of arms. Produces the query text by joining non-empty arms
   with AND.
 - **Search run (history row)**: One execution of a strategy. Holds run date and time, the
@@ -170,10 +229,14 @@ confirm the rows are still there.
 - Checking whether specific studies (DOI or link) are retrieved is a separate, later feature
   of the retrieval check. This feature covers counts and history only.
 - Translation to other databases and synonym help are out of scope.
-- Terms are sent without automatic quoting, field tags, or MeSH mapping; PubMed applies its
-  normal automatic term mapping. Researchers who want phrases or tags type them.
-- The "meta-analysis" arm is a plain text term, not the Publication Type filter. A filter-based
-  variant can be added later.
+- Apart from the automatic quoting of multi-word terms, no field tags or MeSH mapping are added.
+  Unquoted single words get PubMed's normal automatic term mapping.
+- Leaving a box without pressing Enter keeps the typed text pending; pressing Search commits all
+  pending text first (FR-005d).
+- The meta-analysis arm is the quoted phrase `"meta-analysis"`, not the Publication Type filter.
+  A filter-based variant can be added later.
 - There is no "NOT" operator in this feature.
 - Date and time are shown in the researcher's local time zone, to the minute.
+- File export of history (required for reporting by Constitution Principle VI) is deferred to
+  the accounts/projects feature; this feature provides per-row copy only.
 - One strategy is edited at a time; multiple named projects come with the accounts feature.
