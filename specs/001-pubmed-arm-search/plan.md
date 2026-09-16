@@ -92,6 +92,7 @@ specs/001-pubmed-arm-search/
 ├── contracts/
 │   ├── query-builder.md
 │   ├── pubmed-client.md
+│   ├── run.md
 │   ├── storage.md
 │   └── ui.md
 └── tasks.md             # created by /speckit-tasks
