@@ -9,10 +9,9 @@ import {
   removeStudy,
   setStudyInput,
   setStudyLabel,
-  studyQuery,
 } from '../../src/core/study';
 import type { Study } from '../../src/core/types';
-import { pubmedSearchUrl } from '../../src/pubmed/links';
+import { doiOrgUrl, pubmedDoiUrl } from '../../src/pubmed/links';
 import { StudiesPanel, type StudyRowState } from '../../src/ui/StudiesPanel';
 
 const query = '("heart failure")';
@@ -122,7 +121,7 @@ describe('StudiesPanel', () => {
     };
     render(<Harness initial={initial} results={results} />);
     expect(screen.getByRole('link')).toHaveTextContent(
-      'PubMed search for Akcay, 2021 (opens in a new tab)',
+      'PubMed article page for Akcay, 2021 (opens in a new tab)',
     );
   });
 
@@ -167,19 +166,19 @@ describe('StudiesPanel', () => {
     expect(found).toHaveAttribute('data-status', 'found');
     expect(found).toHaveTextContent('Found by the strategy');
     expect(within(found).getByTestId('study-icon-check')).toBeInTheDocument();
-    expect(within(found).getByRole('link')).toHaveAttribute(
-      'href',
-      pubmedSearchUrl(studyQuery(query, doi)),
-    );
+    expect(within(found).getByRole('link')).toHaveAttribute('href', pubmedDoiUrl(doi));
 
     expect(notFound).toHaveAttribute('data-status', 'not_found');
     expect(notFound).toHaveTextContent('Not found by the strategy');
     expect(within(notFound).getByTestId('study-icon-x')).toBeInTheDocument();
+    expect(within(notFound).getByRole('link')).toHaveAttribute('href', pubmedDoiUrl(doi));
 
     expect(notInPubmed).toHaveAttribute('data-status', 'not_in_pubmed');
     expect(notInPubmed).toHaveTextContent('DOI not found in PubMed');
     expect(notInPubmed).not.toHaveTextContent('Not found by the strategy');
     expect(within(notInPubmed).getByTestId('study-icon-unknown')).toBeInTheDocument();
+    expect(within(notInPubmed).getByRole('link')).toHaveAttribute('href', doiOrgUrl(doi));
+    expect(within(notInPubmed).getByRole('link')).toHaveTextContent(/^DOI/);
 
     expect(invalid).toHaveAttribute('data-status', 'invalid');
     expect(invalid).toHaveTextContent('Not a valid DOI');

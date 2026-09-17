@@ -1,7 +1,6 @@
-import { studyQuery } from '../core/study';
 import type { Study, StudyCheck } from '../core/types';
 import { en, t } from '../i18n/en';
-import { pubmedSearchUrl } from '../pubmed/links';
+import { doiOrgUrl, pubmedDoiUrl } from '../pubmed/links';
 
 export type StudyRowCheck = StudyCheck | { status: 'checking'; query: string };
 
@@ -134,6 +133,36 @@ function summaryText(checks: StudyRowCheck[]): string | null {
   return `${summary} ${t(en.studiesUnresolved, { list: unresolved.join(en.listSeparator) })}`;
 }
 
+interface StudyLinkProps {
+  doi: string;
+  inPubmed: boolean;
+  label: string;
+  n: number;
+}
+
+/** Opens the study itself: its PubMed article page, or the publisher page when not in PubMed. */
+function StudyLink({ doi, inPubmed, label, n }: StudyLinkProps) {
+  const name = label.trim();
+  const hidden = inPubmed
+    ? name === ''
+      ? t(en.studyOpenInPubmedHidden, { n })
+      : t(en.studyOpenInPubmedHiddenNamed, { label: name })
+    : name === ''
+      ? t(en.studyOpenDoiHidden, { n })
+      : t(en.studyOpenDoiHiddenNamed, { label: name });
+  return (
+    <a
+      className="study-link"
+      href={inPubmed ? pubmedDoiUrl(doi) : doiOrgUrl(doi)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {inPubmed ? en.studyOpenInPubmed : en.studyOpenDoi}
+      <span className="visually-hidden">{hidden}</span>
+    </a>
+  );
+}
+
 export function StudiesPanel({
   studies,
   results,
@@ -195,19 +224,12 @@ export function StudiesPanel({
                 )}
               </div>
               {resolved && resolved.doi !== null && (
-                <a
-                  className="study-link"
-                  href={pubmedSearchUrl(studyQuery(resolved.query, resolved.doi))}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {en.studyOpenInPubmed}
-                  <span className="visually-hidden">
-                    {study.label.trim() === ''
-                      ? t(en.studyOpenInPubmedHidden, { n })
-                      : t(en.studyOpenInPubmedHiddenNamed, { label: study.label.trim() })}
-                  </span>
-                </a>
+                <StudyLink
+                  doi={resolved.doi}
+                  inPubmed={resolved.status !== 'not_in_pubmed'}
+                  label={study.label}
+                  n={n}
+                />
               )}
               <button
                 type="button"
