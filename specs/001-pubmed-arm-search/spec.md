@@ -208,6 +208,20 @@ confirm the rows are still there.
   and import nothing.
 - **FR-022**: The query text in the search panel and each history row's strategy MUST be a link
   that opens the PubMed website search for that exact query in a new tab.
+- **FR-023**: The page MUST offer a "Known studies" panel with three DOI boxes by default; boxes
+  can be added and removed, and at least one always remains. A box accepts a bare DOI, a
+  doi.org link, or a `doi:` prefix. Each non-empty box is checked with the strategy plus an extra
+  arm containing only that DOI (`<query> AND ("<doi>"[doi])`), after every completed Search and
+  from a "Check studies" button that does not add a history row. Checks run one at a time
+  through the request throttle. Each study shows exactly one outcome, carried by an icon and
+  text, not by color alone: **Found by the strategy** (count above 0, green with a check),
+  **Not found by the strategy** (count 0 while the DOI alone retrieves a PubMed record, red with
+  an X), or Unresolved: **DOI not found in PubMed** (the DOI alone retrieves nothing), **Not a
+  valid DOI** (no request made), or **Error** with the reason. Unresolved MUST NOT be reported as
+  not found (Constitution Principle IV). A result is shown only while its box text and the
+  strategy query are unchanged. A summary reads "Found N of M studies.", where M counts found and
+  not found studies only, and lists Unresolved studies separately. Study inputs are kept in the
+  saved draft.
 
 ### Key Entities
 

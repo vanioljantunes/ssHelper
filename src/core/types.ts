@@ -48,4 +48,25 @@ export interface DraftArm {
 
 export interface Draft {
   arms: DraftArm[];
+  /** Known study inputs (DOI boxes). Missing in drafts saved before FR-023. */
+  studies?: string[];
 }
+
+export interface Study {
+  id: string;
+  input: string;
+}
+
+/**
+ * Outcome of checking one known study against a strategy query (FR-023).
+ * `not_in_pubmed`, `invalid`, and `error` are Unresolved and never mean "not found".
+ */
+export type StudyCheck =
+  | { status: 'invalid'; doi: null; query: string; checkedAt: string }
+  | {
+      status: 'found' | 'not_found' | 'not_in_pubmed';
+      doi: string;
+      query: string;
+      checkedAt: string;
+    }
+  | { status: 'error'; doi: string; query: string; checkedAt: string; message: string };

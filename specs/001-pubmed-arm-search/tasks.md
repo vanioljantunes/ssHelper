@@ -139,6 +139,17 @@ Write each test task before its implementation task and confirm it fails first.
 
 ---
 
+## Phase 7: Addendum - known studies check (FR-023, added 2026-09-16)
+
+- [X] T055 [P] Unit tests in `tests/unit/study.test.ts`: `normalizeDoi` (bare, doi.org and dx.doi.org links, `doi:` prefix, percent-encoded, parentheses, invalid strings); exact `studyQuery` and `doiExistsQuery` strings; `checkStudy` found (1 call), not found (2 calls), not in PubMed, invalid (0 calls), error on the first and on the second call; study list add, remove (at least 1 left), and restore from draft inputs
+- [X] T056 [P] Storage tests in `tests/unit/localStore.test.ts`: draft with `studies` round trips; older draft without `studies` loads; wrong `studies` shape returns null
+- [X] T057 Implement `src/core/study.ts` (DOI normalisation, study queries, `checkStudy` with injected `countQuery`, study list helpers) and `Study`, `StudyCheck`, optional `Draft.studies` in `src/core/types.ts`; validate and save `studies` in `src/storage/localStore.ts` (`schemaVersion` stays 1)
+- [X] T058 [P] Component tests in `tests/component/StudiesPanel.test.tsx`: 3 boxes by default; add and remove with at least 1 left; icon and text per status; summary counts; editing clears the status; results for another query are hidden
+- [X] T059 Implement `StudiesPanel` in `src/ui/StudiesPanel.tsx` (inline SVG icons, status on the right of the box, PubMed link per checked study, summary line), strings in `src/i18n/en.ts`, styles in `src/ui/app.css`; wire in `src/ui/App.tsx` between Search and History: checks after a completed search and from "Check studies" (no history row), sequential through the throttled `countQuery`, study inputs saved in the draft
+- [X] T060 End-to-end tests in `tests/e2e/studies.spec.ts` (found, not found, and not in PubMed after a search with exact request order; Check studies without a history row; add and remove with reload persistence; axe) with term-dependent counts in `tests/e2e/pubmed-mock.ts`
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

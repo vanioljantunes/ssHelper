@@ -12,6 +12,8 @@ export interface MockOptions {
   count?: number;
   /** Count returned for queries with the meta-analysis arm. */
   metaCount?: number;
+  /** Per-term override; return undefined to fall back to `count` or `metaCount`. */
+  countFor?: (term: string) => number | undefined;
 }
 
 /**
@@ -25,7 +27,8 @@ export async function mockPubmed(page: Page, options: MockOptions = {}): Promise
     const term = url.searchParams.get('term') ?? '';
     terms.push(term);
     const isMeta = term.endsWith(' AND ("meta-analysis")');
-    const count = isMeta ? (options.metaCount ?? 56) : (options.count ?? 1234);
+    const count =
+      options.countFor?.(term) ?? (isMeta ? (options.metaCount ?? 56) : (options.count ?? 1234));
     const body = {
       ...countOk,
       esearchresult: { ...countOk.esearchresult, count: String(count), querytranslation: term },

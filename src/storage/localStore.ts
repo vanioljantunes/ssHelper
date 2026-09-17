@@ -109,12 +109,15 @@ function parseDraft(data: unknown): Draft | null {
     (arm) => isObject(arm) && isStringArray(arm.terms) && typeof arm.pending === 'string',
   );
   if (!valid) return null;
-  return {
+  if (data.studies !== undefined && !isStringArray(data.studies)) return null;
+  const draft: Draft = {
     arms: (data.arms as { terms: string[]; pending: string }[]).map((arm) => ({
       terms: [...arm.terms],
       pending: arm.pending,
     })),
   };
+  if (data.studies !== undefined) draft.studies = [...data.studies];
+  return draft;
 }
 
 function newestFirst(runs: SearchRun[]): SearchRun[] {
@@ -158,7 +161,7 @@ export function createLocalDraftStore(storage: Storage | null = browserStorage()
       return safeWrite(
         storage,
         DRAFT_KEY,
-        JSON.stringify({ schemaVersion: SCHEMA_VERSION, arms: draft.arms }),
+        JSON.stringify({ schemaVersion: SCHEMA_VERSION, arms: draft.arms, studies: draft.studies }),
       );
     },
   };

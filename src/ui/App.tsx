@@ -3,6 +3,14 @@ import { newId } from '../core/id';
 import { buildQuery } from '../core/query';
 import { runSearch } from '../core/run';
 import {
+  addStudy,
+  checkStudy,
+  fromStudyInputs,
+  removeStudy,
+  setStudyInput,
+  toStudyInputs,
+} from '../core/study';
+import {
   addArm,
   commitAllPending,
   commitPending,
@@ -14,11 +22,12 @@ import {
   removeArm,
   removeTerm,
   setPending,
+  toArmTerms,
   toDraft,
   unquoteTermById,
   validateStrategy,
 } from '../core/strategy';
-import type { CountOutcome, SearchRun, Strategy } from '../core/types';
+import type { CountOutcome, SearchRun, Strategy, Study } from '../core/types';
 import { en, t } from '../i18n/en';
 import { countQuery as pubmedCountQuery } from '../pubmed/client';
 import { createLocalDraftStore, createLocalHistoryStore } from '../storage/localStore';
@@ -27,6 +36,7 @@ import { ArmsEditor } from './ArmsEditor';
 import { HistoryTable } from './HistoryTable';
 import { ImportStrategy } from './ImportStrategy';
 import { formatCount, SearchPanel, type LastSearch } from './SearchPanel';
+import { StudiesPanel, type StudyRowState } from './StudiesPanel';
 import './app.css';
 
 export interface AppProps {
@@ -38,10 +48,13 @@ export interface AppProps {
 export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }: AppProps) {
   const [history] = useState(() => historyStore ?? createLocalHistoryStore());
   const [drafts] = useState(() => draftStore ?? createLocalDraftStore());
-  const [strategy, setStrategy] = useState<Strategy>(() => {
-    const draft = drafts.load();
-    return draft ? fromDraft(draft) : createDefaultStrategy();
-  });
+  const [initialDraft] = useState(() => drafts.load());
+  const [strategy, setStrategy] = useState<Strategy>(() =>
+    initialDraft ? fromDraft(initialDraft) : createDefaultStrategy(),
+  );
+  const [studies, setStudies] = useState<Study[]>(() => fromStudyInputs(initialDraft?.studies));
+  const [studyResults, setStudyResults] = useState<Record<string, StudyRowState>>({});
+  const [checkingStudies, setCheckingStudies] = useState(false);
   const [runs, setRuns] = useState<SearchRun[]>(() => history.list());
   const [running, setRunning] = useState(false);
   const [last, setLast] = useState<LastSearch | null>(null);
@@ -54,8 +67,8 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
   }, []);
 
   useEffect(() => {
-    track(drafts.save(toDraft(strategy)));
-  }, [drafts, strategy, track]);
+    track(drafts.save({ ...toDraft(strategy), studies: toStudyInputs(studies) }));
+  }, [drafts, strategy, studies, track]);
 
   const update = useCallback((change: (current: Strategy) => Strategy) => {
     setStrategy((current) => change(current));
@@ -64,6 +77,54 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
   const issues = useMemo(() => validateStrategy(strategy), [strategy]);
   const query = useMemo(() => buildQuery(previewArmTerms(strategy)), [strategy]);
   const isEmpty = isStrategyEmpty(strategy);
+
+  /** Checks every non-empty study box in order through the throttled countQuery (FR-023). */
+  const checkStudies = async (checkedQuery: string, list: Study[]) => {
+    const targets = list.filter((study) => study.input.trim() !== '');
+    if (targets.length === 0) return;
+    setCheckingStudies(true);
+    setStudyResults((current) => {
+      const next = { ...current };
+      for (const study of targets) {
+        next[study.id] = { input: study.input, check: { status: 'checking', query: checkedQuery } };
+      }
+      return next;
+    });
+    try {
+      for (const study of targets) {
+        const check = await checkStudy(checkedQuery, study.input, countQuery);
+        setStudyResults((current) => ({ ...current, [study.id]: { input: study.input, check } }));
+      }
+    } finally {
+      setCheckingStudies(false);
+    }
+  };
+
+  const handleCheckStudies = async () => {
+    if (runningRef.current) return;
+    const committed = commitAllPending(strategy);
+    setStrategy(committed);
+    if (validateStrategy(committed).length > 0 || isStrategyEmpty(committed)) return;
+    const committedQuery = buildQuery(toArmTerms(committed));
+    if (committedQuery === null) return;
+
+    runningRef.current = true;
+    try {
+      await checkStudies(committedQuery, studies);
+    } finally {
+      runningRef.current = false;
+    }
+  };
+
+  const handleStudyInput = (id: string, input: string) => {
+    setStudies((current) => setStudyInput(current, id, input));
+    setStudyResults((current) => {
+      if (!(id in current)) return current;
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+  };
 
   const handleSearch = async () => {
     if (runningRef.current) return;
@@ -84,6 +145,7 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
         setAnnouncement(
           t(en.resultsAnnouncement, { count: formatCount(result), meta: formatCount(metaResult) }),
         );
+        await checkStudies(outcome.run.query, studies);
       } else if (outcome.status === 'failed') {
         const { result, metaResult } = outcome.failure;
         setLast({ status: 'failed', result, metaResult });
@@ -143,9 +205,23 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
             query={query}
             isEmpty={isEmpty}
             hasIssues={issues.length > 0}
-            running={running}
+            running={running || checkingStudies}
             last={last}
             onSearch={() => void handleSearch()}
+          />
+        </section>
+        <section className="panel" aria-labelledby="studies-heading">
+          <h2 id="studies-heading">{en.studiesHeading}</h2>
+          <StudiesPanel
+            studies={studies}
+            results={studyResults}
+            query={query}
+            canCheck={!isEmpty && issues.length === 0}
+            checking={running || checkingStudies}
+            onInputChange={handleStudyInput}
+            onAdd={() => setStudies(addStudy)}
+            onRemove={(id) => setStudies((current) => removeStudy(current, id))}
+            onCheck={() => void handleCheckStudies()}
           />
         </section>
         <section className="panel" aria-labelledby="history-heading">

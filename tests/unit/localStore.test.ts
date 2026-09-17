@@ -204,6 +204,32 @@ describe('local draft store (contracts/storage.md)', () => {
     expect(JSON.parse(storage.getItem(DRAFT_KEY) ?? '')).toEqual({ schemaVersion: 1, ...draft });
   });
 
+  it('round trips a draft with study inputs', () => {
+    const storage = new MemoryStorage();
+    const store = createLocalDraftStore(storage);
+    const withStudies: Draft = { ...draft, studies: ['10.1056/NEJMoa1911303', ''] };
+    expect(store.save(withStudies)).toEqual({ ok: true });
+    expect(store.load()).toEqual(withStudies);
+    expect(JSON.parse(storage.getItem(DRAFT_KEY) ?? '')).toEqual({
+      schemaVersion: 1,
+      ...withStudies,
+    });
+  });
+
+  it('loads an older draft without studies', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(DRAFT_KEY, JSON.stringify({ schemaVersion: 1, arms: draft.arms }));
+    const loaded = createLocalDraftStore(storage).load();
+    expect(loaded).toEqual(draft);
+    expect(loaded).not.toHaveProperty('studies');
+  });
+
+  it('returns null when studies has a wrong shape', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(DRAFT_KEY, JSON.stringify({ schemaVersion: 1, arms: [], studies: [1] }));
+    expect(createLocalDraftStore(storage).load()).toBeNull();
+  });
+
   it('returns null for corrupt data and keeps the raw value', () => {
     const storage = new MemoryStorage();
     storage.setItem(DRAFT_KEY, '[1,2');
