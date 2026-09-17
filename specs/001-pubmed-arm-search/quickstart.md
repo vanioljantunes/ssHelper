@@ -87,3 +87,25 @@ documents consistent.
 10. `HistoryStore.clear` writes an empty versioned history instead of removing the key.
 11. Recorded fixtures in `tests/fixtures/pubmed/` are excluded from Prettier so their bytes stay
     as returned by NCBI.
+12. Manual scenarios 1-15 were run as automated Playwright equivalents (tests/e2e) instead of
+    by hand: offline (scenario 13) is simulated by aborting the esearch route, and clipboard
+    reads use granted clipboard permissions. Scenario 7 (compare with the PubMed website) was
+    checked with a one-off headless script, not committed, on 2026-09-16; all 6 counts matched
+    esearch exactly:
+
+    | Query | esearch | pubmed.ncbi.nlm.nih.gov |
+    |-------|---------|-------------------------|
+    | `("heart failure" OR "cardiac failure") AND ("sglt2 inhibitors")` | 2706 | 2706 |
+    | same `AND ("meta-analysis")` | 385 | 385 |
+    | `(diabetes) AND (metformin)` | 25099 | 25099 |
+    | same `AND ("meta-analysis")` | 1093 | 1093 |
+    | `("atrial fibrillation") AND (apixaban OR rivaroxaban) AND (stroke)` | 3465 | 3465 |
+    | same `AND ("meta-analysis")` | 324 | 324 |
+
+13. The live SC-002 test (T040 c) compares each strategy count from the app client with a
+    direct esearch request for the same term (both through one shared throttle), and the SC-003
+    timing (T040 d) is measured on those same 20 runs, so the file makes about 62 requests
+    instead of 100. Result on 2026-09-16: 20 of 20 matched; p95 run time 1.86 s.
+14. The term remove control shows a plain `x` (from `en.removeTermSymbol`) with the accessible
+    name "Remove term". Quote, text, and remove controls in a term box have a 24 px minimum
+    target size to pass the axe WCAG 2.2 `target-size` rule.

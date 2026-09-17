@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectNoAxeViolations } from './a11y';
 import { failPubmed, mockPubmed } from './pubmed-mock';
 
 const arm = (page: Page, n: number) => page.getByRole('group', { name: `Arm ${n}`, exact: true });
@@ -103,4 +104,57 @@ test('scenario 13: offline shows a message and no counts', async ({ page }) => {
   const results = page.getByTestId('search-results');
   await expect(results.getByTestId('result-count')).toHaveText('Error');
   await expect(results.getByTestId('meta-result-count')).toHaveText('Error');
+});
+
+test('accessibility: axe on empty, filled, invalid, and result states', async ({ page }) => {
+  await mockPubmed(page);
+  await expectNoAxeViolations(page);
+  await input(page, 1).fill('heart failure');
+  await input(page, 1).press('Enter');
+  await input(page, 2).fill('(heart');
+  await input(page, 2).press('Enter');
+  await expectNoAxeViolations(page);
+  await arm(page, 2).getByRole('button', { name: 'Remove term' }).click();
+  await searchButton(page).click();
+  await expect(page.getByTestId('search-results')).toBeVisible();
+  await expectNoAxeViolations(page);
+});
+
+test('accessibility: keyboard-only strategy entry and search with visible focus', async ({
+  page,
+}) => {
+  await mockPubmed(page, { count: 42, metaCount: 3 });
+  await input(page, 1).focus();
+  await page.keyboard.type('heart failure');
+  await page.keyboard.press('Enter');
+  await expect(terms(page, 1)).toHaveCount(1);
+
+  // Tab from the arm 1 input reaches the delete control of arm 2, then its input.
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Delete arm 2' })).toBeFocused();
+  const outline = await page.evaluate(
+    () => getComputedStyle(document.activeElement as Element).outlineStyle,
+  );
+  expect(outline).not.toBe('none');
+  await page.keyboard.press('Tab');
+  await expect(input(page, 2)).toBeFocused();
+  await page.keyboard.type('diabetes');
+
+  // Shift+Tab back to arm 1 term controls: remove, closing quote, text, opening quote.
+  await input(page, 1).focus();
+  await page.keyboard.press('Shift+Tab');
+  await expect(terms(page, 1).getByRole('button', { name: 'Remove term' })).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(terms(page, 1).getByRole('button', { name: 'heart failure' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(arm(page, 1).getByRole('textbox', { name: /Edit term/ })).toBeFocused();
+  await page.keyboard.press('Escape');
+
+  await searchButton(page).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('meta-result-count')).toHaveText('3');
+  await expect(page.getByRole('status')).toHaveText(
+    'Search finished. Results: 42. Results + meta-analysis: 3.',
+  );
 });

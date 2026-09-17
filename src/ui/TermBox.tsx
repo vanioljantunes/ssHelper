@@ -73,14 +73,13 @@ export function TermBox({ term, invalid, describedBy, onUnquote, onEdit, onRemov
           title={en.removeQuotes}
           onClick={onUnquote}
         >
-          "
+          {en.quoteMark}
         </button>
       )}
       <button
         type="button"
         className="term-text"
         aria-label={unquoteTerm(term.text)}
-        aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
         onClick={startEdit}
       >
@@ -95,7 +94,7 @@ export function TermBox({ term, invalid, describedBy, onUnquote, onEdit, onRemov
           title={en.removeQuotes}
           onClick={onUnquote}
         >
-          "
+          {en.quoteMark}
         </button>
       )}
       {quoted && tag !== '' && (
@@ -110,7 +109,7 @@ export function TermBox({ term, invalid, describedBy, onUnquote, onEdit, onRemov
         title={en.removeTerm}
         onClick={onRemove}
       >
-        {'×'}
+        {en.removeTermSymbol}
       </button>
     </span>
   );

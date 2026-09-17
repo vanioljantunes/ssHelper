@@ -63,11 +63,7 @@ export function SearchPanel({
       <span className="label" id="query-preview-label">
         {en.queryPreviewLabel}
       </span>
-      <pre
-        className="query-preview"
-        data-testid="query-preview"
-        aria-labelledby="query-preview-label"
-      >
+      <pre className="query-preview" data-testid="query-preview">
         {query ?? en.queryPreviewEmpty}
       </pre>
       <div className="search-row">

@@ -13,6 +13,8 @@ export const en = {
   termEditLabel: 'Edit term {term}',
   removeQuotes: 'Remove quotes',
   removeTerm: 'Remove term',
+  quoteMark: '"',
+  removeTermSymbol: 'x',
 
   issueUnbalancedParentheses: 'Term {term} has unbalanced parentheses.',
   issueUnbalancedQuotes: 'Term {term} has an odd number of quotation marks.',

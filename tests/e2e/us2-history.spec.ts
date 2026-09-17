@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectNoAxeViolations } from './a11y';
 import { failPubmed, mockPubmed } from './pubmed-mock';
 
 const input = (page: Page, n: number) =>
@@ -101,4 +102,41 @@ test('scenarios 14-15: load an older row, delete a row, clear history', async ({
   await expect(page.getByText('No searches yet.')).toBeVisible();
   await page.reload();
   await expect(page.getByText('No searches yet.')).toBeVisible();
+});
+
+test('accessibility: axe on history with rows, error cells, and dialogs', async ({ page }) => {
+  await expectNoAxeViolations(page);
+  let calls = 0;
+  await page.route(
+    'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi**',
+    async (route) => {
+      calls += 1;
+      if (calls % 2 === 0) {
+        await route.fulfill({ status: 404, body: 'not found' });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ esearchresult: { count: '9', querytranslation: 'x' } }),
+      });
+    },
+  );
+  await addTerm(page, 1, 'diabetes');
+  await search(page);
+  await expect(historyRows(page).first().locator('td').nth(3).locator('.error-text')).toHaveText(
+    'Error',
+  );
+  await expectNoAxeViolations(page);
+  await historyRows(page).first().getByRole('button', { name: 'Load' }).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await expect(
+    page.getByRole('alertdialog').getByRole('button', { name: 'Confirm' }),
+  ).toBeFocused();
+  await expectNoAxeViolations(page);
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Clear history' }).click();
+  await expectNoAxeViolations(page);
 });

@@ -1,0 +1,22 @@
+[
+  [["\"heart failure\"", "\"cardiac failure\""], [], ["\"sglt2 inhibitors\""]],
+  [["diabetes"], ["metformin"]],
+  [["\"atrial fibrillation\""], ["apixaban", "rivaroxaban"], ["stroke"]],
+  [["\"heart failure\"[tiab]"], ["\"sacubitril valsartan\""]],
+  [["\"Hypertension\"[Mesh]"], ["\"salt reduction\"", "\"sodium restriction\""]],
+  [["asthma"], ["\"inhaled corticosteroids\""], ["children", "pediatric"]],
+  [["\"chronic obstructive pulmonary disease\"", "copd"], ["\"pulmonary rehabilitation\""]],
+  [["depress*"], ["\"cognitive behavioral therapy\""]],
+  [["\"acute kidney injury\""], ["\"contrast media\""], []],
+  [["sepsis"], ["\"procalcitonin\""], ["\"antibiotic duration\"", "\"antibiotic stewardship\""]],
+  [[], ["\"low back pain\""], ["exercise"]],
+  [["obesity"], ["semaglutide", "liraglutide", "tirzepatide"]],
+  [["\"rheumatoid arthritis\""], ["methotrexate"], ["\"randomized controlled trial\"[pt]"]],
+  [["\"breast cancer\""], ["\"sentinel lymph node biopsy\""]],
+  [["\"COVID-19\"", "\"SARS-CoV-2\""], ["ivermectin"]],
+  [["migraine"], ["\"CGRP antagonist\"", "erenumab"]],
+  [["\"knee osteoarthritis\""], ["\"hyaluronic acid\""], ["injection*"]],
+  [["\"myocardial infarction\""], ["\"beta blockers\"", "\"beta-blockers\""], ["mortality"]],
+  [["schizophrenia"], ["clozapine"], ["\"treatment resistant\""]],
+  [["\"pressure ulcer\"", "\"pressure injury\""], ["\"support surfaces\""]]
+]
