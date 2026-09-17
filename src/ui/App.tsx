@@ -25,6 +25,7 @@ import { createLocalDraftStore, createLocalHistoryStore } from '../storage/local
 import type { DraftStore, HistoryStore, SaveResult } from '../storage/types';
 import { ArmsEditor } from './ArmsEditor';
 import { HistoryTable } from './HistoryTable';
+import { ImportStrategy } from './ImportStrategy';
 import { formatCount, SearchPanel, type LastSearch } from './SearchPanel';
 import './app.css';
 
@@ -118,6 +119,12 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
       <main>
         <section className="panel" aria-labelledby="arms-heading">
           <h2 id="arms-heading">{en.armsHeading}</h2>
+          <ImportStrategy
+            needsConfirmation={!isEmpty}
+            onImport={(arms) =>
+              setStrategy(fromDraft({ arms: arms.map((terms) => ({ terms, pending: '' })) }))
+            }
+          />
           <ArmsEditor
             strategy={strategy}
             issues={issues}

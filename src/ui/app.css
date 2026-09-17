@@ -336,6 +336,30 @@ input {
   margin-top: 0.75rem;
 }
 
+.import {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.import-box {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.import .confirm {
+  width: 100%;
+}
+
 .confirm {
   border: 1px solid var(--border);
   border-radius: 6px;

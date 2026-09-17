@@ -200,6 +200,12 @@ confirm the rows are still there.
   feature.
 - **FR-020**: Search MUST be disabled while any term has unbalanced parentheses or an odd number
   of quotation marks, and the invalid term MUST be marked with an explanation.
+- **FR-021**: The page MUST offer an empty box where a prior strategy can be pasted. "Fill arms"
+  MUST turn groups joined by AND into arms and the OR-joined terms of each group into term boxes,
+  keeping every term exactly as written (quotes, truncation, field tags). If the current arms
+  contain terms, the researcher confirms first. Strategies with NOT, groups inside groups, AND
+  and OR mixed without parentheses, or unbalanced quotes or parentheses MUST show an explanation
+  and import nothing.
 
 ### Key Entities
 

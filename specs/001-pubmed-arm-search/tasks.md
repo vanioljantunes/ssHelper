@@ -127,6 +127,16 @@ Write each test task before its implementation task and confirm it fails first.
 
 ---
 
+## Phase 6: Addendum - Paste a prior strategy (FR-021, added 2026-09-16)
+
+- [X] T048 [P] Parser tests (bladder cancer example, field tags with spaces, outer parentheses, unquoted multi-word terms, determinism, every rejection case) in `tests/unit/parse.test.ts`
+- [X] T049 Implement `parseStrategy` in `src/core/parse.ts` (tokenizer, AND-of-OR groups, whole-input rejection on unsupported syntax)
+- [X] T050 [P] Component tests for the paste box in `tests/component/ImportStrategy.test.tsx`
+- [X] T051 Implement `ImportStrategy` in `src/ui/ImportStrategy.tsx`, strings in `src/i18n/en.ts`, styles in `src/ui/app.css`, wired above the arms in `src/ui/App.tsx`
+- [X] T052 End-to-end tests (paste, fill, search; unsupported error; confirmation) in `tests/e2e/import-strategy.spec.ts`
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

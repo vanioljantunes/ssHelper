@@ -19,6 +19,23 @@ export const en = {
   issueUnbalancedParentheses: 'Term {term} has unbalanced parentheses.',
   issueUnbalancedQuotes: 'Term {term} has an odd number of quotation marks.',
 
+  importLabel: 'Paste a search strategy',
+  importHint:
+    'Groups joined by AND, terms inside each group joined by OR. Each group becomes one arm; terms are kept as written.',
+  importButton: 'Fill arms',
+  importDone: 'Filled {arms} arms with {terms} terms.',
+  confirmImport: 'Replace the current arms with the pasted strategy? Your current terms will be lost.',
+  importErrorEmpty: 'Paste a search strategy first.',
+  importErrorUnbalancedQuotes: 'The strategy has an odd number of quotation marks.',
+  importErrorUnbalancedParentheses: 'The strategy has unbalanced parentheses or brackets.',
+  importErrorNotSupported: 'NOT is not supported yet. Remove the NOT part and paste again.',
+  importErrorNestedGroups:
+    'Groups inside groups are not supported. Use groups of terms joined by OR, and join groups with AND.',
+  importErrorMixedOperators:
+    'AND and OR are mixed without parentheses. Put each OR list in parentheses and join the groups with AND.',
+  importErrorMissingTerm: 'A term is missing next to an AND or OR, or a pair of parentheses is empty.',
+  importErrorMissingOperator: 'An AND or OR is missing between a group and the next term.',
+
   searchHeading: 'Search',
   queryPreviewLabel: 'Query sent to PubMed',
   queryPreviewEmpty: 'No query yet.',
