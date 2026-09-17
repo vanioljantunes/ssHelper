@@ -1,5 +1,6 @@
 import type { CountOutcome } from '../core/types';
 import { en } from '../i18n/en';
+import { pubmedSearchUrl } from '../pubmed/links';
 
 export type LastSearch =
   | { status: 'completed'; result: CountOutcome; metaResult: CountOutcome }
@@ -64,7 +65,18 @@ export function SearchPanel({
         {en.queryPreviewLabel}
       </span>
       <pre className="query-preview" data-testid="query-preview">
-        {query ?? en.queryPreviewEmpty}
+        {query === null ? (
+          en.queryPreviewEmpty
+        ) : (
+          <a
+            href={pubmedSearchUrl(query)}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={en.openInPubmed}
+          >
+            {query}
+          </a>
+        )}
       </pre>
       <div className="search-row">
         <button

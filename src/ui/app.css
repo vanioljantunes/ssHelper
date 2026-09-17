@@ -213,6 +213,18 @@ input {
   color: var(--muted);
 }
 
+.query-preview a,
+.strategy a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.query-preview a:hover,
+.strategy a:hover {
+  text-decoration-thickness: 2px;
+}
+
 .query-preview {
   font-family: var(--mono);
   background: var(--bg);

@@ -206,6 +206,8 @@ confirm the rows are still there.
   contain terms, the researcher confirms first. Strategies with NOT, groups inside groups, AND
   and OR mixed without parentheses, or unbalanced quotes or parentheses MUST show an explanation
   and import nothing.
+- **FR-022**: The query text in the search panel and each history row's strategy MUST be a link
+  that opens the PubMed website search for that exact query in a new tab.
 
 ### Key Entities
 

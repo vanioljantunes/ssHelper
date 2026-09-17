@@ -41,6 +41,7 @@ export const en = {
   searchHeading: 'Search',
   queryPreviewLabel: 'Query sent to PubMed',
   queryPreviewEmpty: 'No query yet.',
+  openInPubmed: 'Open this search on the PubMed website (opens in a new tab)',
   search: 'Search',
   searching: 'Searching PubMed...',
   needTerm: 'Add at least one term.',

@@ -133,6 +133,8 @@ Write each test task before its implementation task and confirm it fails first.
 - [X] T049 Implement `parseStrategy` in `src/core/parse.ts` (tokenizer, AND-of-OR groups, whole-input rejection on unsupported syntax)
 - [X] T050 [P] Component tests for the paste box in `tests/component/ImportStrategy.test.tsx`
 - [X] T051 Implement `ImportStrategy` in `src/ui/ImportStrategy.tsx`, strings in `src/i18n/en.ts`, styles in `src/ui/app.css`, wired above the arms in `src/ui/App.tsx`
+- [X] T053 [P] Link tests in `tests/unit/links.test.ts` and `tests/component/PubmedLinks.test.tsx` (FR-022)
+- [X] T054 Implement `pubmedSearchUrl` in `src/pubmed/links.ts`; strategy links in `src/ui/HistoryTable.tsx` and `src/ui/SearchPanel.tsx`; link styles in `src/ui/app.css`
 - [X] T052 End-to-end tests (paste, fill, search; unsupported error; confirmation) in `tests/e2e/import-strategy.spec.ts`
 
 ---

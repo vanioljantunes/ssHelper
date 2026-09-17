@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import type { CountOutcome, SearchRun } from '../core/types';
 import { en } from '../i18n/en';
+import { pubmedSearchUrl } from '../pubmed/links';
 
 export interface HistoryTableProps {
   runs: SearchRun[];
@@ -130,7 +131,16 @@ export function HistoryTable({
                 <td className="when">
                   <time dateTime={run.createdAt}>{formatRunDate(run.createdAt)}</time>
                 </td>
-                <td className="strategy">{run.query}</td>
+                <td className="strategy">
+                  <a
+                    href={pubmedSearchUrl(run.query)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={en.openInPubmed}
+                  >
+                    {run.query}
+                  </a>
+                </td>
                 <CountCell outcome={run.result} runId={run.id} label="result" />
                 <CountCell outcome={run.metaResult} runId={run.id} label="meta" />
                 <td>
