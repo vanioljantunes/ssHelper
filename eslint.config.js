@@ -32,8 +32,14 @@ export default tseslint.config(
           ],
           patterns: [
             { group: ['**/ui', '**/ui/**'], message: 'src/core must not import UI.' },
-            { group: ['**/pubmed', '**/pubmed/**'], message: 'src/core must not import the PubMed client.' },
-            { group: ['**/storage', '**/storage/**'], message: 'src/core must not import storage.' },
+            {
+              group: ['**/pubmed', '**/pubmed/**'],
+              message: 'src/core must not import the PubMed client.',
+            },
+            {
+              group: ['**/storage', '**/storage/**'],
+              message: 'src/core must not import storage.',
+            },
           ],
         },
       ],

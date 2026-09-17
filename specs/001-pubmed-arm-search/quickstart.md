@@ -53,3 +53,28 @@ npm run build && npm run preview  # local production build (Phase A; Vercel come
 - Storage: [contracts/storage.md](./contracts/storage.md)
 - UI behaviour: [contracts/ui.md](./contracts/ui.md)
 - Entities: [data-model.md](./data-model.md)
+
+## Deviations
+
+Recorded during implementation (2026-09-16). Each is the smallest decision that kept the
+documents consistent.
+
+1. `validateTerm` returns the issue kind (`'unbalanced_parentheses' | 'unbalanced_quotes' | null`)
+   instead of a full `Issue`, because a term alone has no `armId`. `validateStrategy` attaches
+   `armId` and `termId`.
+2. `commitTerm` keeps a body that already contains a quotation mark exactly as typed (not only a
+   fully wrapped body). This applies "never quote twice" to input such as `"heart failure`, which
+   stays as typed and is then flagged by `validateTerm` (FR-020) instead of becoming
+   `""heart failure"`.
+3. `validateStrategy` also checks pending (uncommitted) text, with no `termId`, so Search is
+   disabled before an invalid pending term would be auto-committed.
+4. `runSearch` returns a `status` discriminant: `invalid` (issues), `empty` (null query),
+   `failed` (both counts failed, no run), `completed` (run). `empty` is the explicit form of the
+   "null query stops" step in contracts/run.md.
+5. `App` accepts an optional `countQuery` prop (defaults to the real PubMed client) so component
+   tests can inject a fake; later also the history and draft stores.
+6. Playwright starts its own dev server on port 5183 (override with `E2E_PORT`) instead of 5173,
+   because 5173 is often used by another local Vite app. `npm run dev` still prefers 5173 but no
+   longer fails when it is taken (Vite picks the next free port).
+7. Vitest workers run with `--no-experimental-webstorage` when Node supports that flag. Node 25
+   exposes an incomplete global `localStorage` that shadows the jsdom one.

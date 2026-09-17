@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const TEST_CONTACT_EMAIL = 'test@example.org';
+const nodeHasWebStorage = process.allowedNodeEnvironmentFlags.has('--no-experimental-webstorage');
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
@@ -20,7 +21,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [react()],
-    server: { port: 5173, strictPort: true },
+    server: { port: 5173 },
     test: {
       environment: 'jsdom',
       globals: true,
@@ -28,8 +29,14 @@ export default defineConfig(({ command, mode }) => {
       include: ['tests/**/*.test.{ts,tsx}'],
       exclude: ['node_modules/**', 'tests/e2e/**', ...(liveEnabled ? [] : ['tests/live/**'])],
       passWithNoTests: true,
+      // Node 25 exposes an incomplete global localStorage that shadows jsdom's; turn it off.
+      pool: 'forks',
+      poolOptions: {
+        forks: { execArgv: nodeHasWebStorage ? ['--no-experimental-webstorage'] : [] },
+      },
       env: {
-        VITE_NCBI_CONTACT_EMAIL: liveEnabled && contactEmail !== '' ? contactEmail : TEST_CONTACT_EMAIL,
+        VITE_NCBI_CONTACT_EMAIL:
+          liveEnabled && contactEmail !== '' ? contactEmail : TEST_CONTACT_EMAIL,
       },
     },
   };
