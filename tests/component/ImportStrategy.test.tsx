@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ImportStrategy } from '../../src/ui/ImportStrategy';
 
-const pasted = '("Bladder cancer" OR "Urothelial carcinoma")\nAND\n(ADC OR "Diffusion weighted imaging")';
+const pasted =
+  '("Bladder cancer" OR "Urothelial carcinoma")\nAND\n(ADC OR "Diffusion weighted imaging")';
 
 function setup(needsConfirmation = false) {
   const onImport = vi.fn();

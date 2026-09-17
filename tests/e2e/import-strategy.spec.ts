@@ -23,7 +23,9 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-test('pasting a strategy fills arms with the terms as written and searches it', async ({ page }) => {
+test('pasting a strategy fills arms with the terms as written and searches it', async ({
+  page,
+}) => {
   const requested = await mockPubmed(page, { count: 431, metaCount: 38 });
 
   await box(page).fill(pasted);

@@ -41,7 +41,9 @@ describe('parseStrategy', () => {
   });
 
   it('keeps field tags attached to their term, including tags with spaces', () => {
-    expect(parseStrategy('("heart failure"[Mesh Terms] OR cardiac*[tiab]) AND sglt2[tiab]')).toEqual({
+    expect(
+      parseStrategy('("heart failure"[Mesh Terms] OR cardiac*[tiab]) AND sglt2[tiab]'),
+    ).toEqual({
       ok: true,
       arms: [['"heart failure"[Mesh Terms]', 'cardiac*[tiab]'], ['sglt2[tiab]']],
     });
