@@ -21,7 +21,8 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [react()],
-    server: { port: 5173 },
+    server: { port: 5180, strictPort: true },
+    preview: { port: 5181, strictPort: true },
     test: {
       environment: 'jsdom',
       globals: true,

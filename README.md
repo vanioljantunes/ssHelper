@@ -50,7 +50,7 @@ Counts come from PubMed at the time of the run and change as PubMed is updated.
 ```bash
 npm install
 npx playwright install chromium   # once, for end-to-end tests
-npm run dev                       # http://localhost:5173 (next free port if taken)
+npm run dev                       # http://localhost:5180 (fixed port; fails if taken)
 ```
 
 | Command                           | What it does                                                                      |

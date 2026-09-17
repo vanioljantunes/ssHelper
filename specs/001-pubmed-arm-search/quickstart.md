@@ -12,7 +12,7 @@ Validation guide proving the feature works end to end.
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173
+npm run dev          # http://localhost:5180 (fixed; preview uses 5181)
 ```
 
 ## Automated checks
@@ -74,8 +74,8 @@ documents consistent.
 5. `App` accepts an optional `countQuery` prop (defaults to the real PubMed client) so component
    tests can inject a fake; later also the history and draft stores.
 6. Playwright starts its own dev server on port 5183 (override with `E2E_PORT`) instead of 5173,
-   because 5173 is often used by another local Vite app. `npm run dev` still prefers 5173 but no
-   longer fails when it is taken (Vite picks the next free port).
+   because 5173 is often used by another local Vite app. `npm run dev` uses fixed port 5180 (strictPort, preview 5181) so it never
+   lands on another app's port; if 5180 is busy it stops with an error.
 7. Vitest workers run with `--no-experimental-webstorage` when Node supports that flag. Node 25
    exposes an incomplete global `localStorage` that shadows the jsdom one.
 8. `SaveResult` has a third failure reason, `duplicate`, returned by `HistoryStore.add` when a
