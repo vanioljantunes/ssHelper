@@ -19,6 +19,7 @@ export interface StudiesPanelProps {
   canCheck: boolean;
   checking: boolean;
   onInputChange: (id: string, input: string) => void;
+  onLabelChange: (id: string, label: string) => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
   onCheck: () => void;
@@ -140,6 +141,7 @@ export function StudiesPanel({
   canCheck,
   checking,
   onInputChange,
+  onLabelChange,
   onAdd,
   onRemove,
   onCheck,
@@ -164,9 +166,16 @@ export function StudiesPanel({
               data-testid="study-row"
               data-status={resolved?.status}
             >
-              <label htmlFor={inputId} className="study-label">
-                {t(en.studyLabel, { n })}
-              </label>
+              <input
+                type="text"
+                className="study-name"
+                value={study.label}
+                placeholder={t(en.studyLabel, { n })}
+                spellCheck={false}
+                autoComplete="off"
+                aria-label={t(en.studyNameLabel, { n })}
+                onChange={(event) => onLabelChange(study.id, event.target.value)}
+              />
               <div className="study-box">
                 <input
                   id={inputId}
@@ -193,7 +202,11 @@ export function StudiesPanel({
                   rel="noopener noreferrer"
                 >
                   {en.studyOpenInPubmed}
-                  <span className="visually-hidden">{t(en.studyOpenInPubmedHidden, { n })}</span>
+                  <span className="visually-hidden">
+                    {study.label.trim() === ''
+                      ? t(en.studyOpenInPubmedHidden, { n })
+                      : t(en.studyOpenInPubmedHiddenNamed, { label: study.label.trim() })}
+                  </span>
                 </a>
               )}
               <button

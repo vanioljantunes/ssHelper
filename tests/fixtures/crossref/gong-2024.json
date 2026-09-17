@@ -1,0 +1,54 @@
+{
+  "status": "ok",
+  "message-type": "work",
+  "message": {
+    "DOI": "10.1002/jmri.29184",
+    "author": [
+      {
+        "given": "Yu",
+        "family": "Gong",
+        "sequence": "first"
+      },
+      {
+        "given": "Yi",
+        "family": "Cheng",
+        "sequence": "additional"
+      }
+    ],
+    "published-print": {
+      "date-parts": [
+        [
+          2024,
+          9
+        ]
+      ]
+    },
+    "published-online": {
+      "date-parts": [
+        [
+          2024,
+          1,
+          23
+        ]
+      ]
+    },
+    "published": {
+      "date-parts": [
+        [
+          2024,
+          1,
+          23
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2024,
+          1,
+          23
+        ]
+      ]
+    }
+  }
+}

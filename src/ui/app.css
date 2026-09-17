@@ -423,10 +423,35 @@ input {
   gap: 0.5rem;
 }
 
-.study-label {
+/* Reads as the study name; the border appears on hover and focus to show it is editable. */
+.study-name {
+  width: 11rem;
+  max-width: 100%;
+  font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
-  min-width: 4.5rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.3rem 0.4rem;
+  text-overflow: ellipsis;
+}
+
+.study-name::placeholder {
+  color: var(--text);
+  opacity: 1;
+}
+
+.study-name:hover {
+  border-color: var(--border);
+}
+
+.study-name:focus-visible {
+  border-color: var(--border);
+  background: var(--surface);
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .study-box {

@@ -1,0 +1,46 @@
+{
+  "status": "ok",
+  "message-type": "work",
+  "message": {
+    "DOI": "10.1007/s00261-024-04788-6",
+    "author": [
+      {
+        "given": "Zhichao",
+        "family": "Zhang",
+        "sequence": "first"
+      },
+      {
+        "given": "Weixiong",
+        "family": "Xiao",
+        "sequence": "additional"
+      }
+    ],
+    "published-online": {
+      "date-parts": [
+        [
+          2025,
+          1,
+          2
+        ]
+      ]
+    },
+    "published": {
+      "date-parts": [
+        [
+          2025,
+          1,
+          2
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2025,
+          1,
+          2
+        ]
+      ]
+    }
+  }
+}

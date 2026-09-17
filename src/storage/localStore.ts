@@ -1,4 +1,4 @@
-import type { CountOutcome, Draft, SearchRun } from '../core/types';
+import type { CountOutcome, Draft, DraftStudy, SearchRun } from '../core/types';
 import type { DraftStore, HistoryStore, SaveResult } from './types';
 
 export const HISTORY_KEY = 'sshelper:v1:history';
@@ -102,6 +102,20 @@ function parseHistory(data: unknown): SearchRun[] | null {
   return data.runs.every(isSearchRun) ? data.runs : null;
 }
 
+/** A saved study: the object form, or a plain input string from drafts before FR-024. */
+function parseDraftStudy(value: unknown): DraftStudy | null {
+  if (typeof value === 'string') return { input: value, label: '', labelEdited: false };
+  if (
+    isObject(value) &&
+    typeof value.input === 'string' &&
+    typeof value.label === 'string' &&
+    typeof value.labelEdited === 'boolean'
+  ) {
+    return { input: value.input, label: value.label, labelEdited: value.labelEdited };
+  }
+  return null;
+}
+
 function parseDraft(data: unknown): Draft | null {
   if (!isObject(data) || data.schemaVersion !== SCHEMA_VERSION || !Array.isArray(data.arms))
     return null;
@@ -109,14 +123,23 @@ function parseDraft(data: unknown): Draft | null {
     (arm) => isObject(arm) && isStringArray(arm.terms) && typeof arm.pending === 'string',
   );
   if (!valid) return null;
-  if (data.studies !== undefined && !isStringArray(data.studies)) return null;
+  let studies: DraftStudy[] | undefined;
+  if (data.studies !== undefined) {
+    if (!Array.isArray(data.studies)) return null;
+    studies = [];
+    for (const item of data.studies) {
+      const study = parseDraftStudy(item);
+      if (study === null) return null;
+      studies.push(study);
+    }
+  }
   const draft: Draft = {
     arms: (data.arms as { terms: string[]; pending: string }[]).map((arm) => ({
       terms: [...arm.terms],
       pending: arm.pending,
     })),
   };
-  if (data.studies !== undefined) draft.studies = [...data.studies];
+  if (studies !== undefined) draft.studies = studies;
   return draft;
 }
 

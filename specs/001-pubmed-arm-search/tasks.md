@@ -148,6 +148,16 @@ Write each test task before its implementation task and confirm it fails first.
 - [X] T059 Implement `StudiesPanel` in `src/ui/StudiesPanel.tsx` (inline SVG icons, status on the right of the box, PubMed link per checked study, summary line), strings in `src/i18n/en.ts`, styles in `src/ui/app.css`; wire in `src/ui/App.tsx` between Search and History: checks after a completed search and from "Check studies" (no history row), sequential through the throttled `countQuery`, study inputs saved in the draft
 - [X] T060 End-to-end tests in `tests/e2e/studies.spec.ts` (found, not found, and not in PubMed after a search with exact request order; Check studies without a history row; add and remove with reload persistence; axe) with term-dependent counts in `tests/e2e/pubmed-mock.ts`
 
+## Phase 8: Addendum - study labels (FR-024, added 2026-09-17)
+
+- [X] T061 [P] Unit tests in `tests/unit/label.test.ts` (`formatStudyLabel`: name and year, trim, capitalisation kept, missing year, missing name) and `tests/unit/study.test.ts` (typing locks the label, clearing unlocks it, a DOI change clears an automatic label and keeps a typed one, `applyAutoLabel` ignored for a changed input or a typed label, draft round trip including old string form)
+- [X] T062 [P] Contract tests in `tests/contract/crossref-client.test.ts` with recorded, trimmed fixtures in `tests/fixtures/crossref/` (Akcay 2021, Gong 2024, Elshewy 2024, Zhang 2025, Yu 2024): URL and mailto, print over online year, online only, published and issued fallbacks, missing year, `name` fallback, no author, HTTP 404, 429 and 5xx retries (at most 2), malformed JSON, network failure, timeout, never throws
+- [X] T063 [P] Storage tests in `tests/unit/localStore.test.ts`: object-form studies round trip; old string-form studies load as unlabelled, unedited; wrong study shapes return null
+- [X] T064 Implement `src/core/label.ts`, label fields and helpers in `src/core/types.ts` and `src/core/study.ts` (`setStudyLabel`, `applyAutoLabel`, `toDraftStudies`, `fromDraftStudies`), `src/crossref/client.ts` (own 200 ms queue), draft validation in `src/storage/localStore.ts` (`schemaVersion` stays 1), and an ESLint rule keeping `src/core` free of the Crossref client
+- [X] T065 [P] Component tests in `tests/component/StudiesPanel.test.tsx`: name input with "Study N" placeholder and name "Name for study N"; typing sets the edited state; an automatic label appears; a typed label is not overwritten; the hidden PubMed link text uses the label
+- [X] T066 Implement the name input in `src/ui/StudiesPanel.tsx` (border on hover and focus, styles in `src/ui/app.css`, strings in `src/i18n/en.ts`) and wire lookups in `src/ui/App.tsx` (injectable `lookupLabel`, run alongside the PubMed checks, applied only to the same input and unedited label)
+- [X] T067 End-to-end test in `tests/e2e/studies.spec.ts` with Crossref routed to fixtures in `tests/e2e/pubmed-mock.ts` (unknown DOIs get 404): labels after Search; a typed label survives Check studies and reload; clearing it brings the automatic label back; a new DOI clears the automatic label; axe
+
 ---
 
 ## Dependencies & Execution Order

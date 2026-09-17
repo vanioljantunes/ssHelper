@@ -46,15 +46,26 @@ export interface DraftArm {
   pending: string;
 }
 
+/** A saved study box. Drafts saved before FR-024 hold only the input string. */
+export interface DraftStudy {
+  input: string;
+  label: string;
+  labelEdited: boolean;
+}
+
 export interface Draft {
   arms: DraftArm[];
-  /** Known study inputs (DOI boxes). Missing in drafts saved before FR-023. */
-  studies?: string[];
+  /** Known study boxes. Missing in drafts saved before FR-023. */
+  studies?: DraftStudy[];
 }
 
 export interface Study {
   id: string;
   input: string;
+  /** Display name such as "Akcay, 2021"; empty shows the "Study N" placeholder (FR-024). */
+  label: string;
+  /** True once the researcher typed the label; automatic lookups never overwrite it. */
+  labelEdited: boolean;
 }
 
 /**

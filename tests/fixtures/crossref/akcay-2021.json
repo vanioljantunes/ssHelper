@@ -1,0 +1,43 @@
+{
+  "status": "ok",
+  "message-type": "work",
+  "message": {
+    "DOI": "10.1016/j.clinimag.2021.02.026",
+    "author": [
+      {
+        "given": "Ahmet",
+        "family": "Akcay",
+        "sequence": "first"
+      },
+      {
+        "given": "Ahmet Baki",
+        "family": "Yagci",
+        "sequence": "additional"
+      }
+    ],
+    "published-print": {
+      "date-parts": [
+        [
+          2021,
+          9
+        ]
+      ]
+    },
+    "published": {
+      "date-parts": [
+        [
+          2021,
+          9
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2021,
+          9
+        ]
+      ]
+    }
+  }
+}

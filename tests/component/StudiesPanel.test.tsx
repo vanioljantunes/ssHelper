@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   addStudy,
+  applyAutoLabel,
   createDefaultStudies,
   removeStudy,
   setStudyInput,
+  setStudyLabel,
   studyQuery,
 } from '../../src/core/study';
 import type { Study } from '../../src/core/types';
@@ -29,18 +31,32 @@ function Harness({
   onCheck?: () => void;
 }) {
   const [studies, setStudies] = useState<Study[]>(() => initial ?? createDefaultStudies());
+  const first = studies[0];
   return (
-    <StudiesPanel
-      studies={studies}
-      results={results}
-      query={currentQuery}
-      canCheck
-      checking={false}
-      onInputChange={(id, input) => setStudies((s) => setStudyInput(s, id, input))}
-      onAdd={() => setStudies(addStudy)}
-      onRemove={(id) => setStudies((s) => removeStudy(s, id))}
-      onCheck={onCheck}
-    />
+    <>
+      {/* Stands in for a Crossref lookup finishing for the first study's current input. */}
+      <button
+        type="button"
+        onClick={() =>
+          first && setStudies((s) => applyAutoLabel(s, first.id, 'Akcay, 2021', first.input))
+        }
+      >
+        auto label
+      </button>
+      <output data-testid="edited">{studies.map((s) => String(s.labelEdited)).join(',')}</output>
+      <StudiesPanel
+        studies={studies}
+        results={results}
+        query={currentQuery}
+        canCheck
+        checking={false}
+        onInputChange={(id, input) => setStudies((s) => setStudyInput(s, id, input))}
+        onLabelChange={(id, label) => setStudies((s) => setStudyLabel(s, id, label))}
+        onAdd={() => setStudies(addStudy)}
+        onRemove={(id) => setStudies((s) => removeStudy(s, id))}
+        onCheck={onCheck}
+      />
+    </>
   );
 }
 
@@ -53,7 +69,12 @@ function row(index: number): HTMLElement {
 }
 
 function withInputs(inputs: string[]): Study[] {
-  return inputs.map((input, index) => ({ id: `s${index + 1}`, input }));
+  return inputs.map((input, index) => ({
+    id: `s${index + 1}`,
+    input,
+    label: '',
+    labelEdited: false,
+  }));
 }
 
 describe('StudiesPanel', () => {
@@ -62,8 +83,47 @@ describe('StudiesPanel', () => {
     expect(rows()).toHaveLength(3);
     for (const n of [1, 2, 3]) {
       expect(screen.getByRole('textbox', { name: `DOI for study ${n}` })).toHaveValue('');
-      expect(screen.getByText(`Study ${n}`)).toBeInTheDocument();
+      const name = screen.getByRole('textbox', { name: `Name for study ${n}` });
+      expect(name).toHaveValue('');
+      expect(name).toHaveAttribute('placeholder', `Study ${n}`);
     }
+  });
+
+  it('typing a name marks the label edited; clearing it unlocks it', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    const name = screen.getByRole('textbox', { name: 'Name for study 1' });
+    await user.type(name, 'Custom, 2020');
+    expect(name).toHaveValue('Custom, 2020');
+    expect(screen.getByTestId('edited')).toHaveTextContent('true,false,false');
+    await user.clear(name);
+    expect(screen.getByTestId('edited')).toHaveTextContent('false,false,false');
+  });
+
+  it('shows an automatic label and never overwrites an edited one', async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={withInputs([doi])} />);
+    const name = screen.getByRole('textbox', { name: 'Name for study 1' });
+    await user.click(screen.getByRole('button', { name: 'auto label' }));
+    expect(name).toHaveValue('Akcay, 2021');
+    expect(screen.getByTestId('edited')).toHaveTextContent('false');
+
+    await user.clear(name);
+    await user.type(name, 'Mine');
+    await user.click(screen.getByRole('button', { name: 'auto label' }));
+    expect(name).toHaveValue('Mine');
+    expect(screen.getByTestId('edited')).toHaveTextContent('true');
+  });
+
+  it('uses the label in the hidden PubMed link text', () => {
+    const initial = [{ id: 's1', input: doi, label: 'Akcay, 2021', labelEdited: false }];
+    const results: Record<string, StudyRowState> = {
+      s1: { input: doi, check: { status: 'found', doi, query, checkedAt } },
+    };
+    render(<Harness initial={initial} results={results} />);
+    expect(screen.getByRole('link')).toHaveTextContent(
+      'PubMed search for Akcay, 2021 (opens in a new tab)',
+    );
   });
 
   it('adds and removes boxes, keeping at least one', async () => {

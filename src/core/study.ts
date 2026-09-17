@@ -1,5 +1,5 @@
 import { newId } from './id';
-import type { CountOutcome, Study, StudyCheck } from './types';
+import type { CountOutcome, DraftStudy, Study, StudyCheck } from './types';
 
 export const DEFAULT_STUDY_COUNT = 3;
 
@@ -52,8 +52,8 @@ export async function checkStudy(
   return { status: alone.count > 0 ? 'not_found' : 'not_in_pubmed', doi, query, checkedAt };
 }
 
-export function createStudy(input = ''): Study {
-  return { id: newId(), input };
+export function createStudy(input = '', label = '', labelEdited = false): Study {
+  return { id: newId(), input, label, labelEdited };
 }
 
 export function createDefaultStudies(): Study[] {
@@ -70,17 +70,52 @@ export function removeStudy(studies: Study[], id: string): Study[] {
   return rest.length === 0 ? [createStudy()] : rest;
 }
 
+/** A new DOI clears an automatic label, which belonged to the old DOI; an edited label stays. */
 export function setStudyInput(studies: Study[], id: string, input: string): Study[] {
-  return studies.map((study) => (study.id === id ? { ...study, input } : study));
+  return studies.map((study) => {
+    if (study.id !== id) return study;
+    if (study.labelEdited || study.input === input) return { ...study, input };
+    return { ...study, input, label: '' };
+  });
+}
+
+/** Typing locks the label; clearing it unlocks automatic labelling again (FR-024). */
+export function setStudyLabel(studies: Study[], id: string, label: string): Study[] {
+  const cleared = label.trim() === '';
+  return studies.map((study) =>
+    study.id === id ? { ...study, label: cleared ? '' : label, labelEdited: !cleared } : study,
+  );
+}
+
+/** Applies a looked-up label only if the box still holds that input and was not edited. */
+export function applyAutoLabel(
+  studies: Study[],
+  id: string,
+  label: string,
+  forDoiInput: string,
+): Study[] {
+  return studies.map((study) =>
+    study.id === id && study.input === forDoiInput && !study.labelEdited
+      ? { ...study, label }
+      : study,
+  );
 }
 
 export function toStudyInputs(studies: Study[]): string[] {
   return studies.map((study) => study.input);
 }
 
-/** Missing inputs (older drafts) give the default boxes. */
-export function fromStudyInputs(inputs: string[] | undefined): Study[] {
-  if (inputs === undefined) return createDefaultStudies();
-  if (inputs.length === 0) return [createStudy()];
-  return inputs.map((input) => createStudy(input));
+export function toDraftStudies(studies: Study[]): DraftStudy[] {
+  return studies.map(({ input, label, labelEdited }) => ({ input, label, labelEdited }));
+}
+
+/** Missing studies (older drafts) give the default boxes; plain strings are unlabelled inputs. */
+export function fromDraftStudies(saved: (string | DraftStudy)[] | undefined): Study[] {
+  if (saved === undefined) return createDefaultStudies();
+  if (saved.length === 0) return [createStudy()];
+  return saved.map((item) =>
+    typeof item === 'string'
+      ? createStudy(item)
+      : createStudy(item.input, item.label, item.labelEdited),
+  );
 }

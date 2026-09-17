@@ -1,0 +1,46 @@
+{
+  "status": "ok",
+  "message-type": "work",
+  "message": {
+    "DOI": "10.1186/s43055-023-01181-z",
+    "author": [
+      {
+        "given": "Nesma",
+        "family": "Elshewy",
+        "sequence": "first"
+      },
+      {
+        "given": "Adel Ali",
+        "family": "Ramadan",
+        "sequence": "additional"
+      }
+    ],
+    "published-online": {
+      "date-parts": [
+        [
+          2024,
+          1,
+          25
+        ]
+      ]
+    },
+    "published": {
+      "date-parts": [
+        [
+          2024,
+          1,
+          25
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2024,
+          1,
+          25
+        ]
+      ]
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAxeViolations } from './a11y';
-import { mockPubmed } from './pubmed-mock';
+import { CROSSREF_FIXTURES, mockPubmed } from './pubmed-mock';
 
 const FOUND = '10.1000/found.1';
 const MISSED = '10.1000/missed.2';
@@ -116,5 +116,49 @@ test('add and remove study boxes; inputs persist after reload', async ({ page })
   await page.reload();
   await expect(studyRows(page)).toHaveCount(1);
   await expect(doiInput(page, 1)).toHaveValue(MISSED);
+  await expectNoAxeViolations(page);
+});
+
+const nameInput = (page: Page, n: number) =>
+  page.getByRole('textbox', { name: `Name for study ${n}` });
+
+test('labels come from Crossref after a search and can be edited', async ({ page }) => {
+  await mockPubmed(page);
+  const dois = Object.keys(CROSSREF_FIXTURES);
+  const labels = ['Akcay, 2021', 'Gong, 2024', 'Elshewy, 2024', 'Zhang, 2025', 'Yu, 2024'];
+  await addTerm(page, 'prostate cancer');
+  await page.getByRole('button', { name: 'Add study' }).click();
+  await page.getByRole('button', { name: 'Add study' }).click();
+  for (const [i, doi] of dois.entries()) await doiInput(page, i + 1).fill(`https://doi.org/${doi}`);
+  await expect(nameInput(page, 1)).toHaveAttribute('placeholder', 'Study 1');
+  await expect(nameInput(page, 1)).toHaveValue('');
+
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  for (const [i, label] of labels.entries())
+    await expect(nameInput(page, i + 1)).toHaveValue(label);
+  await expect(studyRows(page).nth(0)).toHaveAttribute('data-status', 'found');
+  await expectNoAxeViolations(page);
+
+  // An edited label survives a later check and a reload.
+  await nameInput(page, 1).fill('Custom, 2020');
+  await page.getByRole('button', { name: 'Check studies' }).click();
+  await expect(studyRows(page).nth(0)).toHaveAttribute('data-status', 'found');
+  await expect(page.getByTestId('studies-summary')).toContainText('Found 5 of 5 studies.');
+  await expect(nameInput(page, 1)).toHaveValue('Custom, 2020');
+  await page.reload();
+  await expect(nameInput(page, 1)).toHaveValue('Custom, 2020');
+  await expect(nameInput(page, 2)).toHaveValue('Gong, 2024');
+
+  // Clearing it lets the automatic label return on the next check.
+  await nameInput(page, 1).fill('');
+  await page.getByRole('button', { name: 'Check studies' }).click();
+  await expect(nameInput(page, 1)).toHaveValue('Akcay, 2021');
+
+  // A new DOI clears an automatic label; an unknown DOI gets no label and no error.
+  await doiInput(page, 2).fill('10.1000/unknown.9');
+  await expect(nameInput(page, 2)).toHaveValue('');
+  await page.getByRole('button', { name: 'Check studies' }).click();
+  await expect(studyRows(page).nth(1)).toHaveAttribute('data-status', 'found');
+  await expect(nameInput(page, 2)).toHaveValue('');
   await expectNoAxeViolations(page);
 });

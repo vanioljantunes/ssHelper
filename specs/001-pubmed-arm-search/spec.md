@@ -222,6 +222,17 @@ confirm the rows are still there.
   strategy query are unchanged. A summary reads "Found N of M studies.", where M counts found and
   not found studies only, and lists Unresolved studies separately. Study inputs are kept in the
   saved draft.
+- **FR-024**: Each study box MUST have an editable name shown in place of "Study N" (which stays as
+  the placeholder). During every studies check (after Search or from "Check studies"), boxes with
+  a valid DOI and no name yet get an automatic name "Lastname, Year" from the Crossref works
+  record: the first author's family name (or the author's name when there is no family name) and
+  the year of the print date, else the online date, else `published`, else `issued`; with no
+  year the name alone is used. Lookups run on their own Crossref queue (at least 200 ms between
+  request starts) alongside the PubMed checks and never slow them. A failed lookup leaves the
+  name empty and shows no error. A name typed by the researcher is never overwritten by a lookup;
+  clearing it allows automatic naming again. Changing the DOI clears an automatic name but keeps
+  a typed one. Names and whether they were typed are kept in the saved draft; older drafts that
+  hold only DOI strings still load.
 
 ### Key Entities
 

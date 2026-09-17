@@ -1,14 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   addStudy,
+  applyAutoLabel,
   checkStudy,
   createDefaultStudies,
   doiExistsQuery,
-  fromStudyInputs,
+  fromDraftStudies,
   normalizeDoi,
   removeStudy,
   setStudyInput,
+  setStudyLabel,
   studyQuery,
+  toDraftStudies,
   toStudyInputs,
 } from '../../src/core/study';
 import type { CountOutcome } from '../../src/core/types';
@@ -166,8 +169,75 @@ describe('study list', () => {
   });
 
   it('restores studies from draft inputs', () => {
-    expect(toStudyInputs(fromStudyInputs(undefined))).toEqual(['', '', '']);
-    expect(toStudyInputs(fromStudyInputs([]))).toEqual(['']);
-    expect(toStudyInputs(fromStudyInputs([doi, '']))).toEqual([doi, '']);
+    expect(toStudyInputs(fromDraftStudies(undefined))).toEqual(['', '', '']);
+    expect(toStudyInputs(fromDraftStudies([]))).toEqual(['']);
+    expect(toStudyInputs(fromDraftStudies([doi, '']))).toEqual([doi, '']);
+  });
+
+  it('new studies have an empty, unedited label', () => {
+    for (const study of addStudy(createDefaultStudies())) {
+      expect(study.label).toBe('');
+      expect(study.labelEdited).toBe(false);
+    }
+  });
+
+  it('restores labels from draft objects and old string drafts', () => {
+    const studies = fromDraftStudies([
+      doi,
+      { input: '10.1002/jmri.29184', label: 'Custom, 2020', labelEdited: true },
+    ]);
+    expect(studies.map(({ input, label, labelEdited }) => ({ input, label, labelEdited }))).toEqual(
+      [
+        { input: doi, label: '', labelEdited: false },
+        { input: '10.1002/jmri.29184', label: 'Custom, 2020', labelEdited: true },
+      ],
+    );
+    expect(toDraftStudies(studies)).toEqual([
+      { input: doi, label: '', labelEdited: false },
+      { input: '10.1002/jmri.29184', label: 'Custom, 2020', labelEdited: true },
+    ]);
+  });
+});
+
+describe('study labels (FR-024)', () => {
+  const one = (input = doi, label = '', labelEdited = false) => [
+    { id: 's1', input, label, labelEdited },
+  ];
+
+  it('typing a label marks it edited', () => {
+    const [study] = setStudyLabel(one(), 's1', 'Custom, 2020');
+    expect(study).toMatchObject({ label: 'Custom, 2020', labelEdited: true });
+  });
+
+  it('clearing a label unlocks automatic labelling', () => {
+    const [study] = setStudyLabel(one(doi, 'Custom, 2020', true), 's1', '');
+    expect(study).toMatchObject({ label: '', labelEdited: false });
+    const [blank] = setStudyLabel(one(doi, 'Custom, 2020', true), 's1', '   ');
+    expect(blank).toMatchObject({ label: '', labelEdited: false });
+  });
+
+  it('a DOI change clears an automatic label', () => {
+    const [study] = setStudyInput(one(doi, 'Akcay, 2021'), 's1', '10.1002/jmri.29184');
+    expect(study).toMatchObject({ input: '10.1002/jmri.29184', label: '', labelEdited: false });
+  });
+
+  it('a DOI change keeps an edited label', () => {
+    const [study] = setStudyInput(one(doi, 'Custom, 2020', true), 's1', '10.1002/jmri.29184');
+    expect(study).toMatchObject({ label: 'Custom, 2020', labelEdited: true });
+  });
+
+  it('applyAutoLabel sets the label for the same input', () => {
+    const [study] = applyAutoLabel(one(), 's1', 'Akcay, 2021', doi);
+    expect(study).toMatchObject({ label: 'Akcay, 2021', labelEdited: false });
+  });
+
+  it('applyAutoLabel is ignored when the input changed', () => {
+    const studies = one('10.1002/jmri.29184');
+    expect(applyAutoLabel(studies, 's1', 'Akcay, 2021', doi)).toEqual(studies);
+  });
+
+  it('applyAutoLabel never overwrites an edited label', () => {
+    const studies = one(doi, 'Custom, 2020', true);
+    expect(applyAutoLabel(studies, 's1', 'Akcay, 2021', doi)).toEqual(studies);
   });
 });

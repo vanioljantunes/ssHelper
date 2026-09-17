@@ -37,6 +37,10 @@ export default tseslint.config(
               message: 'src/core must not import the PubMed client.',
             },
             {
+              group: ['**/crossref', '**/crossref/**'],
+              message: 'src/core must not import the Crossref client.',
+            },
+            {
               group: ['**/storage', '**/storage/**'],
               message: 'src/core must not import storage.',
             },

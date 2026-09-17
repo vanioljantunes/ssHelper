@@ -64,6 +64,7 @@ export const en = {
   studiesHint:
     'Paste a DOI or doi.org link. Each study is checked with the strategy plus an extra arm containing only that DOI.',
   studyLabel: 'Study {n}',
+  studyNameLabel: 'Name for study {n}',
   studyInputLabel: 'DOI for study {n}',
   removeStudy: 'Remove study {n}',
   addStudy: 'Add study',
@@ -75,6 +76,7 @@ export const en = {
   studyInvalid: 'Not a valid DOI',
   studyOpenInPubmed: 'PubMed',
   studyOpenInPubmedHidden: ' search for study {n} (opens in a new tab)',
+  studyOpenInPubmedHiddenNamed: ' search for {label} (opens in a new tab)',
   studiesSummary: 'Found {found} of {total} studies.',
   studiesNotInPubmedOne: '{n} DOI not in PubMed',
   studiesNotInPubmedMany: '{n} DOIs not in PubMed',
@@ -84,6 +86,10 @@ export const en = {
   removeStudyVisible: 'Remove',
   studiesErrorOne: '{n} check failed',
   studiesErrorMany: '{n} checks failed',
+  labelErrorNetwork: 'Crossref could not be reached.',
+  labelErrorHttp: 'Crossref returned an error (HTTP {status}).',
+  labelErrorInvalidResponse: 'Crossref returned an unexpected response.',
+  labelErrorNoAuthor: 'Crossref has no author name for this DOI.',
 
   historyHeading: 'History',
   historyDateTime: 'Date and time',

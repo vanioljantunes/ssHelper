@@ -109,3 +109,9 @@ documents consistent.
 14. The term remove control shows a plain `x` (from `en.removeTermSymbol`) with the accessible
     name "Remove term". Quote, text, and remove controls in a term box have a 24 px minimum
     target size to pass the axe WCAG 2.2 `target-size` rule.
+15. FR-024 study labels: a lookup is made only for a box with a valid DOI, no typed label, and an
+    empty label. A box that already holds an automatic label is not looked up again, because a
+    DOI change clears that label; this avoids repeat Crossref requests on every check. The
+    Crossref client reuses `createThrottle` from `src/pubmed/throttle.ts` with its own instance
+    (200 ms), so PubMed and Crossref queues are independent. `mockPubmed` in the e2e tests also
+    routes Crossref, so no e2e test reaches the real API.

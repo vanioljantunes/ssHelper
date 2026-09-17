@@ -101,3 +101,25 @@ All Technical Context unknowns are resolved below. Probes against NCBI were run 
   One live PubMed smoke test runs only when `LIVE_PUBMED=1`.
 - **Rationale**: Constitution requires recorded-response tests and opt-in live tests.
 - **Alternatives considered**: Only e2e tests (slow, brittle for quoting rules).
+
+## R11. Study labels from Crossref (FR-024, added 2026-09-17)
+
+- **Decision**: Name study boxes "Lastname, Year" from the Crossref REST API
+  (`https://api.crossref.org/works/{doi}`, DOI path-encoded with `encodeURIComponent`, plus
+  `mailto=<VITE_NCBI_CONTACT_EMAIL>` for the polite pool). The name is
+  `message.author[0].family`, falling back to `author[0].name`. The year is the first integer in
+  `published-print`, then `published-online`, then `published`, then `issued`
+  (`date-parts[0][0]`). Client in `src/crossref/client.ts`: 15 s timeout, at most 2 retries on
+  429 or 5xx, its own FIFO queue with at least 200 ms between request starts; it never throws.
+  Formatting is pure (`formatStudyLabel` in `src/core/label.ts`).
+- **Rationale**: Crossref answers CORS requests (`access-control-allow-origin: *`) and covers
+  every registered DOI, including journals PubMed does not index: 10.1186/s43055-023-01181-z
+  (Elshewy 2024) has no PubMed record but resolves in Crossref. The print year matches how the
+  study is usually cited: 10.1002/jmri.29103 was online in 2023 and in print in 2024, and is cited
+  as Yu 2024. Verified on 9 real DOIs (2026-09-17); five are recorded in
+  `tests/fixtures/crossref/`. The request carries only the DOI the researcher entered, for a
+  function the researcher invoked (a studies check), which fits Principle II (data limited to
+  what the function needs, no tracking).
+- **Alternatives considered**: PubMed esummary (rejected: misses non-indexed DOIs and would share
+  the NCBI throttle, slowing the checks); a label from the `issued` year only (rejected:
+  gives the online year, Yu 2023).

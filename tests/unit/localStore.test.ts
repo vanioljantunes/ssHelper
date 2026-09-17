@@ -204,10 +204,17 @@ describe('local draft store (contracts/storage.md)', () => {
     expect(JSON.parse(storage.getItem(DRAFT_KEY) ?? '')).toEqual({ schemaVersion: 1, ...draft });
   });
 
-  it('round trips a draft with study inputs', () => {
+  it('round trips a draft with study inputs and labels', () => {
     const storage = new MemoryStorage();
     const store = createLocalDraftStore(storage);
-    const withStudies: Draft = { ...draft, studies: ['10.1056/NEJMoa1911303', ''] };
+    const withStudies: Draft = {
+      ...draft,
+      studies: [
+        { input: '10.1056/NEJMoa1911303', label: 'McMurray, 2019', labelEdited: false },
+        { input: '10.1002/jmri.29184', label: 'Custom, 2020', labelEdited: true },
+        { input: '', label: '', labelEdited: false },
+      ],
+    };
     expect(store.save(withStudies)).toEqual({ ok: true });
     expect(store.load()).toEqual(withStudies);
     expect(JSON.parse(storage.getItem(DRAFT_KEY) ?? '')).toEqual({
@@ -224,10 +231,37 @@ describe('local draft store (contracts/storage.md)', () => {
     expect(loaded).not.toHaveProperty('studies');
   });
 
+  it('loads old string-form studies as unlabelled, unedited studies', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({
+        schemaVersion: 1,
+        arms: draft.arms,
+        studies: ['10.1056/NEJMoa1911303', ''],
+      }),
+    );
+    expect(createLocalDraftStore(storage).load()).toEqual({
+      ...draft,
+      studies: [
+        { input: '10.1056/NEJMoa1911303', label: '', labelEdited: false },
+        { input: '', label: '', labelEdited: false },
+      ],
+    });
+  });
+
   it('returns null when studies has a wrong shape', () => {
     const storage = new MemoryStorage();
     storage.setItem(DRAFT_KEY, JSON.stringify({ schemaVersion: 1, arms: [], studies: [1] }));
     expect(createLocalDraftStore(storage).load()).toBeNull();
+    for (const study of [
+      { input: 'x', label: 2, labelEdited: false },
+      { input: 'x', label: '', labelEdited: 'yes' },
+      { label: '', labelEdited: false },
+    ]) {
+      storage.setItem(DRAFT_KEY, JSON.stringify({ schemaVersion: 1, arms: [], studies: [study] }));
+      expect(createLocalDraftStore(storage).load()).toBeNull();
+    }
   });
 
   it('returns null for corrupt data and keeps the raw value', () => {

@@ -1,0 +1,54 @@
+{
+  "status": "ok",
+  "message-type": "work",
+  "message": {
+    "DOI": "10.1002/jmri.29103",
+    "author": [
+      {
+        "given": "Ruixi",
+        "family": "Yu",
+        "sequence": "first"
+      },
+      {
+        "given": "Lingkai",
+        "family": "Cai",
+        "sequence": "additional"
+      }
+    ],
+    "published-print": {
+      "date-parts": [
+        [
+          2024,
+          8
+        ]
+      ]
+    },
+    "published-online": {
+      "date-parts": [
+        [
+          2023,
+          10,
+          30
+        ]
+      ]
+    },
+    "published": {
+      "date-parts": [
+        [
+          2023,
+          10,
+          30
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2023,
+          10,
+          30
+        ]
+      ]
+    }
+  }
+}

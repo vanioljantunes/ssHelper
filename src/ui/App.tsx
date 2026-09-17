@@ -4,11 +4,14 @@ import { buildQuery } from '../core/query';
 import { runSearch } from '../core/run';
 import {
   addStudy,
+  applyAutoLabel,
   checkStudy,
-  fromStudyInputs,
+  fromDraftStudies,
+  normalizeDoi,
   removeStudy,
   setStudyInput,
-  toStudyInputs,
+  setStudyLabel,
+  toDraftStudies,
 } from '../core/study';
 import {
   addArm,
@@ -28,6 +31,7 @@ import {
   validateStrategy,
 } from '../core/strategy';
 import type { CountOutcome, SearchRun, Strategy, Study } from '../core/types';
+import { fetchStudyLabel, type LabelOutcome } from '../crossref/client';
 import { en, t } from '../i18n/en';
 import { countQuery as pubmedCountQuery } from '../pubmed/client';
 import { createLocalDraftStore, createLocalHistoryStore } from '../storage/localStore';
@@ -41,18 +45,25 @@ import './app.css';
 
 export interface AppProps {
   countQuery?: (query: string) => Promise<CountOutcome>;
+  /** Study label lookup by DOI (FR-024); defaults to the Crossref client. */
+  lookupLabel?: (doi: string) => Promise<LabelOutcome>;
   historyStore?: HistoryStore;
   draftStore?: DraftStore;
 }
 
-export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }: AppProps) {
+export function App({
+  countQuery = pubmedCountQuery,
+  lookupLabel = fetchStudyLabel,
+  historyStore,
+  draftStore,
+}: AppProps) {
   const [history] = useState(() => historyStore ?? createLocalHistoryStore());
   const [drafts] = useState(() => draftStore ?? createLocalDraftStore());
   const [initialDraft] = useState(() => drafts.load());
   const [strategy, setStrategy] = useState<Strategy>(() =>
     initialDraft ? fromDraft(initialDraft) : createDefaultStrategy(),
   );
-  const [studies, setStudies] = useState<Study[]>(() => fromStudyInputs(initialDraft?.studies));
+  const [studies, setStudies] = useState<Study[]>(() => fromDraftStudies(initialDraft?.studies));
   const [studyResults, setStudyResults] = useState<Record<string, StudyRowState>>({});
   const [checkingStudies, setCheckingStudies] = useState(false);
   const [runs, setRuns] = useState<SearchRun[]>(() => history.list());
@@ -67,7 +78,7 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
   }, []);
 
   useEffect(() => {
-    track(drafts.save({ ...toDraft(strategy), studies: toStudyInputs(studies) }));
+    track(drafts.save({ ...toDraft(strategy), studies: toDraftStudies(studies) }));
   }, [drafts, strategy, studies, track]);
 
   const update = useCallback((change: (current: Strategy) => Strategy) => {
@@ -78,8 +89,26 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
   const query = useMemo(() => buildQuery(previewArmTerms(strategy)), [strategy]);
   const isEmpty = isStrategyEmpty(strategy);
 
+  /**
+   * Looks up labels for boxes with a valid DOI and no label yet, on the Crossref queue so the
+   * PubMed checks are not slowed. Failures leave the label empty and show nothing (FR-024).
+   */
+  const labelStudies = (list: Study[]) => {
+    for (const study of list) {
+      const doi = normalizeDoi(study.input);
+      if (doi === null || study.labelEdited || study.label !== '') continue;
+      void lookupLabel(doi)
+        .then((outcome) => {
+          if (outcome.status !== 'ok') return;
+          setStudies((current) => applyAutoLabel(current, study.id, outcome.label, study.input));
+        })
+        .catch(() => undefined);
+    }
+  };
+
   /** Checks every non-empty study box in order through the throttled countQuery (FR-023). */
   const checkStudies = async (checkedQuery: string, list: Study[]) => {
+    labelStudies(list);
     const targets = list.filter((study) => study.input.trim() !== '');
     if (targets.length === 0) return;
     setCheckingStudies(true);
@@ -219,6 +248,9 @@ export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }:
             canCheck={!isEmpty && issues.length === 0}
             checking={running || checkingStudies}
             onInputChange={handleStudyInput}
+            onLabelChange={(id, label) =>
+              setStudies((current) => setStudyLabel(current, id, label))
+            }
             onAdd={() => setStudies(addStudy)}
             onRemove={(id) => setStudies((current) => removeStudy(current, id))}
             onCheck={() => void handleCheckStudies()}
