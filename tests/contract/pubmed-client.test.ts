@@ -169,6 +169,22 @@ describe('countQuery (contracts/pubmed-client.md)', () => {
     expect(fetchFn).toHaveBeenCalledTimes(3);
   });
 
+  it('does not retry a network failure when the browser is offline', async () => {
+    const failed = async (): Promise<Response> => {
+      throw new TypeError('Failed to fetch');
+    };
+    const fetchFn = vi.fn<FetchFn>(failed);
+    const client = createPubmedClient({
+      fetchFn,
+      email: EMAIL,
+      sleep: async () => {},
+      throttle: { schedule: (fn) => fn() },
+      isOnline: () => false,
+    });
+    expect(await client.countQuery('x')).toMatchObject({ status: 'error', kind: 'network' });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
   it('recovers when a network failure (e.g. a rate limit without CORS headers) clears', async () => {
     const { client, fetchFn } = setup([
       async () => {

@@ -87,4 +87,6 @@ export async function mockPubmed(page: Page, options: MockOptions = {}): Promise
 export async function failPubmed(page: Page): Promise<void> {
   await page.unroute(ESEARCH_PATTERN);
   await page.route(ESEARCH_PATTERN, (route) => route.abort('internetdisconnected'));
+  // Truly offline: navigator.onLine is false, so the client reports the failure without retries.
+  await page.context().setOffline(true);
 }

@@ -18,6 +18,8 @@ export interface PubmedClientOptions {
   sleep?: (ms: number) => Promise<void>;
   timeoutMs?: number;
   retryDelaysMs?: readonly number[];
+  /** Network failures are retried only while online; defaults to navigator.onLine. */
+  isOnline?: () => boolean;
 }
 
 export interface PubmedClient {
@@ -113,6 +115,8 @@ export function createPubmedClient(options: PubmedClientOptions): PubmedClient {
   const sleep = options.sleep ?? defaultSleep;
   const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
   const retryDelays = options.retryDelaysMs ?? RETRY_DELAYS_MS;
+  const isOnline =
+    options.isOnline ?? (() => typeof navigator === 'undefined' || navigator.onLine !== false);
 
   async function attempt(url: string, signal?: AbortSignal): Promise<Attempt> {
     const controller = new AbortController();
@@ -139,7 +143,9 @@ export function createPubmedClient(options: PubmedClientOptions): PubmedClient {
     } catch {
       // A timeout or caller abort is final. Other fetch failures are retried: a PubMed rate
       // limit response without CORS headers reaches the browser as a plain network error.
-      if (controller.signal.aborted) return { type: 'done', outcome: failure('network') };
+      if (controller.signal.aborted || !isOnline()) {
+        return { type: 'done', outcome: failure('network') };
+      }
       return { type: 'retry', kind: 'network', status: 0 };
     } finally {
       clearTimeout(timer);
