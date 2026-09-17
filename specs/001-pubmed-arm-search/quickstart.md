@@ -78,3 +78,12 @@ documents consistent.
    longer fails when it is taken (Vite picks the next free port).
 7. Vitest workers run with `--no-experimental-webstorage` when Node supports that flag. Node 25
    exposes an incomplete global `localStorage` that shadows the jsdom one.
+8. `SaveResult` has a third failure reason, `duplicate`, returned by `HistoryStore.add` when a
+   run with the same id exists (contracts/storage.md requires rejection but lists only `quota`
+   and `unavailable`). The UI does not show the storage warning for `duplicate`.
+9. Confirmations (Load over existing terms, Clear history) are inline `alertdialog` panels with
+   Confirm and Cancel buttons instead of `window.confirm`, so they are keyboard reachable,
+   styled, and testable without browser dialogs.
+10. `HistoryStore.clear` writes an empty versioned history instead of removing the key.
+11. Recorded fixtures in `tests/fixtures/pubmed/` are excluded from Prettier so their bytes stay
+    as returned by NCBI.

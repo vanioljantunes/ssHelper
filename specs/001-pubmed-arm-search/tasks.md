@@ -97,16 +97,16 @@ Write each test task before its implementation task and confirm it fails first.
 
 ### Tests for User Story 2 (write first, confirm failing)
 
-- [ ] T033 [P] [US2] Storage tests in `tests/unit/localStore.test.ts`: `list` newest first; `add` rejects duplicate id and never overwrites; `remove`; `clear`; draft round trip; corrupt JSON and unknown `schemaVersion` return empty or null and copy the raw value to `<key>:corrupt`; `QuotaExceededError` and access errors return `{ ok: false, reason }`; two runs with identical query text are both stored; only `sshelper:v1:history`, `sshelper:v1:draft`, and `:corrupt` keys are written
-- [ ] T034 [P] [US2] Component tests for `HistoryTable` in `tests/component/HistoryTable.test.tsx`: column order; local date and time to the minute; formatted counts; error outcome shows "Error" with reason as accessible description; Copy writes `query` to `navigator.clipboard` and shows "Copied"; Load calls handler; Delete removes row; Clear history requires confirmation; empty state "No searches yet."
+- [X] T033 [P] [US2] Storage tests in `tests/unit/localStore.test.ts`: `list` newest first; `add` rejects duplicate id and never overwrites; `remove`; `clear`; draft round trip; corrupt JSON and unknown `schemaVersion` return empty or null and copy the raw value to `<key>:corrupt`; `QuotaExceededError` and access errors return `{ ok: false, reason }`; two runs with identical query text are both stored; only `sshelper:v1:history`, `sshelper:v1:draft`, and `:corrupt` keys are written
+- [X] T034 [P] [US2] Component tests for `HistoryTable` in `tests/component/HistoryTable.test.tsx`: column order; local date and time to the minute; formatted counts; error outcome shows "Error" with reason as accessible description; Copy writes `query` to `navigator.clipboard` and shows "Copied"; Load calls handler; Delete removes row; Clear history requires confirmation; empty state "No searches yet."
 
 ### Implementation for User Story 2
 
-- [ ] T035 [P] [US2] Define `HistoryStore`, `DraftStore`, `SaveResult` interfaces in `src/storage/types.ts` per contracts/storage.md
-- [ ] T036 [US2] Implement `createLocalHistoryStore(storage = window.localStorage)` and `createLocalDraftStore(storage = window.localStorage)` in `src/storage/localStore.ts` with `schemaVersion: 1`, safe reads, corrupt-value preservation, and caught write errors (depends on T035)
-- [ ] T037 [US2] Implement `HistoryTable` in `src/ui/HistoryTable.tsx` per contracts/ui.md (Date and time, Search strategy wrapping with full text, Results, Results + meta-analysis, Actions Load, Copy, Delete; Clear history with confirm dialog; empty state)
-- [ ] T038 [US2] Wire US2 in `src/ui/App.tsx`: create stores once; restore draft via `fromDraft` (fallback default strategy); save draft on every strategy change; after a run, `add` it and refresh the list; Load replaces strategy with the row's arms after confirmation when the current draft has terms; Delete and Clear call the store; show "History could not be saved in this browser." when a `SaveResult` is not ok (depends on T031, T036, T037)
-- [ ] T039 [US2] Playwright test for US2 with PubMed routed to fixtures: quickstart scenarios 8-10 and 14-15 including reload persistence and clipboard copy (clipboard permissions granted) in `tests/e2e/us2-history.spec.ts`
+- [X] T035 [P] [US2] Define `HistoryStore`, `DraftStore`, `SaveResult` interfaces in `src/storage/types.ts` per contracts/storage.md
+- [X] T036 [US2] Implement `createLocalHistoryStore(storage = window.localStorage)` and `createLocalDraftStore(storage = window.localStorage)` in `src/storage/localStore.ts` with `schemaVersion: 1`, safe reads, corrupt-value preservation, and caught write errors (depends on T035)
+- [X] T037 [US2] Implement `HistoryTable` in `src/ui/HistoryTable.tsx` per contracts/ui.md (Date and time, Search strategy wrapping with full text, Results, Results + meta-analysis, Actions Load, Copy, Delete; Clear history with confirm dialog; empty state)
+- [X] T038 [US2] Wire US2 in `src/ui/App.tsx`: create stores once; restore draft via `fromDraft` (fallback default strategy); save draft on every strategy change; after a run, `add` it and refresh the list; Load replaces strategy with the row's arms after confirmation when the current draft has terms; Delete and Clear call the store; show "History could not be saved in this browser." when a `SaveResult` is not ok (depends on T031, T036, T037)
+- [X] T039 [US2] Playwright test for US2 with PubMed routed to fixtures: quickstart scenarios 8-10 and 14-15 including reload persistence and clipboard copy (clipboard permissions granted) in `tests/e2e/us2-history.spec.ts`
 
 **Checkpoint**: User Stories 1 and 2 work independently and together
 

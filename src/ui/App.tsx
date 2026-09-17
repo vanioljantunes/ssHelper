@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { newId } from '../core/id';
 import { buildQuery } from '../core/query';
 import { runSearch } from '../core/run';
@@ -8,31 +8,53 @@ import {
   commitPending,
   createDefaultStrategy,
   editTerm,
+  fromDraft,
   isStrategyEmpty,
   previewArmTerms,
   removeArm,
   removeTerm,
   setPending,
+  toDraft,
   unquoteTermById,
   validateStrategy,
 } from '../core/strategy';
-import type { CountOutcome, Strategy } from '../core/types';
+import type { CountOutcome, SearchRun, Strategy } from '../core/types';
 import { en, t } from '../i18n/en';
 import { countQuery as pubmedCountQuery } from '../pubmed/client';
+import { createLocalDraftStore, createLocalHistoryStore } from '../storage/localStore';
+import type { DraftStore, HistoryStore, SaveResult } from '../storage/types';
 import { ArmsEditor } from './ArmsEditor';
+import { HistoryTable } from './HistoryTable';
 import { formatCount, SearchPanel, type LastSearch } from './SearchPanel';
 import './app.css';
 
 export interface AppProps {
   countQuery?: (query: string) => Promise<CountOutcome>;
+  historyStore?: HistoryStore;
+  draftStore?: DraftStore;
 }
 
-export function App({ countQuery = pubmedCountQuery }: AppProps) {
-  const [strategy, setStrategy] = useState<Strategy>(createDefaultStrategy);
+export function App({ countQuery = pubmedCountQuery, historyStore, draftStore }: AppProps) {
+  const [history] = useState(() => historyStore ?? createLocalHistoryStore());
+  const [drafts] = useState(() => draftStore ?? createLocalDraftStore());
+  const [strategy, setStrategy] = useState<Strategy>(() => {
+    const draft = drafts.load();
+    return draft ? fromDraft(draft) : createDefaultStrategy();
+  });
+  const [runs, setRuns] = useState<SearchRun[]>(() => history.list());
   const [running, setRunning] = useState(false);
   const [last, setLast] = useState<LastSearch | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  const [saveFailed, setSaveFailed] = useState(false);
   const runningRef = useRef(false);
+
+  const track = useCallback((result: SaveResult) => {
+    if (!result.ok && result.reason !== 'duplicate') setSaveFailed(true);
+  }, []);
+
+  useEffect(() => {
+    track(drafts.save(toDraft(strategy)));
+  }, [drafts, strategy, track]);
 
   const update = useCallback((change: (current: Strategy) => Strategy) => {
     setStrategy((current) => change(current));
@@ -55,6 +77,8 @@ export function App({ countQuery = pubmedCountQuery }: AppProps) {
       const outcome = await runSearch(committed, { countQuery, now: () => new Date(), newId });
       if (outcome.status === 'completed') {
         const { result, metaResult } = outcome.run;
+        track(history.add(outcome.run));
+        setRuns(history.list());
         setLast({ status: 'completed', result, metaResult });
         setAnnouncement(
           t(en.resultsAnnouncement, { count: formatCount(result), meta: formatCount(metaResult) }),
@@ -69,6 +93,20 @@ export function App({ countQuery = pubmedCountQuery }: AppProps) {
       runningRef.current = false;
       setRunning(false);
     }
+  };
+
+  const handleLoad = (run: SearchRun) => {
+    setStrategy(fromDraft({ arms: run.arms.map((arm) => ({ terms: arm.terms, pending: '' })) }));
+  };
+
+  const handleDelete = (id: string) => {
+    track(history.remove(id));
+    setRuns(history.list());
+  };
+
+  const handleClear = () => {
+    track(history.clear());
+    setRuns(history.list());
   };
 
   return (
@@ -105,6 +143,14 @@ export function App({ countQuery = pubmedCountQuery }: AppProps) {
         </section>
         <section className="panel" aria-labelledby="history-heading">
           <h2 id="history-heading">{en.historyHeading}</h2>
+          {saveFailed && <p className="alert">{en.historySaveFailed}</p>}
+          <HistoryTable
+            runs={runs}
+            needsLoadConfirmation={strategy.arms.some((arm) => arm.terms.length > 0)}
+            onLoad={handleLoad}
+            onDelete={handleDelete}
+            onClear={handleClear}
+          />
         </section>
       </main>
       <div className="visually-hidden" role="status" aria-live="polite">
