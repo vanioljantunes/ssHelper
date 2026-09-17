@@ -160,13 +160,24 @@ describe('countQuery (contracts/pubmed-client.md)', () => {
     expect(outcome).toMatchObject({ status: 'error', kind: 'http' });
   });
 
-  it('maps a network failure to network', async () => {
-    const { client } = setup([
+  it('maps a network failure to network after retrying twice', async () => {
+    const failed = async (): Promise<Response> => {
+      throw new TypeError('Failed to fetch');
+    };
+    const { client, fetchFn } = setup([failed, failed, failed]);
+    expect(await client.countQuery('x')).toMatchObject({ status: 'error', kind: 'network' });
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+  });
+
+  it('recovers when a network failure (e.g. a rate limit without CORS headers) clears', async () => {
+    const { client, fetchFn } = setup([
       async () => {
         throw new TypeError('Failed to fetch');
       },
+      async () => response(countOk),
     ]);
-    expect(await client.countQuery('x')).toMatchObject({ status: 'error', kind: 'network' });
+    expect(await client.countQuery('x')).toMatchObject({ status: 'ok' });
+    expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
   it('maps a 15 s timeout to network', async () => {

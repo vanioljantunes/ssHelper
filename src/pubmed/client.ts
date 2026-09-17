@@ -26,7 +26,7 @@ export interface PubmedClient {
 
 type Attempt =
   | { type: 'done'; outcome: CountOutcome }
-  | { type: 'retry'; kind: 'rate_limited' | 'http'; status: number };
+  | { type: 'retry'; kind: 'rate_limited' | 'http' | 'network'; status: number };
 
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -137,7 +137,10 @@ export function createPubmedClient(options: PubmedClientOptions): PubmedClient {
       }
       return parseBody(text);
     } catch {
-      return { type: 'done', outcome: failure('network') };
+      // A timeout or caller abort is final. Other fetch failures are retried: a PubMed rate
+      // limit response without CORS headers reaches the browser as a plain network error.
+      if (controller.signal.aborted) return { type: 'done', outcome: failure('network') };
+      return { type: 'retry', kind: 'network', status: 0 };
     } finally {
       clearTimeout(timer);
       signal?.removeEventListener('abort', onAbort);
