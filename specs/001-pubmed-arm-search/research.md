@@ -74,15 +74,27 @@ All Technical Context unknowns are resolved below. Probes against NCBI were run 
 
 ## R8. Contact parameters
 
-- **Decision**: `tool=ssHelper` and `email` from the required env variable
-  `VITE_NCBI_CONTACT_EMAIL`, set in `.env.local` (gitignored, so the address is not committed to
-  the public repository). `vite.config.ts` fails dev server start and build when it is missing.
-  No NCBI account is needed; a probe with `tool` and `email` returned HTTP 200 (2026-09-16).
-- **Rationale**: NCBI asks for tool and email to contact the developer about misuse. The email
-  is public by nature (sent from the browser), so it is not a secret.
-- **Alternatives considered**: Omitting email when unset (rejected: Constitution Principle IV
-  requires it); hardcoding the address in source (rejected: public repository). An NCBI API key
-  (free NCBI account) raises the limit to 10 req/s; not needed in Phase A.
+- **Decision** (revised 2026-09-18, FR-025): `tool=ssHelper` and `email` set to an address the
+  visitor types in the Search panel, saved only in their browser under `sshelper:v1:settings`
+  (`{ "schemaVersion": 1, "contactEmail": string }`). The PubMed and Crossref clients read it at
+  request time. Search and Check studies stay disabled until it has a simple valid shape, and
+  the PubMed client returns an `error/no_email` outcome instead of calling NCBI without one.
+  Crossref gets it as `mailto` (omitted when blank). `VITE_NCBI_CONTACT_EMAIL` is now optional:
+  when set, for example in a local `.env.local`, it only pre-fills the field; the build no longer
+  requires it. No NCBI account is needed; a probe with `tool` and `email` returned HTTP 200
+  (2026-09-16).
+- **Rationale**: NCBI asks for tool and email to contact the user about misuse. The first
+  decision (a required build-time address in `.env.local`) embedded the operator's personal
+  email in the JavaScript bundle, which is unacceptable once Phase A is deployed publicly as a
+  preview. With a visitor-entered address the public bundle holds no personal data, and every
+  PubMed request still carries `tool` and `email` (Constitution Principle IV stays satisfied:
+  no request is sent without one).
+- **Alternatives considered**: Keeping the build-time address (rejected: personal email in a
+  public bundle); omitting email when unset (rejected: Principle IV requires it); a shared
+  project mailbox baked into the build (rejected: still a fixed address for every visitor, and
+  the operator chose a visitor field); a server proxy adding the address (rejected: Phase A has
+  no server, Principle VIII). An NCBI API key (free NCBI account) raises the limit to 10 req/s;
+  not needed in Phase A.
 
 ## R9. Term commit and quoting rules
 

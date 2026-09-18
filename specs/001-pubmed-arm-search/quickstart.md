@@ -5,8 +5,11 @@ Validation guide proving the feature works end to end.
 ## Prerequisites
 
 - Node 20+ and npm.
-- Required: `.env.local` at the repository root containing `VITE_NCBI_CONTACT_EMAIL=<contact
-  address>` (gitignored). No NCBI account is needed.
+- Contact email: typed by each visitor in the Search panel and saved only in that browser
+  (FR-025). No NCBI account is needed.
+- Optional: `.env.local` at the repository root with `VITE_NCBI_CONTACT_EMAIL=<address>`
+  (gitignored) only pre-fills that field during local development. Builds do not need it; leave
+  it unset for public builds.
 
 ## Setup and run
 
@@ -115,3 +118,11 @@ documents consistent.
     Crossref client reuses `createThrottle` from `src/pubmed/throttle.ts` with its own instance
     (200 ms), so PubMed and Crossref queues are independent. `mockPubmed` in the e2e tests also
     routes Crossref, so no e2e test reaches the real API.
+16. FR-025 contact email (2026-09-18): the field sits in the Search panel above the Search
+    button, next to the action it unlocks, instead of a line under the header. The PubMed error
+    outcome for a blank email is a new `CountErrorKind`, `no_email`. Clearing the field saves an
+    empty address, so a visitor can remove it from the browser; an empty saved value is restored
+    as empty (the build default only applies when nothing is saved). A failed settings save is
+    not reported, because it only means retyping the address after a reload. Every e2e spec
+    starts through `resetStorage`, which seeds a saved contact email, so e2e runs never depend
+    on a local `.env.local`.

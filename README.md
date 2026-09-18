@@ -21,6 +21,8 @@ information specialist's judgment, and it is not a substitute for peer review of
   quotes.
 - Press **Search** to get two PubMed counts: the strategy, and the strategy with an extra
   `("meta-analysis")` arm.
+- Each visitor types a **contact email** once (sent to PubMed and Crossref, saved only in that
+  browser); Search stays disabled until it is set.
 - Every run is kept in a **history** table (date and time, query, both counts) that survives
   page reloads and can be loaded back, copied, or deleted.
 
@@ -28,22 +30,21 @@ Counts come from PubMed at the time of the run and change as PubMed is updated.
 
 ## Delivery phases
 
-- **Phase A, local test version (current)**: runs on your machine with the Vite dev server.
-  No accounts, no hosting. History is stored in this browser (`localStorage`).
+- **Phase A, local test version (current)**: runs on your machine with the Vite dev server,
+  and may be deployed publicly as a preview (Vercel) without accounts. History, draft, and the
+  contact email are stored in this browser (`localStorage`); the build embeds no secrets or
+  personal data.
 - **Phase B, hosted version (next)**: Vercel hosting and Supabase accounts, with history moved
   into the signed-in account.
 
 ## Requirements
 
 - Node 20 or newer and npm.
-- A contact email for NCBI. Copy `.env.example` to `.env.local` and set:
-
-  ```
-  VITE_NCBI_CONTACT_EMAIL=you@example.org
-  ```
-
-  `.env.local` is gitignored. No NCBI account is needed. The dev server and the build refuse to
-  start without this value.
+- Nothing else is required. Each visitor enters their own contact email in the app. No NCBI
+  account is needed.
+- Optional, for local development: copy `.env.example` to `.env.local` and set
+  `VITE_NCBI_CONTACT_EMAIL=you@example.org` to pre-fill that field. `.env.local` is gitignored.
+  Leave the variable unset for public builds, so no personal address ends up in the bundle.
 
 ## Development
 
@@ -69,7 +70,7 @@ On PowerShell, set the live flag with `$env:LIVE_PUBMED = '1'; npm run test:live
 ## PubMed usage
 
 ssHelper calls NCBI E-utilities `esearch` directly from the browser with `tool=ssHelper` and
-your contact email, as NCBI asks. Requests are queued at least 350 ms apart (under the limit of
+the contact email the visitor entered, as NCBI asks; no request is sent without one. Requests are queued at least 350 ms apart (under the limit of
 3 requests per second without an API key) and retried with backoff on rate limiting. See the
 [NCBI E-utilities usage policy](https://www.ncbi.nlm.nih.gov/books/NBK25497/).
 

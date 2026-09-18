@@ -10,7 +10,8 @@ translation to other databases. The [constitution](.specify/memory/constitution.
 anything else, including this file.
 
 Current state: feature 001 (PubMed arm-based search and result history) in Delivery Phase A,
-a local test version with browser storage. Phase B adds Vercel hosting and Supabase accounts.
+a local test version with browser storage, deployable publicly as a preview. Each visitor
+enters their own contact email (FR-025); never embed a personal address in the build. Phase B adds Vercel hosting and Supabase accounts.
 
 ## Stack
 
@@ -38,7 +39,7 @@ src/ui       React components
 ## Commands
 
 ```bash
-npm run dev          # needs .env.local with VITE_NCBI_CONTACT_EMAIL
+npm run dev          # optional .env.local VITE_NCBI_CONTACT_EMAIL only pre-fills the email field
 npm run typecheck
 npm run lint
 npm test

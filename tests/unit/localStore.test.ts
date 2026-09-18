@@ -3,8 +3,10 @@ import type { Draft, SearchRun } from '../../src/core/types';
 import {
   DRAFT_KEY,
   HISTORY_KEY,
+  SETTINGS_KEY,
   createLocalDraftStore,
   createLocalHistoryStore,
+  createLocalSettingsStore,
 } from '../../src/storage/localStore';
 
 function run(id: string, createdAt: string, query = '(diabetes)'): SearchRun {
@@ -282,5 +284,52 @@ describe('local draft store (contracts/storage.md)', () => {
   it('reports quota errors on save', () => {
     const store = createLocalDraftStore(new ThrowingStorage(quotaError()));
     expect(store.save(draft)).toEqual({ ok: false, reason: 'quota' });
+  });
+});
+
+describe('SettingsStore (localStorage, FR-025)', () => {
+  it('returns null when nothing is saved', () => {
+    expect(createLocalSettingsStore(new MemoryStorage()).load()).toBeNull();
+  });
+
+  it('round trips the contact email under the versioned key', () => {
+    const storage = new MemoryStorage();
+    const store = createLocalSettingsStore(storage);
+    expect(store.save({ contactEmail: 'you@example.org' })).toEqual({ ok: true });
+    expect(store.load()).toEqual({ contactEmail: 'you@example.org' });
+    expect(JSON.parse(storage.getItem(SETTINGS_KEY) ?? '')).toEqual({
+      schemaVersion: 1,
+      contactEmail: 'you@example.org',
+    });
+    expect(SETTINGS_KEY).toBe('sshelper:v1:settings');
+  });
+
+  it('returns null for corrupt data and keeps the raw value', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(SETTINGS_KEY, '{"schemaVersion":');
+    expect(createLocalSettingsStore(storage).load()).toBeNull();
+    expect(storage.getItem(`${SETTINGS_KEY}:corrupt`)).toBe('{"schemaVersion":');
+  });
+
+  it('returns null for a wrong shape or unknown schemaVersion', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(SETTINGS_KEY, JSON.stringify({ schemaVersion: 1, contactEmail: 3 }));
+    expect(createLocalSettingsStore(storage).load()).toBeNull();
+    storage.setItem(SETTINGS_KEY, JSON.stringify({ schemaVersion: 2, contactEmail: 'a@b.org' }));
+    expect(createLocalSettingsStore(storage).load()).toBeNull();
+  });
+
+  it('never throws when storage is unavailable and reports write errors', () => {
+    const store = createLocalSettingsStore(null);
+    expect(store.load()).toBeNull();
+    expect(store.save({ contactEmail: 'you@example.org' })).toEqual({
+      ok: false,
+      reason: 'unavailable',
+    });
+    expect(
+      createLocalSettingsStore(new ThrowingStorage(quotaError())).save({
+        contactEmail: 'you@example.org',
+      }),
+    ).toEqual({ ok: false, reason: 'quota' });
   });
 });

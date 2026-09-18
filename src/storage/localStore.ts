@@ -1,8 +1,9 @@
 import type { CountOutcome, Draft, DraftStudy, SearchRun } from '../core/types';
-import type { DraftStore, HistoryStore, SaveResult } from './types';
+import type { DraftStore, HistoryStore, SaveResult, Settings, SettingsStore } from './types';
 
 export const HISTORY_KEY = 'sshelper:v1:history';
 export const DRAFT_KEY = 'sshelper:v1:draft';
+export const SETTINGS_KEY = 'sshelper:v1:settings';
 export const SCHEMA_VERSION = 1;
 
 const OK: SaveResult = { ok: true };
@@ -143,6 +144,11 @@ function parseDraft(data: unknown): Draft | null {
   return draft;
 }
 
+function parseSettings(data: unknown): Settings | null {
+  if (!isObject(data) || data.schemaVersion !== SCHEMA_VERSION) return null;
+  return typeof data.contactEmail === 'string' ? { contactEmail: data.contactEmail } : null;
+}
+
 function newestFirst(runs: SearchRun[]): SearchRun[] {
   return [...runs].sort((a, b) =>
     a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0,
@@ -185,6 +191,24 @@ export function createLocalDraftStore(storage: Storage | null = browserStorage()
         storage,
         DRAFT_KEY,
         JSON.stringify({ schemaVersion: SCHEMA_VERSION, arms: draft.arms, studies: draft.studies }),
+      );
+    },
+  };
+}
+
+export function createLocalSettingsStore(
+  storage: Storage | null = browserStorage(),
+): SettingsStore {
+  return {
+    load() {
+      const result = safeRead(storage, SETTINGS_KEY, parseSettings);
+      return result.status === 'ok' ? result.value : null;
+    },
+    save(settings) {
+      return safeWrite(
+        storage,
+        SETTINGS_KEY,
+        JSON.stringify({ schemaVersion: SCHEMA_VERSION, contactEmail: settings.contactEmail }),
       );
     },
   };

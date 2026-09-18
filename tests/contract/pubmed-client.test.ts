@@ -59,18 +59,38 @@ describe('countQuery (contracts/pubmed-client.md)', () => {
     expect(raw).not.toContain('"');
   });
 
-  it('throws at creation when the contact email is missing', () => {
-    expect(() =>
-      createPubmedClient({
-        fetchFn: vi.fn<FetchFn>(),
-        email: '  ',
-        throttle: { schedule: (fn) => fn() },
-      }),
-    ).toThrow(/VITE_NCBI_CONTACT_EMAIL/);
+  it('returns an error outcome without calling PubMed when the contact email is empty', async () => {
+    const fetchFn = vi.fn<FetchFn>();
+    const client = createPubmedClient({
+      fetchFn,
+      email: '  ',
+      throttle: { schedule: (fn) => fn() },
+    });
+    await expect(client.countQuery('(diabetes)')).resolves.toEqual({
+      status: 'error',
+      kind: 'no_email',
+      message: 'Enter your email before searching PubMed.',
+    });
+    expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  it('has a contact email configured for the default client', () => {
-    expect(import.meta.env.VITE_NCBI_CONTACT_EMAIL).toBeTruthy();
+  it('reads the contact email at request time from a getter (FR-025)', async () => {
+    const fetchFn = vi.fn<FetchFn>(async () => response(countOk));
+    let email = '';
+    const client = createPubmedClient({
+      fetchFn,
+      email: () => email,
+      throttle: { schedule: (fn) => fn() },
+    });
+    await expect(client.countQuery('(diabetes)')).resolves.toMatchObject({ kind: 'no_email' });
+    email = ' visitor@example.org ';
+    await client.countQuery('(diabetes)');
+    email = 'other@example.org';
+    await client.countQuery('(diabetes)');
+    const emails = fetchFn.mock.calls.map((call) =>
+      new URL(String(call[0])).searchParams.get('email'),
+    );
+    expect(emails).toEqual(['visitor@example.org', 'other@example.org']);
   });
 
   it('maps a normal response to ok', async () => {

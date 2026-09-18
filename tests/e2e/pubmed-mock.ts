@@ -19,6 +19,26 @@ export const CROSSREF_PATTERN = 'https://api.crossref.org/works/**';
 
 export const ESEARCH_PATTERN = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi**';
 
+/** Contact email seeded for e2e runs, so tests never depend on a local .env.local (FR-025). */
+export const E2E_CONTACT_EMAIL = 'e2e@example.org';
+export const SETTINGS_KEY = 'sshelper:v1:settings';
+
+/**
+ * Starts each test from empty browser storage with a saved contact email, or with the email
+ * field empty when `contactEmail` is ''.
+ */
+export async function resetStorage(page: Page, contactEmail = E2E_CONTACT_EMAIL): Promise<void> {
+  await page.goto('/');
+  await page.evaluate(
+    ([key, email]) => {
+      window.localStorage.clear();
+      window.localStorage.setItem(key, JSON.stringify({ schemaVersion: 1, contactEmail: email }));
+    },
+    [SETTINGS_KEY, contactEmail] as const,
+  );
+  await page.reload();
+}
+
 export interface MockOptions {
   /** Count returned for queries without the meta-analysis arm. */
   count?: number;

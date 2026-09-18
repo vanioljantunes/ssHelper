@@ -15,7 +15,7 @@ Never throws. Always resolves to a `CountOutcome` (see data-model.md).
 | retmode | `json` |
 | retmax | `0` |
 | tool | `ssHelper` |
-| email | `VITE_NCBI_CONTACT_EMAIL` (required; startup fails if missing) |
+| email | The visitor's contact email (FR-025), read at request time; blank gives `error/no_email` and no request |
 
 All calls pass through the throttle queue: at least 350 ms between request starts, 15 s timeout.
 
@@ -29,6 +29,7 @@ All calls pass through the throttle queue: at least 350 ms between request start
 | Other non-200 | `error/http` (no retry) |
 | Network failure or timeout | `error/network` |
 | 200 but body not JSON or `count` missing | `error/invalid_response` |
+| Contact email blank (no request sent) | `error/no_email` |
 
 ### Recorded fixtures (`tests/fixtures/pubmed/`)
 

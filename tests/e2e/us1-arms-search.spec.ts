@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAxeViolations } from './a11y';
-import { failPubmed, mockPubmed } from './pubmed-mock';
+import { failPubmed, mockPubmed, resetStorage } from './pubmed-mock';
 
 const arm = (page: Page, n: number) => page.getByRole('group', { name: `Arm ${n}`, exact: true });
 const input = (page: Page, n: number) =>
@@ -9,9 +9,7 @@ const terms = (page: Page, n: number) => arm(page, n).getByTestId('term');
 const searchButton = (page: Page) => page.getByRole('button', { name: 'Search', exact: true });
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(() => window.localStorage.clear());
-  await page.reload();
+  await resetStorage(page);
 });
 
 test('scenario 1: three empty arms, AND between them, Search disabled', async ({ page }) => {

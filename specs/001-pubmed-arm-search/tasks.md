@@ -158,6 +158,17 @@ Write each test task before its implementation task and confirm it fails first.
 - [X] T066 Implement the name input in `src/ui/StudiesPanel.tsx` (border on hover and focus, styles in `src/ui/app.css`, strings in `src/i18n/en.ts`) and wire lookups in `src/ui/App.tsx` (injectable `lookupLabel`, run alongside the PubMed checks, applied only to the same input and unedited label)
 - [X] T067 End-to-end test in `tests/e2e/studies.spec.ts` with Crossref routed to fixtures in `tests/e2e/pubmed-mock.ts` (unknown DOIs get 404): labels after Search; a typed label survives Check studies and reload; clearing it brings the automatic label back; a new DOI clears the automatic label; axe
 
+## Phase 9: Addendum - contact email at runtime (FR-025, added 2026-09-18)
+
+- [X] T068 [P] Unit tests in `tests/unit/email.test.ts` (`isValidContactEmail`: accepted shapes, surrounding spaces, empty, missing `@`, missing domain dot, inner space, trailing dot) and `tests/unit/localStore.test.ts` (`SettingsStore`: missing value, round trip under `sshelper:v1:settings`, corrupt JSON copied to `:corrupt`, wrong shape and unknown `schemaVersion`, unavailable storage and quota errors)
+- [X] T069 Implement `src/core/email.ts`, `Settings` and `SettingsStore` in `src/storage/types.ts`, and `createLocalSettingsStore` in `src/storage/localStore.ts` (same read and write safety rules as history and draft)
+- [X] T070 [P] Contract tests in `tests/contract/pubmed-client.test.ts` (blank email gives `error/no_email` with no request; a getter is read at request time) and `tests/contract/crossref-client.test.ts` (getter read at request time; blank omits `mailto`)
+- [X] T071 PubMed and Crossref clients accept an email string or getter read per request; the PubMed client returns `no_email` instead of throwing; `createAppPubmedClient` and `createAppCrossrefClient` share one queue each; remove the build-time throw from `vite.config.ts` and document the optional variable in `.env.example`
+- [X] T072 [P] Component tests in `tests/component/ContactEmail.test.tsx`: no email disables Search and Check studies with the hint in `aria-describedby`; an invalid email is marked and not saved; a valid email enables Search and is saved trimmed; clearing removes the saved email; a saved email wins over the build default; the default pre-fills when nothing is saved
+- [X] T073 Implement the email field above the Search button in `src/ui/SearchPanel.tsx` (strings in `src/i18n/en.ts`, styles in `src/ui/app.css`), the `describedBy` hint link on "Check studies" in `src/ui/StudiesPanel.tsx`, and the settings state, save rules, and request-time email in `src/ui/App.tsx`
+- [X] T074 End-to-end tests in `tests/e2e/contact-email.spec.ts` (no email: disabled and hint; typed email enables Search and persists after reload; PubMed `email=` and Crossref `mailto=` carry the typed address; axe) and `resetStorage` in `tests/e2e/pubmed-mock.ts` seeding a contact email for every other spec
+- [X] T075 Docs: research.md R8, spec.md FR-025, quickstart.md, contracts, README.md, CLAUDE.md; constitution v2.2.0 (Phase A public preview) with plan references updated
+
 ---
 
 ## Dependencies & Execution Order

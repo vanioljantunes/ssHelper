@@ -69,6 +69,22 @@ describe('fetchStudyLabel (Crossref works, FR-024)', () => {
     expect(String(fetchFn.mock.calls[0]?.[0])).toBe(`${CROSSREF_WORKS_URL}/10.1002%2Fjmri.29184`);
   });
 
+  it('reads the contact email at request time from a getter (FR-025)', async () => {
+    const fetchFn = vi.fn<FetchFn>(async () => response(fixture('gong-2024')));
+    let email = '';
+    const client = createCrossrefClient({
+      fetchFn,
+      email: () => email,
+      throttle: { schedule: (fn) => fn() },
+    });
+    await client.fetchStudyLabel('10.1002/jmri.29184');
+    email = ' visitor@example.org ';
+    await client.fetchStudyLabel('10.1002/jmri.29184');
+    const urls = fetchFn.mock.calls.map((call) => String(call[0]));
+    expect(urls[0]).toBe(`${CROSSREF_WORKS_URL}/10.1002%2Fjmri.29184`);
+    expect(new URL(urls[1] ?? '').searchParams.get('mailto')).toBe('visitor@example.org');
+  });
+
   it('prefers the print year over the online year (Yu: online 2023, print 2024)', async () => {
     const { client } = setup([async () => response(fixture('yu-2024'))]);
     await expect(client.fetchStudyLabel('10.1002/jmri.29103')).resolves.toMatchObject({

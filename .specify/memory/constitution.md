@@ -1,28 +1,30 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.0.0 -> 2.1.0
-Bump rationale: MINOR. Adds a Delivery Phases section: a local test phase (no accounts, no
-hosting, browser storage) precedes the hosted phase (Vercel + Supabase). Principle II account,
-RLS, deletion, and file-export duties apply from the hosted phase. No principle removed.
-(2.0.0: hosted web app with accounts, AI premium deferred, 2026-09-16. 1.0.0: initial, 2026-09-16.)
+Version change: 2.1.0 -> 2.2.0
+Bump rationale: MINOR. Materially expands Delivery Phase A: it MAY be deployed publicly as a
+preview (e.g. Vercel) without accounts, provided no secrets or personal data are embedded in the
+build and all user data stays in the visitor's browser. Motivated by FR-025 (each visitor enters
+their own NCBI contact email at runtime). No principle removed or redefined.
+(2.1.0: Delivery Phases section, local test phase before hosted phase, 2026-09-16. 2.0.0: hosted
+web app with accounts, AI premium deferred, 2026-09-16. 1.0.0: initial, 2026-09-16.)
 
-Modified principles:
-  II. Hosted Web App, Private by Default (scoped to the hosted phase)
-  VI. Saved and Reproducible Work (file export scoped to the hosted phase)
+Modified principles: none
 
-Added sections:
-  - Delivery Phases
+Modified sections:
+  - Delivery Phases (Phase A public preview allowed under conditions)
+
+Added sections: none
 
 Removed sections: none
 
 Templates and dependent files:
   ✅ .specify/memory/constitution.md          (amended)
-  ✅ .specify/templates/plan-template.md       (gate II notes delivery phase)
-  ✅ specs/001-pubmed-arm-search/plan.md       (Constitution Check re-evaluated for local phase)
+  ✅ .specify/templates/plan-template.md       (version reference updated to v2.2.0)
+  ✅ specs/001-pubmed-arm-search/plan.md       (version references updated to v2.2.0)
   ✅ .specify/templates/spec-template.md       (reviewed; no change needed)
   ✅ .specify/templates/tasks-template.md      (reviewed; no change needed)
-  ⚠ README.md / CLAUDE.md                      (not yet created; tasks T044, T045 in feature 001)
+  ✅ README.md / CLAUDE.md                     (Phase A preview and visitor contact email noted)
 
 Deferred TODOs:
   - TODO(PREMIUM_TIER): pricing, usage limits, and AI provider for premium synonyms; requires
@@ -60,7 +62,9 @@ does not replace the searcher's or an information specialist's judgment.
   development server for testing. No accounts, no hosting, no server secrets. Data is kept in
   browser storage behind the storage interfaces required by Principle VII. Principle II account,
   row-level security, account deletion, and project file export duties do not yet apply; all
-  other principles apply in full.
+  other principles apply in full. Phase A MAY be deployed publicly as a preview (e.g. Vercel)
+  without accounts, provided no secrets or personal data are embedded in the build and all user
+  data stays in the visitor's browser.
 - **Phase B, hosted version**: deployed on Vercel with Supabase. Principle II applies in full.
   Moving from Phase A to Phase B MUST replace browser storage with Supabase behind the same
   interfaces, add accounts and row-level security, and offer import of Phase A data.
@@ -221,4 +225,4 @@ Rationale: A small team must be able to run and afford a free public tool.
 - Compliance review: every spec, plan, task list, and code review MUST check alignment with
   these principles. Violations MUST be fixed or justified in Complexity Tracking.
 
-**Version**: 2.1.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-16
+**Version**: 2.2.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-18

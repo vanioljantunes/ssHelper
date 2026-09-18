@@ -48,6 +48,9 @@ describe('PubMed links', () => {
         hasIssues={false}
         running={false}
         last={null}
+        contactEmail="you@example.org"
+        emailValid
+        onContactEmailChange={vi.fn()}
         onSearch={vi.fn()}
       />,
     );
@@ -63,6 +66,9 @@ describe('PubMed links', () => {
         hasIssues={false}
         running={false}
         last={null}
+        contactEmail="you@example.org"
+        emailValid
+        onContactEmailChange={vi.fn()}
         onSearch={vi.fn()}
       />,
     );

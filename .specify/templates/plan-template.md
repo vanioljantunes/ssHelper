@@ -40,7 +40,7 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Source: `.specify/memory/constitution.md` (v2.1.0). Mark each gate PASS, N/A, or VIOLATION.
+Source: `.specify/memory/constitution.md` (v2.2.0). Mark each gate PASS, N/A, or VIOLATION.
 Violations MUST be justified in Complexity Tracking.
 
 - [ ] **I. Researcher owns strategy**: No silent strategy changes; suggestions and translations

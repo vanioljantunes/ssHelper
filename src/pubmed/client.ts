@@ -11,9 +11,13 @@ const IGNORED_MESSAGES = new Set(['No items found.']);
 
 export type FetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
+/** A contact email, or a getter read at each request so the visitor can change it (FR-025). */
+export type ContactEmail = string | (() => string);
+
 export interface PubmedClientOptions {
   fetchFn: FetchFn;
-  email: string;
+  /** Contact address sent as `email`; requests are refused with `no_email` while it is blank. */
+  email: ContactEmail;
   throttle?: Throttle;
   sleep?: (ms: number) => Promise<void>;
   timeoutMs?: number;
@@ -38,6 +42,7 @@ function failure(kind: CountErrorKind, status?: number): CountOutcome {
     network: en.errorNetwork,
     http: t(en.errorHttp, { status: status ?? 0 }),
     invalid_response: en.errorInvalidResponse,
+    no_email: en.errorNoEmail,
   };
   return { status: 'error', kind, message: messages[kind] };
 }
@@ -107,10 +112,8 @@ function parseBody(text: string): Attempt {
 }
 
 export function createPubmedClient(options: PubmedClientOptions): PubmedClient {
-  const email = options.email.trim();
-  if (email === '') {
-    throw new Error('VITE_NCBI_CONTACT_EMAIL is required to call PubMed (see .env.example).');
-  }
+  const readEmail = () =>
+    (typeof options.email === 'function' ? options.email() : options.email).trim();
   const throttle = options.throttle ?? createThrottle();
   const sleep = options.sleep ?? defaultSleep;
   const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
@@ -156,6 +159,8 @@ export function createPubmedClient(options: PubmedClientOptions): PubmedClient {
   return {
     async countQuery(query: string, signal?: AbortSignal): Promise<CountOutcome> {
       try {
+        const email = readEmail();
+        if (email === '') return failure('no_email');
         const url = buildEsearchUrl(query, email);
         for (let i = 0; ; i += 1) {
           const result = await throttle.schedule(() => attempt(url, signal));
@@ -171,15 +176,14 @@ export function createPubmedClient(options: PubmedClientOptions): PubmedClient {
   };
 }
 
-let defaultClient: PubmedClient | null = null;
+/** One queue for every app client, so all PubMed calls from this page share the rate limit. */
+const sharedThrottle = createThrottle();
 
-/** Counts PubMed records for a query with the app's shared throttle and contact email. */
-export function countQuery(query: string, signal?: AbortSignal): Promise<CountOutcome> {
-  if (defaultClient === null) {
-    defaultClient = createPubmedClient({
-      fetchFn: (input, init) => fetch(input, init),
-      email: import.meta.env.VITE_NCBI_CONTACT_EMAIL ?? '',
-    });
-  }
-  return defaultClient.countQuery(query, signal);
+/** The app's PubMed client: browser fetch, the shared throttle, and the visitor's email. */
+export function createAppPubmedClient(email: ContactEmail): PubmedClient {
+  return createPubmedClient({
+    fetchFn: (input, init) => fetch(input, init),
+    email,
+    throttle: sharedThrottle,
+  });
 }

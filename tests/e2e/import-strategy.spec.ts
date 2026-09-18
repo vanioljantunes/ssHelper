@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAxeViolations } from './a11y';
-import { mockPubmed } from './pubmed-mock';
+import { mockPubmed, resetStorage } from './pubmed-mock';
 
 const pasted = `("Bladder cancer" OR "Bladder neoplasm*" OR "Bladder tumor*" OR
 "Urinary bladder cancer" OR "Urinary bladder neoplasm*" OR
@@ -18,9 +18,7 @@ const terms = (page: Page, n: number) =>
   page.getByRole('group', { name: `Arm ${n}`, exact: true }).getByTestId('term');
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(() => window.localStorage.clear());
-  await page.reload();
+  await resetStorage(page);
 });
 
 test('pasting a strategy fills arms with the terms as written and searches it', async ({

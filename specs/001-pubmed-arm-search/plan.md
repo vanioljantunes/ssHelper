@@ -44,7 +44,7 @@ feature.
 arm edits feel instant (under 50 ms).
 
 **Constraints**: NCBI policy of 3 requests/s per IP without key; `tool` and `email` params on
-every call (`VITE_NCBI_CONTACT_EMAIL` required; dev server and build fail without it); no secrets in client; no telemetry; UI text in a translatable catalog (FR-018).
+every call (the visitor enters the contact email at runtime, FR-025; no request without it); no secrets in client; no telemetry; UI text in a translatable catalog (FR-018).
 
 **Scale/Scope**: One page, one user per browser, history up to about 1,000 rows (well under
 `localStorage` limits; see research.md R5).
@@ -53,7 +53,7 @@ every call (`VITE_NCBI_CONTACT_EMAIL` required; dev server and build fail withou
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Source: `.specify/memory/constitution.md` (v2.1.0). Mark each gate PASS, N/A, or VIOLATION.
+Source: `.specify/memory/constitution.md` (v2.2.0). Mark each gate PASS, N/A, or VIOLATION.
 Violations MUST be justified in Complexity Tracking.
 
 - [x] **I. Researcher owns strategy**: PASS. The only automatic change is quoting multi-word
@@ -65,7 +65,7 @@ Violations MUST be justified in Complexity Tracking.
 - [x] **III. Free core, AI deferred**: PASS. No AI, no user keys, free.
 - [x] **IV. Real PubMed evidence**: PASS for counts. Counts come from `esearch`; errors never
   shown as numbers; query text, timestamp, counts, and PubMed warnings recorded; calls
-  throttled; `tool` and `email` always sent (contact email required at startup). Found / Not found / Unresolved belongs to the later
+  throttled; `tool` and `email` always sent (visitor contact email required before any request, FR-025). Found / Not found / Unresolved belongs to the later
   study-check feature (N/A here).
 - [x] **V. Deterministic translation**: N/A (no translation). Query builder is deterministic and
   fixture-tested.
@@ -145,7 +145,7 @@ README.md and CLAUDE.md are created in this feature (constitution follow-up).
 
 ## Complexity Tracking
 
-No constitution violations for Phase A (constitution v2.1.0).
+No constitution violations for Phase A (constitution v2.2.0).
 
 | Decision | Why Needed | Simpler Alternative Rejected Because |
 |----------|------------|-------------------------------------|

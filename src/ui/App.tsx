@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { isValidContactEmail } from '../core/email';
 import { newId } from '../core/id';
 import { buildQuery } from '../core/query';
 import { runSearch } from '../core/run';
@@ -31,15 +32,19 @@ import {
   validateStrategy,
 } from '../core/strategy';
 import type { CountOutcome, SearchRun, Strategy, Study } from '../core/types';
-import { fetchStudyLabel, type LabelOutcome } from '../crossref/client';
+import { createAppCrossrefClient, type LabelOutcome } from '../crossref/client';
 import { en, t } from '../i18n/en';
-import { countQuery as pubmedCountQuery } from '../pubmed/client';
-import { createLocalDraftStore, createLocalHistoryStore } from '../storage/localStore';
-import type { DraftStore, HistoryStore, SaveResult } from '../storage/types';
+import { createAppPubmedClient } from '../pubmed/client';
+import {
+  createLocalDraftStore,
+  createLocalHistoryStore,
+  createLocalSettingsStore,
+} from '../storage/localStore';
+import type { DraftStore, HistoryStore, SaveResult, SettingsStore } from '../storage/types';
 import { ArmsEditor } from './ArmsEditor';
 import { HistoryTable } from './HistoryTable';
 import { ImportStrategy } from './ImportStrategy';
-import { formatCount, SearchPanel, type LastSearch } from './SearchPanel';
+import { CONTACT_EMAIL_HINT_ID, formatCount, SearchPanel, type LastSearch } from './SearchPanel';
 import { StudiesPanel, type StudyRowState } from './StudiesPanel';
 import './app.css';
 
@@ -49,16 +54,37 @@ export interface AppProps {
   lookupLabel?: (doi: string) => Promise<LabelOutcome>;
   historyStore?: HistoryStore;
   draftStore?: DraftStore;
+  settingsStore?: SettingsStore;
+  /** Pre-filled contact email when none is saved; defaults to the optional build variable. */
+  defaultContactEmail?: string;
 }
 
 export function App({
-  countQuery = pubmedCountQuery,
-  lookupLabel = fetchStudyLabel,
+  countQuery: countQueryProp,
+  lookupLabel: lookupLabelProp,
   historyStore,
   draftStore,
+  settingsStore,
+  defaultContactEmail = import.meta.env.VITE_NCBI_CONTACT_EMAIL ?? '',
 }: AppProps) {
   const [history] = useState(() => historyStore ?? createLocalHistoryStore());
   const [drafts] = useState(() => draftStore ?? createLocalDraftStore());
+  const [settings] = useState(() => settingsStore ?? createLocalSettingsStore());
+  const [contactEmail, setContactEmail] = useState(
+    () => settings.load()?.contactEmail ?? defaultContactEmail.trim(),
+  );
+  const emailValid = isValidContactEmail(contactEmail);
+  // The clients read the visitor's email at request time (FR-025).
+  const emailRef = useRef(contactEmail.trim());
+  useEffect(() => {
+    emailRef.current = contactEmail.trim();
+  }, [contactEmail]);
+  const [clients] = useState(() => {
+    const email = () => emailRef.current;
+    return { pubmed: createAppPubmedClient(email), crossref: createAppCrossrefClient(email) };
+  });
+  const countQuery = countQueryProp ?? ((query: string) => clients.pubmed.countQuery(query));
+  const lookupLabel = lookupLabelProp ?? ((doi: string) => clients.crossref.fetchStudyLabel(doi));
   const [initialDraft] = useState(() => drafts.load());
   const [strategy, setStrategy] = useState<Strategy>(() =>
     initialDraft ? fromDraft(initialDraft) : createDefaultStrategy(),
@@ -129,8 +155,18 @@ export function App({
     }
   };
 
+  /**
+   * Saves the email once it is valid; clearing the field removes the saved address. A failed
+   * save only means the visitor retypes it after a reload, so it is not reported.
+   */
+  const handleContactEmailChange = (value: string) => {
+    setContactEmail(value);
+    const trimmed = value.trim();
+    if (trimmed === '' || isValidContactEmail(trimmed)) settings.save({ contactEmail: trimmed });
+  };
+
   const handleCheckStudies = async () => {
-    if (runningRef.current) return;
+    if (runningRef.current || !emailValid) return;
     const committed = commitAllPending(strategy);
     setStrategy(committed);
     if (validateStrategy(committed).length > 0 || isStrategyEmpty(committed)) return;
@@ -156,7 +192,7 @@ export function App({
   };
 
   const handleSearch = async () => {
-    if (runningRef.current) return;
+    if (runningRef.current || !emailValid) return;
     const committed = commitAllPending(strategy);
     setStrategy(committed);
     if (validateStrategy(committed).length > 0 || isStrategyEmpty(committed)) return;
@@ -236,6 +272,9 @@ export function App({
             hasIssues={issues.length > 0}
             running={running || checkingStudies}
             last={last}
+            contactEmail={contactEmail}
+            emailValid={emailValid}
+            onContactEmailChange={handleContactEmailChange}
             onSearch={() => void handleSearch()}
           />
         </section>
@@ -245,7 +284,8 @@ export function App({
             studies={studies}
             results={studyResults}
             query={query}
-            canCheck={!isEmpty && issues.length === 0}
+            canCheck={!isEmpty && issues.length === 0 && emailValid}
+            describedBy={emailValid ? undefined : CONTACT_EMAIL_HINT_ID}
             checking={running || checkingStudies}
             onInputChange={handleStudyInput}
             onLabelChange={(id, label) =>

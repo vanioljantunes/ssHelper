@@ -42,6 +42,9 @@ export const en = {
   queryPreviewLabel: 'Query sent to PubMed',
   queryPreviewEmpty: 'No query yet.',
   openInPubmed: 'Open this search on the PubMed website (opens in a new tab)',
+  contactEmailLabel:
+    'Your email (sent to PubMed and Crossref with each request, saved only in this browser)',
+  contactEmailHint: 'Enter your email to search. PubMed asks every tool to identify a contact.',
   search: 'Search',
   searching: 'Searching PubMed...',
   needTerm: 'Add at least one term.',
@@ -59,6 +62,7 @@ export const en = {
   errorNetwork: 'Could not reach PubMed. Check your connection and try again.',
   errorHttp: 'PubMed returned an error (HTTP {status}).',
   errorInvalidResponse: 'PubMed returned an unexpected response.',
+  errorNoEmail: 'Enter your email before searching PubMed.',
 
   studiesHeading: 'Known studies',
   studiesHint:

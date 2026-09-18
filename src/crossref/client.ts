@@ -1,5 +1,6 @@
 import { formatStudyLabel } from '../core/label';
 import { en, t } from '../i18n/en';
+import type { ContactEmail } from '../pubmed/client';
 import { createThrottle, type Throttle } from '../pubmed/throttle';
 
 export const CROSSREF_WORKS_URL = 'https://api.crossref.org/works';
@@ -18,8 +19,8 @@ export type LabelOutcome =
 
 export interface CrossrefClientOptions {
   fetchFn: FetchFn;
-  /** Contact address for the Crossref polite pool; omitted from the URL when blank. */
-  email: string;
+  /** Contact address for the Crossref polite pool, or a getter; omitted from the URL when blank. */
+  email: ContactEmail;
   throttle?: Throttle;
   sleep?: (ms: number) => Promise<void>;
   timeoutMs?: number;
@@ -81,7 +82,8 @@ function parseBody(text: string): LabelOutcome {
 
 /** Crossref works lookups for study labels (FR-024), on their own queue apart from PubMed. */
 export function createCrossrefClient(options: CrossrefClientOptions): CrossrefClient {
-  const email = options.email.trim();
+  const readEmail = () =>
+    (typeof options.email === 'function' ? options.email() : options.email).trim();
   const throttle = options.throttle ?? createThrottle({ minIntervalMs: CROSSREF_MIN_INTERVAL_MS });
   const sleep = options.sleep ?? defaultSleep;
   const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
@@ -115,7 +117,7 @@ export function createCrossrefClient(options: CrossrefClientOptions): CrossrefCl
   return {
     async fetchStudyLabel(doi: string, signal?: AbortSignal): Promise<LabelOutcome> {
       try {
-        const url = buildWorksUrl(doi, email);
+        const url = buildWorksUrl(doi, readEmail());
         for (let i = 0; ; i += 1) {
           const result = await throttle.schedule(() => attempt(url, signal));
           if (result.type === 'done') return result.outcome;
@@ -132,15 +134,14 @@ export function createCrossrefClient(options: CrossrefClientOptions): CrossrefCl
   };
 }
 
-let defaultClient: CrossrefClient | null = null;
+/** One Crossref queue for every app client, separate from the PubMed queue. */
+const sharedThrottle = createThrottle({ minIntervalMs: CROSSREF_MIN_INTERVAL_MS });
 
-/** Looks up "Lastname, Year" for a DOI with the app's Crossref queue and contact email. */
-export function fetchStudyLabel(doi: string, signal?: AbortSignal): Promise<LabelOutcome> {
-  if (defaultClient === null) {
-    defaultClient = createCrossrefClient({
-      fetchFn: (input, init) => fetch(input, init),
-      email: import.meta.env.VITE_NCBI_CONTACT_EMAIL ?? '',
-    });
-  }
-  return defaultClient.fetchStudyLabel(doi, signal);
+/** The app's Crossref client: browser fetch, the shared queue, and the visitor's email. */
+export function createAppCrossrefClient(email: ContactEmail): CrossrefClient {
+  return createCrossrefClient({
+    fetchFn: (input, init) => fetch(input, init),
+    email,
+    throttle: sharedThrottle,
+  });
 }

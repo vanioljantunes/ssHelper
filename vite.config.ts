@@ -5,17 +5,11 @@ import react from '@vitejs/plugin-react';
 const TEST_CONTACT_EMAIL = 'test@example.org';
 const nodeHasWebStorage = process.allowedNodeEnvironmentFlags.has('--no-experimental-webstorage');
 
-export default defineConfig(({ command, mode }) => {
+// VITE_NCBI_CONTACT_EMAIL is optional (FR-025): visitors enter their own email in the app. When
+// set (for example in .env.local), it only pre-fills that field. Leave it unset for public builds.
+export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
-  const isVitest = Boolean(process.env.VITEST);
   const contactEmail = env.VITE_NCBI_CONTACT_EMAIL?.trim() ?? '';
-
-  if (!isVitest && (command === 'serve' || command === 'build') && contactEmail === '') {
-    throw new Error(
-      'VITE_NCBI_CONTACT_EMAIL is required. Create .env.local at the repository root with ' +
-        'VITE_NCBI_CONTACT_EMAIL=<your contact address> (see .env.example). No NCBI account is needed.',
-    );
-  }
 
   const liveEnabled = process.env.LIVE_PUBMED === '1';
 

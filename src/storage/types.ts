@@ -18,3 +18,15 @@ export interface DraftStore {
   load(): Draft | null;
   save(draft: Draft): SaveResult;
 }
+
+/** Visitor settings kept in this browser (FR-025). */
+export interface Settings {
+  /** Contact email sent to PubMed and Crossref; empty when the visitor removed it. */
+  contactEmail: string;
+}
+
+/** Visitor settings. Reads never throw; a missing or corrupt value loads as null. */
+export interface SettingsStore {
+  load(): Settings | null;
+  save(settings: Settings): SaveResult;
+}

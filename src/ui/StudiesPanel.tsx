@@ -17,6 +17,8 @@ export interface StudiesPanelProps {
   query: string | null;
   canCheck: boolean;
   checking: boolean;
+  /** Id of a hint explaining why Check studies is disabled. */
+  describedBy?: string;
   onInputChange: (id: string, input: string) => void;
   onLabelChange: (id: string, label: string) => void;
   onAdd: () => void;
@@ -169,6 +171,7 @@ export function StudiesPanel({
   query,
   canCheck,
   checking,
+  describedBy,
   onInputChange,
   onLabelChange,
   onAdd,
@@ -252,6 +255,7 @@ export function StudiesPanel({
           className="primary"
           disabled={!canCheck || checking}
           aria-busy={checking || undefined}
+          aria-describedby={describedBy}
           onClick={onCheck}
         >
           {en.checkStudies}

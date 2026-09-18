@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAxeViolations } from './a11y';
-import { failPubmed, mockPubmed } from './pubmed-mock';
+import { failPubmed, mockPubmed, resetStorage } from './pubmed-mock';
 
 const input = (page: Page, n: number) =>
   page.getByRole('textbox', { name: `New term for arm ${n}` });
@@ -21,9 +21,7 @@ async function search(page: Page) {
 
 test.beforeEach(async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.goto('/');
-  await page.evaluate(() => window.localStorage.clear());
-  await page.reload();
+  await resetStorage(page);
 });
 
 test('scenarios 8-10: row added, persists after reload, copy gives exact query', async ({

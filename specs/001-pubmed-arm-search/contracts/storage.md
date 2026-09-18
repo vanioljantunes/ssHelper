@@ -26,6 +26,7 @@ type SaveResult = { ok: true } | { ok: false; reason: 'quota' | 'unavailable' };
 |-----|-------|
 | `sshelper:v1:history` | `{ "schemaVersion": 1, "runs": SearchRun[] }` |
 | `sshelper:v1:draft` | `{ "schemaVersion": 1, "arms": [{ "terms": string[], "pending": string }] }` |
+| `sshelper:v1:settings` | `{ "schemaVersion": 1, "contactEmail": string }` (FR-025, `SettingsStore`) |
 
 Rules:
 

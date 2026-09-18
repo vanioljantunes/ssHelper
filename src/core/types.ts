@@ -21,7 +21,7 @@ export interface Issue {
   kind: IssueKind;
 }
 
-export type CountErrorKind = 'rate_limited' | 'network' | 'http' | 'invalid_response';
+export type CountErrorKind = 'rate_limited' | 'network' | 'http' | 'invalid_response' | 'no_email';
 
 export type CountOutcome =
   | { status: 'ok'; count: number; queryTranslation: string; warnings: string[] }

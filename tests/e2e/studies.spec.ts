@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAxeViolations } from './a11y';
-import { CROSSREF_FIXTURES, mockPubmed } from './pubmed-mock';
+import { CROSSREF_FIXTURES, mockPubmed, resetStorage } from './pubmed-mock';
 
 const FOUND = '10.1000/found.1';
 const MISSED = '10.1000/missed.2';
@@ -26,9 +26,7 @@ async function addTerm(page: Page, text: string) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(() => window.localStorage.clear());
-  await page.reload();
+  await resetStorage(page);
 });
 
 test('search checks each DOI: found, not found, not in PubMed', async ({ page }) => {

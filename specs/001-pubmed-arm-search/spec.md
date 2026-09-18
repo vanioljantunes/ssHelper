@@ -233,6 +233,16 @@ confirm the rows are still there.
   clearing it allows automatic naming again. Changing the DOI clears an automatic name but keeps
   a typed one. Names and whether they were typed are kept in the saved draft; older drafts that
   hold only DOI strings still load.
+- **FR-025** (added 2026-09-18): The Search panel MUST have a contact email field labelled "Your
+  email (sent to PubMed and Crossref with each request, saved only in this browser)". The address
+  is sent as `email` on every PubMed request and as `mailto` on Crossref lookups. While the field
+  is empty or does not have a simple email shape (`name@domain.tld`, no spaces), Search and
+  "Check studies" MUST be disabled and a hint "Enter your email to search. PubMed asks every tool
+  to identify a contact." MUST be shown and linked to the field and both buttons with
+  `aria-describedby`; no PubMed request is made without a valid address. A valid address is saved
+  in this browser only and restored on the next visit; clearing the field removes the saved
+  address. When nothing is saved, an optional build-time default (`VITE_NCBI_CONTACT_EMAIL`)
+  pre-fills the field; the public build sets none, so it contains no personal address.
 
 ### Key Entities
 
