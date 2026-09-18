@@ -1,7 +1,20 @@
 export const en = {
   appTitle: 'ssHelper',
-  appPurpose:
-    'Build a PubMed search strategy in arms and see how many records it retrieves, with and without a meta-analysis arm.',
+  heroSubtitle: 'Build and test systematic review search strategies',
+  heroPointsLabel: 'What ssHelper does',
+  heroPoint1: 'Build PubMed strategies in arms, or paste one you already have',
+  heroPoint2: 'Check whether known studies (by DOI) are retrieved by the strategy',
+  heroPoint3: 'Compare result counts over time in your search history',
+  heroPrivacy: 'Free. Your strategies, studies and email stay in your browser.',
+  authorCaption: 'Made by',
+  authorName: 'Vanio Antunes',
+  authorBio: 'Meta-analysis researcher. Coordinator of MetaHub.',
+  authorLinksLabel: 'Profiles',
+  authorLinkHidden: '{name} on {network} (opens in a new tab)',
+  networkGithub: 'GitHub',
+  networkLinkedin: 'LinkedIn',
+  networkX: 'X',
+  networkInstagram: 'Instagram',
 
   armsHeading: 'Search strategy',
   armLabel: 'Arm {n}',

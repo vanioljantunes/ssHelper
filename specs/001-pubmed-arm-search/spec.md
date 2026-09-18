@@ -243,6 +243,19 @@ confirm the rows are still there.
   in this browser only and restored on the next visit; clearing the field removes the saved
   address. When nothing is saved, an optional build-time default (`VITE_NCBI_CONTACT_EMAIL`)
   pre-fills the field; the public build sets none, so it contains no personal address.
+- **FR-026** (added 2026-09-18): The page MUST open with a landing hero in two columns. The left
+  column holds the title "ssHelper" as the only level-1 heading, the subtitle "Build and test
+  systematic review search strategies", three bullets ("Build PubMed strategies in arms, or paste
+  one you already have"; "Check whether known studies (by DOI) are retrieved by the strategy";
+  "Compare result counts over time in your search history"), and the line "Free. Your
+  strategies, studies and email stay in your browser." The right column is an author card
+  (complementary landmark named "Made by") with the name "Vanio Antunes", the bio "Meta-analysis
+  researcher. Coordinator of MetaHub.", and four icon links to the author's GitHub, LinkedIn, X
+  and Instagram profiles. Each link opens in a new tab with `rel="noopener noreferrer"`, has an
+  accessible name "Vanio Antunes on {network} (opens in a new tab)", a hit area of at least
+  24x24 px, and a visible focus outline; the icons are inline SVG with `aria-hidden="true"` (no
+  icon library). Below 720px wide the card stacks under the intro. The hero passes axe at
+  desktop and 390px widths.
 
 ### Key Entities
 

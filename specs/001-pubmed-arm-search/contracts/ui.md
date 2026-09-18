@@ -4,7 +4,8 @@ Single page. All visible strings come from `src/i18n/en.ts`.
 
 ## Layout (top to bottom)
 
-1. Title and one-line purpose.
+1. Landing hero (FR-026): title, subtitle, three feature bullets and a privacy line, with an
+   author card and four profile links beside it (stacked below it under 720px).
 2. Arms editor: arms stacked vertically; an "AND" label between consecutive arms; "Add arm"
    button below the last arm.
 3. Search panel: live query preview (monospace, wraps), "Search" button, both counts after a

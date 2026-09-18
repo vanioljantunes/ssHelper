@@ -171,6 +171,15 @@ Write each test task before its implementation task and confirm it fails first.
 
 ---
 
+## Phase 10: Addendum - hero and author card (FR-026, added 2026-09-18)
+
+- [X] T076 [P] Component tests in `tests/component/Hero.test.tsx`: h1 "ssHelper", subtitle, three bullets, privacy line; author card with name and bio; exactly four links with the exact profile URLs, `target="_blank"`, `rel` with `noopener noreferrer`, accessible names naming the network, and `aria-hidden` SVG icons
+- [X] T077 [P] End-to-end tests in `tests/e2e/hero.spec.ts`: hero and card visible, four links with the right hrefs and hit areas of at least 24x24 px, card stacked below the title with no horizontal scroll at 390px, axe at 1440px and 390px
+- [X] T078 Implement `src/ui/Hero.tsx` (intro header plus author card aside, hand-drawn inline SVG marks for GitHub, LinkedIn, X and Instagram), render it in place of the old header in `src/ui/App.tsx`, move the strings to `src/i18n/en.ts` (replacing `appPurpose`), and add the two-column grid, card, 36px icon links, focus outline and 720px stacking rule to `src/ui/app.css` with the existing tokens
+- [X] T079 Docs: spec.md FR-026, contracts/ui.md layout item 1
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

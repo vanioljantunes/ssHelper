@@ -52,9 +52,116 @@ h2 {
   font-size: 1.15rem;
 }
 
-.purpose {
-  margin: 0 0 1.25rem;
+/* Hero (FR-026) */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
+}
+
+.hero-intro h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.15;
+  color: var(--accent);
+}
+
+.hero-subtitle {
+  margin: 0.3rem 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.hero-points {
+  margin: 0 0 0.75rem;
+  padding-left: 1.2rem;
+}
+
+.hero-points li + li {
+  margin-top: 0.2rem;
+}
+
+.hero-points li::marker {
+  color: var(--accent);
+}
+
+.hero-privacy {
+  margin: 0;
+  font-size: 0.85rem;
   color: var(--muted);
+}
+
+.author-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.author-card p {
+  margin: 0;
+}
+
+.author-caption {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.author-name {
+  margin-top: 0.15rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.author-bio {
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.author-links {
+  list-style: none;
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.6rem 0 0 -0.4rem;
+  padding: 0;
+}
+
+.author-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 6px;
+  color: var(--text);
+}
+
+.author-links a:hover {
+  color: var(--accent);
+  background: var(--term-bg);
+}
+
+.author-links a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.author-links svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
 }
 
 .panel {

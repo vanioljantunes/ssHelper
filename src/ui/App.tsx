@@ -42,6 +42,7 @@ import {
 } from '../storage/localStore';
 import type { DraftStore, HistoryStore, SaveResult, SettingsStore } from '../storage/types';
 import { ArmsEditor } from './ArmsEditor';
+import { Hero } from './Hero';
 import { HistoryTable } from './HistoryTable';
 import { ImportStrategy } from './ImportStrategy';
 import { CONTACT_EMAIL_HINT_ID, formatCount, SearchPanel, type LastSearch } from './SearchPanel';
@@ -239,10 +240,7 @@ export function App({
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>{en.appTitle}</h1>
-        <p className="purpose">{en.appPurpose}</p>
-      </header>
+      <Hero />
       <main>
         <section className="panel" aria-labelledby="arms-heading">
           <h2 id="arms-heading">{en.armsHeading}</h2>
