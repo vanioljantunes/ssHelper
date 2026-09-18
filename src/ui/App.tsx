@@ -45,7 +45,10 @@ import { ArmsEditor } from './ArmsEditor';
 import { Hero } from './Hero';
 import { HistoryTable } from './HistoryTable';
 import { ImportStrategy } from './ImportStrategy';
+import { Packages } from './Packages';
 import { CONTACT_EMAIL_HINT_ID, formatCount, SearchPanel, type LastSearch } from './SearchPanel';
+import { SectionNav } from './SectionNav';
+import { SiteBar } from './SiteBar';
 import { StudiesPanel, type StudyRowState } from './StudiesPanel';
 import './app.css';
 
@@ -239,76 +242,83 @@ export function App({
   };
 
   return (
-    <div className="app">
-      <Hero />
-      <main>
-        <section className="panel" aria-labelledby="arms-heading">
-          <h2 id="arms-heading">{en.armsHeading}</h2>
-          <ImportStrategy
-            needsConfirmation={!isEmpty}
-            onImport={(arms) =>
-              setStrategy(fromDraft({ arms: arms.map((terms) => ({ terms, pending: '' })) }))
-            }
-          />
-          <ArmsEditor
-            strategy={strategy}
-            issues={issues}
-            onAddArm={() => update(addArm)}
-            onDeleteArm={(armId) => update((s) => removeArm(s, armId))}
-            onPendingChange={(armId, text) => update((s) => setPending(s, armId, text))}
-            onCommitPending={(armId) => update((s) => commitPending(s, armId))}
-            onEditTerm={(armId, termId, raw) => update((s) => editTerm(s, armId, termId, raw))}
-            onRemoveTerm={(armId, termId) => update((s) => removeTerm(s, armId, termId))}
-            onUnquoteTerm={(armId, termId) => update((s) => unquoteTermById(s, armId, termId))}
-          />
-        </section>
-        <section className="panel" aria-labelledby="search-heading">
-          <h2 id="search-heading">{en.searchHeading}</h2>
-          <SearchPanel
-            query={query}
-            isEmpty={isEmpty}
-            hasIssues={issues.length > 0}
-            running={running || checkingStudies}
-            last={last}
-            contactEmail={contactEmail}
-            emailValid={emailValid}
-            onContactEmailChange={handleContactEmailChange}
-            onSearch={() => void handleSearch()}
-          />
-        </section>
-        <section className="panel" aria-labelledby="studies-heading">
-          <h2 id="studies-heading">{en.studiesHeading}</h2>
-          <StudiesPanel
-            studies={studies}
-            results={studyResults}
-            query={query}
-            canCheck={!isEmpty && issues.length === 0 && emailValid}
-            describedBy={emailValid ? undefined : CONTACT_EMAIL_HINT_ID}
-            checking={running || checkingStudies}
-            onInputChange={handleStudyInput}
-            onLabelChange={(id, label) =>
-              setStudies((current) => setStudyLabel(current, id, label))
-            }
-            onAdd={() => setStudies(addStudy)}
-            onRemove={(id) => setStudies((current) => removeStudy(current, id))}
-            onCheck={() => void handleCheckStudies()}
-          />
-        </section>
-        <section className="panel" aria-labelledby="history-heading">
-          <h2 id="history-heading">{en.historyHeading}</h2>
-          {saveFailed && <p className="alert">{en.historySaveFailed}</p>}
-          <HistoryTable
-            runs={runs}
-            needsLoadConfirmation={strategy.arms.some((arm) => arm.terms.length > 0)}
-            onLoad={handleLoad}
-            onDelete={handleDelete}
-            onClear={handleClear}
-          />
-        </section>
-      </main>
-      <div className="visually-hidden" role="status" aria-live="polite">
-        {announcement}
+    <>
+      <SiteBar />
+      <div className="app">
+        <Hero />
+        <div className="tool">
+          <SectionNav />
+          <main>
+            <section className="panel" id="strategy" tabIndex={-1} aria-labelledby="arms-heading">
+              <h2 id="arms-heading">{en.armsHeading}</h2>
+              <ImportStrategy
+                needsConfirmation={!isEmpty}
+                onImport={(arms) =>
+                  setStrategy(fromDraft({ arms: arms.map((terms) => ({ terms, pending: '' })) }))
+                }
+              />
+              <ArmsEditor
+                strategy={strategy}
+                issues={issues}
+                onAddArm={() => update(addArm)}
+                onDeleteArm={(armId) => update((s) => removeArm(s, armId))}
+                onPendingChange={(armId, text) => update((s) => setPending(s, armId, text))}
+                onCommitPending={(armId) => update((s) => commitPending(s, armId))}
+                onEditTerm={(armId, termId, raw) => update((s) => editTerm(s, armId, termId, raw))}
+                onRemoveTerm={(armId, termId) => update((s) => removeTerm(s, armId, termId))}
+                onUnquoteTerm={(armId, termId) => update((s) => unquoteTermById(s, armId, termId))}
+              />
+            </section>
+            <section className="panel" id="search" tabIndex={-1} aria-labelledby="search-heading">
+              <h2 id="search-heading">{en.searchHeading}</h2>
+              <SearchPanel
+                query={query}
+                isEmpty={isEmpty}
+                hasIssues={issues.length > 0}
+                running={running || checkingStudies}
+                last={last}
+                contactEmail={contactEmail}
+                emailValid={emailValid}
+                onContactEmailChange={handleContactEmailChange}
+                onSearch={() => void handleSearch()}
+              />
+            </section>
+            <section className="panel" id="studies" tabIndex={-1} aria-labelledby="studies-heading">
+              <h2 id="studies-heading">{en.studiesHeading}</h2>
+              <StudiesPanel
+                studies={studies}
+                results={studyResults}
+                query={query}
+                canCheck={!isEmpty && issues.length === 0 && emailValid}
+                describedBy={emailValid ? undefined : CONTACT_EMAIL_HINT_ID}
+                checking={running || checkingStudies}
+                onInputChange={handleStudyInput}
+                onLabelChange={(id, label) =>
+                  setStudies((current) => setStudyLabel(current, id, label))
+                }
+                onAdd={() => setStudies(addStudy)}
+                onRemove={(id) => setStudies((current) => removeStudy(current, id))}
+                onCheck={() => void handleCheckStudies()}
+              />
+            </section>
+            <section className="panel" id="history" tabIndex={-1} aria-labelledby="history-heading">
+              <h2 id="history-heading">{en.historyHeading}</h2>
+              {saveFailed && <p className="alert">{en.historySaveFailed}</p>}
+              <HistoryTable
+                runs={runs}
+                needsLoadConfirmation={strategy.arms.some((arm) => arm.terms.length > 0)}
+                onLoad={handleLoad}
+                onDelete={handleDelete}
+                onClear={handleClear}
+              />
+            </section>
+          </main>
+        </div>
+        <Packages />
+        <div className="visually-hidden" role="status" aria-live="polite">
+          {announcement}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -3,14 +3,18 @@ import { describe, expect, it } from 'vitest';
 import { Hero } from '../../src/ui/Hero';
 
 const LINKS = [
-  { network: 'GitHub', href: 'https://github.com/vanioljantunes' },
-  { network: 'LinkedIn', href: 'https://www.linkedin.com/in/vanio-antunes/' },
   { network: 'X', href: 'https://x.com/VanioAntunes' },
-  { network: 'Instagram', href: 'https://www.instagram.com/vanio.antunes/' },
+  { network: 'LinkedIn', href: 'https://www.linkedin.com/in/vanio-antunes/' },
+];
+
+const BIO = [
+  'Last-year medical student',
+  'Focus: statistics and medical software development',
+  'Looking for a research position in radiology (up to 2028)',
 ];
 
 describe('Hero (FR-026)', () => {
-  it('shows the title, subtitle, three feature bullets and the privacy line', () => {
+  it('shows the title, subtitle, three numbered steps under "How it works" and the privacy line', () => {
     render(<Hero />);
     expect(screen.getByRole('heading', { level: 1, name: 'ssHelper' })).toBeInTheDocument();
     expect(
@@ -19,6 +23,11 @@ describe('Hero (FR-026)', () => {
 
     const list = screen.getByRole('list', { name: /what ssHelper does/i });
     expect(list.tagName).toBe('OL');
+    // The steps sit in a native disclosure so phones can collapse them.
+    const details = list.closest('details');
+    expect(details).not.toBeNull();
+    expect(details!.querySelector('summary')).toHaveTextContent('How it works');
+
     const items = within(list).getAllByRole('listitem');
     expect(items).toHaveLength(3);
     // The visible step number is decorative (aria-hidden); the <ol> carries the order.
@@ -42,9 +51,9 @@ describe('Hero (FR-026)', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows an author card with the photo, name and bio', () => {
+  it('shows an author block with the photo, name and the three bio lines', () => {
     render(<Hero />);
-    const card = screen.getByRole('complementary', { name: /made by/i });
+    const card = screen.getByRole('complementary', { name: /made by vanio antunes/i });
     const photo = within(card).getByRole('img', { name: 'Vanio Antunes' });
     expect(photo.tagName).toBe('IMG');
     expect(photo).toHaveAttribute('width');
@@ -52,16 +61,30 @@ describe('Hero (FR-026)', () => {
     expect(photo).toHaveAttribute('loading', 'eager');
     expect(photo.getAttribute('src')).toMatch(/vanio-antunes/);
     expect(within(card).getByText('Vanio Antunes')).toBeInTheDocument();
+    for (const line of BIO) expect(within(card).getByText(line)).toBeInTheDocument();
     expect(
-      within(card).getByText('Meta-analysis researcher. Coordinator of MetaHub.'),
+      within(card).getByText('Medical student. Statistics and medical software.'),
     ).toBeInTheDocument();
   });
 
-  it('has exactly four social links that open in a new tab', () => {
+  it('never mentions MetaHub', () => {
+    const { container } = render(<Hero />);
+    expect(container.textContent).not.toMatch(/metahub/i);
+  });
+
+  it('puts the title, the steps and the author block in one card', () => {
+    render(<Hero />);
+    const card = screen.getByRole('region', { name: 'ssHelper' });
+    expect(within(card).getByRole('heading', { level: 1, name: 'ssHelper' })).toBeInTheDocument();
+    expect(within(card).getByRole('list', { name: /what ssHelper does/i })).toBeInTheDocument();
+    expect(within(card).getByRole('complementary', { name: /made by/i })).toBeInTheDocument();
+  });
+
+  it('has exactly two social links, X and LinkedIn, that open in a new tab', () => {
     render(<Hero />);
     const card = screen.getByRole('complementary', { name: /made by/i });
     const links = within(card).getAllByRole('link');
-    expect(links).toHaveLength(4);
+    expect(links).toHaveLength(2);
 
     expect(links.map((link) => link.getAttribute('href'))).toEqual(LINKS.map((l) => l.href));
     links.forEach((link, i) => {
