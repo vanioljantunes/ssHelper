@@ -7,13 +7,16 @@ const nodeHasWebStorage = process.allowedNodeEnvironmentFlags.has('--no-experime
 
 // VITE_NCBI_CONTACT_EMAIL is optional (FR-025): visitors enter their own email in the app. When
 // set (for example in .env.local), it only pre-fills that field. Leave it unset for public builds.
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   const contactEmail = env.VITE_NCBI_CONTACT_EMAIL?.trim() ?? '';
 
   const liveEnabled = process.env.LIVE_PUBMED === '1';
 
   return {
+    // Production builds are served at vanioantunes.com/tools/ssHelper/ (proxied from the site's
+    // Vercel project). Dev, preview and e2e keep the root path.
+    base: command === 'build' ? '/tools/ssHelper/' : '/',
     plugins: [react()],
     server: { port: 5180, strictPort: true },
     preview: { port: 5181, strictPort: true },
