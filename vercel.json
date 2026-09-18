@@ -4,7 +4,7 @@
     { "source": "/", "destination": "https://vanioantunes.com/tools/ssHelper/", "permanent": false }
   ],
   "rewrites": [
-    { "source": "/tools/ssHelper/", "destination": "/index.html" },
+    { "source": "/tools/ssHelper{/}?", "destination": "/index.html" },
     { "source": "/tools/ssHelper/:path+", "destination": "/:path+" }
   ]
 }
