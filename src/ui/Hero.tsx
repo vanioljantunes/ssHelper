@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import photo from '../assets/vanio-antunes.jpg';
 import { en, t } from '../i18n/en';
 
 interface AuthorLink {
@@ -66,41 +67,66 @@ const AUTHOR_LINKS: AuthorLink[] = [
   },
 ];
 
-/** Landing block: what ssHelper does, and who made it (FR-026). */
+const STEPS = [en.heroPoint1, en.heroPoint2, en.heroPoint3];
+
+/**
+ * Landing block: what ssHelper does, and who made it (FR-026).
+ * The author card comes first in the DOM so reading order matches the phone layout, where it
+ * shows as a compact strip above the title; on wide screens CSS grid places it in the right column.
+ */
 export function Hero() {
   return (
     <div className="hero">
+      <aside className="author-card" aria-labelledby="author-caption">
+        <img
+          className="author-photo"
+          src={photo}
+          alt={en.authorName}
+          width={96}
+          height={96}
+          loading="eager"
+          decoding="async"
+        />
+        <div className="author-text">
+          <p className="author-line">
+            <span className="author-caption" id="author-caption">
+              {en.authorCaption}
+            </span>{' '}
+            <span className="author-name">{en.authorName}</span>
+          </p>
+          <p className="author-bio">{en.authorBio}</p>
+          <ul className="author-links" aria-label={en.authorLinksLabel}>
+            {AUTHOR_LINKS.map(({ network, href, icon }) => (
+              <li key={href}>
+                <a href={href} target="_blank" rel="noopener noreferrer" title={network}>
+                  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor">
+                    {icon}
+                  </svg>
+                  <span className="visually-hidden">
+                    {t(en.authorLinkHidden, { name: en.authorName, network })}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </aside>
       <header className="hero-intro">
         <h1>{en.appTitle}</h1>
         <p className="hero-subtitle">{en.heroSubtitle}</p>
-        <ul className="hero-points" aria-label={en.heroPointsLabel}>
-          <li>{en.heroPoint1}</li>
-          <li>{en.heroPoint2}</li>
-          <li>{en.heroPoint3}</li>
-        </ul>
-        <p className="hero-privacy">{en.heroPrivacy}</p>
-      </header>
-      <aside className="author-card" aria-labelledby="author-caption">
-        <p className="author-caption" id="author-caption">
-          {en.authorCaption}
-        </p>
-        <p className="author-name">{en.authorName}</p>
-        <p className="author-bio">{en.authorBio}</p>
-        <ul className="author-links" aria-label={en.authorLinksLabel}>
-          {AUTHOR_LINKS.map(({ network, href, icon }) => (
-            <li key={href}>
-              <a href={href} target="_blank" rel="noopener noreferrer" title={network}>
-                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor">
-                  {icon}
-                </svg>
-                <span className="visually-hidden">
-                  {t(en.authorLinkHidden, { name: en.authorName, network })}
-                </span>
-              </a>
+        {/* list-style is removed for the drawn circles, so role="list" keeps list semantics in Safari. */}
+        <ol className="hero-steps" role="list" aria-label={en.heroPointsLabel}>
+          {STEPS.map((step, i) => (
+            <li key={step}>
+              <span className="hero-step-number" aria-hidden="true">
+                {i + 1}
+              </span>
+              {step}
             </li>
           ))}
-        </ul>
-      </aside>
+        </ol>
+        <p className="hero-privacy">{en.heroPrivacy}</p>
+      </header>
     </div>
   );
 }

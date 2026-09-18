@@ -6,6 +6,7 @@
   --border: #c9d0d9;
   --accent: #1d5fb8;
   --accent-text: #ffffff;
+  --accent-tint: #e4edf9;
   --danger: #b3261e;
   --warning-bg: #fff6e0;
   --success: #1b6e2a;
@@ -52,39 +53,63 @@ h2 {
   font-size: 1.15rem;
 }
 
-/* Hero (FR-026) */
+/* Hero (FR-026). The author card is first in the DOM; on wide screens grid puts it on the right. */
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 18rem;
-  gap: 1.5rem;
+  grid-template-areas: 'intro card';
+  column-gap: 3rem;
   align-items: start;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.hero-intro {
+  grid-area: intro;
 }
 
 .hero-intro h1 {
   margin: 0;
-  font-size: 2rem;
-  line-height: 1.15;
+  font-size: clamp(1.75rem, 1.45rem + 1.2vw, 2.25rem);
+  line-height: 1.1;
   color: var(--accent);
 }
 
 .hero-subtitle {
-  margin: 0.3rem 0 0.75rem;
+  margin: 0.35rem 0 1.1rem;
+  max-width: 65ch;
   font-size: 1.15rem;
   font-weight: 600;
 }
 
-.hero-points {
-  margin: 0 0 0.75rem;
-  padding-left: 1.2rem;
+.hero-steps {
+  list-style: none;
+  display: grid;
+  gap: 0.6rem;
+  max-width: 65ch;
+  margin: 0 0 1.1rem;
+  padding: 0;
 }
 
-.hero-points li + li {
-  margin-top: 0.2rem;
+.hero-steps li {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  column-gap: 0.7rem;
+  align-items: start;
 }
 
-.hero-points li::marker {
+/* Nudged up so the circle centres on the first text line (measured at 16px body text). */
+.hero-step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-top: -0.08rem;
+  border-radius: 50%;
+  background: var(--accent-tint);
   color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .hero-privacy {
@@ -94,17 +119,29 @@ h2 {
 }
 
 .author-card {
+  grid-area: card;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 1rem;
+  padding: 1.25rem;
 }
 
 .author-card p {
   margin: 0;
 }
 
+.author-photo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .author-caption {
+  display: block;
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -113,6 +150,7 @@ h2 {
 }
 
 .author-name {
+  display: block;
   margin-top: 0.15rem;
   font-size: 1.1rem;
   font-weight: 600;
@@ -157,10 +195,70 @@ h2 {
   height: 20px;
 }
 
-@media (max-width: 720px) {
+/* Phone: compact author strip first, then the intro. */
+@media (max-width: 719.98px) {
+  .app {
+    padding-top: 1rem;
+  }
+
   .hero {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
+    grid-template-areas:
+      'card'
+      'intro';
+    row-gap: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .author-card {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .author-photo {
+    width: 48px;
+    height: 48px;
+    margin: 0;
+  }
+
+  .author-caption,
+  .author-name {
+    display: inline;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .author-caption {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .author-bio {
+    margin-top: 0;
+    font-size: 0.8rem;
+  }
+
+  .author-links {
+    margin: 0.15rem 0 0 -0.35rem;
+  }
+
+  .author-links a {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .hero-subtitle {
+    margin-bottom: 0.9rem;
+    font-size: 1.05rem;
+  }
+
+  .hero-steps {
+    gap: 0.45rem;
+    margin-bottom: 0.9rem;
   }
 }
 

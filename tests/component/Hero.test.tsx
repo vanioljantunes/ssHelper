@@ -18,8 +18,21 @@ describe('Hero (FR-026)', () => {
     ).toBeInTheDocument();
 
     const list = screen.getByRole('list', { name: /what ssHelper does/i });
+    expect(list.tagName).toBe('OL');
     const items = within(list).getAllByRole('listitem');
-    expect(items.map((item) => item.textContent)).toEqual([
+    expect(items).toHaveLength(3);
+    // The visible step number is decorative (aria-hidden); the <ol> carries the order.
+    expect(items.map((item) => item.querySelector('[aria-hidden="true"]')?.textContent)).toEqual([
+      '1',
+      '2',
+      '3',
+    ]);
+    const spokenText = (item: HTMLElement) =>
+      Array.from(item.childNodes)
+        .filter((node) => !(node instanceof Element && node.getAttribute('aria-hidden') === 'true'))
+        .map((node) => node.textContent)
+        .join('');
+    expect(items.map(spokenText)).toEqual([
       'Build PubMed strategies in arms, or paste one you already have',
       'Check whether known studies (by DOI) are retrieved by the strategy',
       'Compare result counts over time in your search history',
@@ -29,9 +42,15 @@ describe('Hero (FR-026)', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows an author card with the name and bio', () => {
+  it('shows an author card with the photo, name and bio', () => {
     render(<Hero />);
     const card = screen.getByRole('complementary', { name: /made by/i });
+    const photo = within(card).getByRole('img', { name: 'Vanio Antunes' });
+    expect(photo.tagName).toBe('IMG');
+    expect(photo).toHaveAttribute('width');
+    expect(photo).toHaveAttribute('height');
+    expect(photo).toHaveAttribute('loading', 'eager');
+    expect(photo.getAttribute('src')).toMatch(/vanio-antunes/);
     expect(within(card).getByText('Vanio Antunes')).toBeInTheDocument();
     expect(
       within(card).getByText('Meta-analysis researcher. Coordinator of MetaHub.'),

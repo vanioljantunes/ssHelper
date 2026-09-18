@@ -37,16 +37,31 @@ test.beforeEach(async ({ page }) => {
 test('hero with author card is visible and accessible at desktop width', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await expectHero(page);
+  await expect(authorCard(page).getByRole('img', { name: 'Vanio Antunes' })).toBeVisible();
+
+  // Two columns: the author card sits to the right of the title.
+  const title = await page.getByRole('heading', { level: 1, name: 'ssHelper' }).boundingBox();
+  const card = await authorCard(page).boundingBox();
+  expect(card!.x).toBeGreaterThan(title!.x + title!.width);
   await expectNoAxeViolations(page);
 });
 
-test('hero stacks the author card below the intro at mobile width', async ({ page }) => {
+test('hero shows a compact author strip first and keeps the tool in view on a phone', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await expectHero(page);
+  await expect(authorCard(page).getByRole('img', { name: 'Vanio Antunes' })).toBeVisible();
 
   const title = await page.getByRole('heading', { level: 1, name: 'ssHelper' }).boundingBox();
   const card = await authorCard(page).boundingBox();
-  expect(card!.y).toBeGreaterThan(title!.y + title!.height);
+  expect(card!.y + card!.height).toBeLessThanOrEqual(title!.y);
+
+  const strategy = await page
+    .getByRole('heading', { level: 2, name: 'Search strategy', exact: true })
+    .boundingBox();
+  expect(strategy!.y).toBeLessThan(844);
+
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(scrollWidth).toBeLessThanOrEqual(390);
   await expectNoAxeViolations(page);
