@@ -63,7 +63,7 @@ body {
 }
 
 .tool .panel {
-  scroll-margin-top: 3.75rem;
+  scroll-margin-top: calc(var(--site-bar-h) + 3.75rem);
 }
 
 .tool .panel:focus,
@@ -312,7 +312,7 @@ h2 {
 /* Section nav: sticky horizontal bar under 1024px (sidebar rules below). */
 .section-nav {
   position: sticky;
-  top: 0;
+  top: var(--site-bar-h);
   z-index: 10;
   margin: 0 -1rem 1rem;
   padding: 0.3rem 1rem;
@@ -416,13 +416,13 @@ h2 {
   }
 
   .tool .panel {
-    scroll-margin-top: 1.5rem;
+    scroll-margin-top: calc(var(--site-bar-h) + 1.5rem);
   }
 
   .section-nav {
     grid-area: nav;
     align-self: start;
-    top: 1.5rem;
+    top: calc(var(--site-bar-h) + 1.5rem);
     margin: 0;
     padding: 0;
     background: none;
@@ -1050,8 +1050,16 @@ input {
   font-weight: 600;
 }
 
-/* Site bar: the same top bar as vanioantunes.com (values match its site-bar.css). */
+/* Site bar: the same top bar as vanioantunes.com (values match its site-bar.css). Pinned to the
+   top; --site-bar-h is its height so the sticky section nav and anchor jumps sit below it. */
+:root {
+  --site-bar-h: 61px;
+}
+
 .site-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   border-bottom: 1px solid #c9d0d9;
   background: #ffffff;
 }
@@ -1124,6 +1132,10 @@ input {
 
 /* Phones: one 48px row (photo and links) so the tool stays high; the name stays for screen readers. */
 @media (max-width: 719.98px) {
+  :root {
+    --site-bar-h: 49px;
+  }
+
   .site-bar__inner {
     flex-wrap: nowrap;
     min-height: 48px;

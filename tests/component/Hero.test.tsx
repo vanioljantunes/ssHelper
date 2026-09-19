@@ -8,7 +8,7 @@ const LINKS = [
 ];
 
 const BIO = [
-  'Last-year medical student',
+  'Final-year medical student',
   'Focus: statistics and medical software development',
   'Looking for a research position in radiology (up to 2028)',
 ];

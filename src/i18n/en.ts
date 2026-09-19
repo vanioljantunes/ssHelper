@@ -9,7 +9,7 @@ export const en = {
   heroHowItWorks: 'How it works',
   authorCaption: 'Made by',
   authorName: 'Vanio Antunes',
-  authorBio1: 'Last-year medical student',
+  authorBio1: 'Final-year medical student',
   authorBio2: 'Focus: statistics and medical software development',
   authorBio3: 'Looking for a research position in radiology (up to 2028)',
   authorBioShort: 'Medical student. Statistics and medical software.',

@@ -208,3 +208,24 @@ test.describe('phone at 125% text size', () => {
     await expectNoHorizontalScroll(page, 390);
   });
 });
+
+for (const [name, width, height] of [
+  ['desktop', 1280, 800],
+  ['phone', 390, 844],
+] as const) {
+  test(`site bar stays pinned to the top while scrolling (${name})`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    await resetStorage(page);
+    await page.reload();
+    const bar = page.getByRole('banner');
+    await page.getByRole('heading', { level: 2, name: 'History' }).scrollIntoViewIfNeeded();
+    await page.mouse.wheel(0, 400);
+    const barBox = (await bar.boundingBox())!;
+    expect(Math.round(barBox.y)).toBe(0);
+    await expect(bar.getByRole('link', { name: 'Tools' })).toBeInViewport();
+    // The sticky section nav sits under the bar, never behind it.
+    const navBox = (await sectionNav(page).boundingBox())!;
+    expect(navBox.y).toBeGreaterThanOrEqual(barBox.y + barBox.height - 1);
+  });
+}
