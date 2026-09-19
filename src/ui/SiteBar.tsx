@@ -28,6 +28,14 @@ const PROFILES = [
   },
 ];
 
+const TOOLS = [
+  { label: en.toolsNavAll, href: `${SITE}/tools/`, current: false },
+  { label: en.toolsNavSsHelper, href: `${SITE}/tools/ssHelper/`, current: true },
+  { label: en.toolsNavDiagnostic, href: `${SITE}/tools/diagnostic/`, current: false },
+  { label: en.toolsNavCombine, href: `${SITE}/tools/combine/`, current: false },
+  { label: en.toolsNavMedian, href: `${SITE}/tools/median/`, current: false },
+];
+
 /** The same top bar as every page of vanioantunes.com; ssHelper lives under Tools. */
 export function SiteBar() {
   return (
@@ -67,6 +75,17 @@ export function SiteBar() {
           </ul>
         </nav>
       </div>
+      <nav className="site-subnav" aria-label={en.toolsNavLabel}>
+        <ul className="site-subnav__links">
+          {TOOLS.map(({ label, href, current }) => (
+            <li key={href}>
+              <a href={href} aria-current={current ? 'page' : undefined}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </header>
   );
 }

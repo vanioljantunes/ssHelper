@@ -12,9 +12,12 @@ const PACKAGES = [
   { name: 'nmaplots', href: 'https://github.com/vanioljantunes/nmaplots' },
 ];
 
-/** Phone budget: the top of the first tool heading, measured without scrolling. */
-const PHONE_HEADING_MAX = 360;
-const PHONE_ZOOM_HEADING_MAX = 520;
+/**
+ * Phone budget: the top of the first tool heading, measured without scrolling. Raised by 40px
+ * for the pinned tools sub-navigation (quickstart.md deviation 17).
+ */
+const PHONE_HEADING_MAX = 400;
+const PHONE_ZOOM_HEADING_MAX = 560;
 
 const authorCard = (page: Page) => page.getByRole('complementary', { name: /made by/i });
 const packages = (page: Page) => page.getByRole('region', { name: 'R packages by Vanio' });
@@ -116,6 +119,9 @@ test.describe('desktop', () => {
 
     // The sidebar stays in view while the page scrolls.
     await expect(nav).toBeInViewport();
+    // axe's target-size rule counts a field that is half hidden under the pinned bars as too
+    // small, so the audit runs with the page back at the top.
+    await page.evaluate(() => window.scrollTo(0, 0));
     await expectNoAxeViolations(page);
   });
 });
@@ -223,7 +229,7 @@ for (const [name, width, height] of [
     await page.mouse.wheel(0, 400);
     const barBox = (await bar.boundingBox())!;
     expect(Math.round(barBox.y)).toBe(0);
-    await expect(bar.getByRole('link', { name: 'Tools' })).toBeInViewport();
+    await expect(bar.getByRole('link', { name: 'Tools', exact: true })).toBeInViewport();
     // The sticky section nav sits under the bar, never behind it.
     const navBox = (await sectionNav(page).boundingBox())!;
     expect(navBox.y).toBeGreaterThanOrEqual(barBox.y + barBox.height - 1);

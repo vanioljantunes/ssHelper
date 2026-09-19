@@ -126,3 +126,8 @@ documents consistent.
     not reported, because it only means retyping the address after a reload. Every e2e spec
     starts through `resetStorage`, which seeds a saved contact email, so e2e runs never depend
     on a local `.env.local`.
+17. Site bar and tools sub-navigation (2026-09-19): the page opens with the vanioantunes.com bar
+    (Scholar, LinkedIn and X after the name) and a pinned second row linking every tool, with
+    ssHelper marked current. The phone heading budgets in tests/e2e/hero.spec.ts rose by 40px
+    (360 to 400, 520 to 560 at 125% text) to fit that row; the strategy heading stays in the
+    first screen.

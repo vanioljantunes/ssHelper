@@ -44,6 +44,23 @@ describe('SiteBar (same bar as vanioantunes.com)', () => {
     for (const link of links) expect(link).toHaveAttribute('target', '_blank');
   });
 
+  it('has a tools sub-navigation with ssHelper as the current tool', () => {
+    render(<SiteBar />);
+    const sub = within(screen.getByRole('banner')).getByRole('navigation', { name: 'Tools' });
+    const links = within(sub).getAllByRole('link');
+    expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['All tools', `${SITE}/tools/`],
+      ['ssHelper', `${SITE}/tools/ssHelper/`],
+      ['Diagnostic calculator', `${SITE}/tools/diagnostic/`],
+      ['Combine means and SDs', `${SITE}/tools/combine/`],
+      ['Median to mean', `${SITE}/tools/median/`],
+    ]);
+    expect(within(sub).getByRole('link', { name: 'ssHelper' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
   it('is the only banner and sits above the tool in the app', () => {
     render(<App countQuery={vi.fn()} lookupLabel={vi.fn()} defaultContactEmail="" />);
     const bar = screen.getByRole('banner');

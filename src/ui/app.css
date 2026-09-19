@@ -1053,7 +1053,13 @@ input {
 /* Site bar: the same top bar as vanioantunes.com (values match its site-bar.css). Pinned to the
    top; --site-bar-h is its height so the sticky section nav and anchor jumps sit below it. */
 :root {
-  --site-bar-h: 61px;
+  /* Main bar (61px) plus the tools sub-navigation (43px). */
+  --site-bar-h: 104px;
+}
+
+/* Scrolls triggered by focus or scrollIntoView stop below the pinned bars. */
+html {
+  scroll-padding-top: calc(var(--site-bar-h) + 0.5rem);
 }
 
 .site-bar {
@@ -1169,7 +1175,7 @@ input {
 /* Phones: one 48px row (photo and links) so the tool stays high; the name stays for screen readers. */
 @media (max-width: 719.98px) {
   :root {
-    --site-bar-h: 49px;
+    --site-bar-h: 88px;
   }
 
   .site-bar__inner {
@@ -1245,5 +1251,61 @@ input {
 
   .site-bar__social a {
     width: 26px;
+  }
+}
+
+/* Tools sub-navigation: same second row as the vanioantunes.com tools pages. */
+.site-subnav {
+  border-top: 1px solid #e3e7ec;
+  background: #f7f8fa;
+}
+
+.site-subnav__links {
+  display: flex;
+  gap: 0.25rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0.3rem 1.25rem;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.site-subnav__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  color: #545f6d;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.site-subnav__links a:hover {
+  color: #1c2430;
+  background: #e8f0fb;
+}
+
+.site-subnav__links a[aria-current='page'] {
+  color: #ffffff;
+  background: #164a90;
+}
+
+.site-subnav a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+@media (max-width: 719.98px) {
+  .site-subnav__links {
+    padding: 0.25rem 0.75rem;
+  }
+
+  .site-subnav__links a {
+    min-height: 30px;
+    padding-inline: 0.55rem;
+    font-size: 0.8125rem;
   }
 }

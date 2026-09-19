@@ -33,6 +33,12 @@ export const en = {
   siteBarProfiles: 'Profiles',
   siteBarProfileLink: '{network} (opens in a new tab)',
   networkScholar: 'Google Scholar',
+  toolsNavLabel: 'Tools',
+  toolsNavAll: 'All tools',
+  toolsNavSsHelper: 'ssHelper',
+  toolsNavDiagnostic: 'Diagnostic calculator',
+  toolsNavCombine: 'Combine means and SDs',
+  toolsNavMedian: 'Median to mean',
 
   sectionNavLabel: 'Page sections',
   sectionNavAbout: 'About',
