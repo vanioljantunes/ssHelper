@@ -1198,7 +1198,23 @@ input {
   }
 
   .site-bar__id {
+    flex: none;
     gap: 0.25rem;
+  }
+
+  /* Never a second row: with large text the links scroll sideways inside the bar. */
+  .site-bar__inner > nav {
+    min-width: 0;
+  }
+
+  .site-bar__links {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-bar__links a {
+    white-space: nowrap;
   }
 
   .site-bar__social a {
