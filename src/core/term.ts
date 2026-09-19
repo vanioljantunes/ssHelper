@@ -40,6 +40,23 @@ export function commitTerm(raw: string): string | null {
   return body + tag;
 }
 
+/** Field tags offered by the + control on each term (FR-027). */
+export const FIELD_TAGS = ['[tiab]', '[Mesh]'] as const;
+
+/** Replaces the trailing field tag; an empty tag removes it. Quotes are kept. */
+export function withTag(text: string, tag: string): string {
+  return splitTag(text).body + tag;
+}
+
+/**
+ * The words a researcher edits (FR-028): the body without its wrapping quotes and without the
+ * field tag. Quotes are never typed by hand; commitTerm puts them back by the space rule.
+ */
+export function editableBody(text: string): string {
+  const { body } = splitTag(text);
+  return isWrappedInQuotes(body) ? body.slice(1, -1) : body;
+}
+
 /** Removes the wrapping quotes of the body and keeps the tag. */
 export function unquoteTerm(text: string): string {
   const { body, tag } = splitTag(text);

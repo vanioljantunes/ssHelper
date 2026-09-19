@@ -10,6 +10,7 @@ export interface ArmHandlers {
   onEditTerm: (armId: string, termId: string, raw: string) => void;
   onRemoveTerm: (armId: string, termId: string) => void;
   onUnquoteTerm: (armId: string, termId: string) => void;
+  onSetTermTag: (armId: string, termId: string, tag: string) => void;
 }
 
 export interface ArmRowProps extends ArmHandlers {
@@ -67,6 +68,7 @@ export function ArmRow({ arm, index, issues, ...handlers }: ArmRowProps) {
               describedBy={invalidTermIds.has(term.id) ? issuesId : undefined}
               onUnquote={() => handlers.onUnquoteTerm(arm.id, term.id)}
               onEdit={(raw) => handlers.onEditTerm(arm.id, term.id, raw)}
+              onSetTag={(tag) => handlers.onSetTermTag(arm.id, term.id, tag)}
               onRemove={() => handlers.onRemoveTerm(arm.id, term.id)}
             />
             <span className="operator">{en.or}</span>

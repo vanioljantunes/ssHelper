@@ -9,7 +9,8 @@ Single page. All visible strings come from `src/i18n/en.ts`.
 2. Arms editor: arms stacked vertically; an "AND" label between consecutive arms; "Add arm"
    button below the last arm.
 3. Search panel: live query preview (monospace, wraps), "Search" button, both counts after a
-   run, PubMed warnings if any, and a notice that counts reflect PubMed at run time (FR-017).
+   run, and a notice that counts reflect PubMed at run time (FR-017). PubMed warnings are not
+   shown (FR-029).
 4. History table.
 
 ## Arm row
@@ -26,7 +27,10 @@ Single page. All visible strings come from `src/i18n/en.ts`.
 | Type in input, press Enter | `commitTerm`; term box added before the input; focus stays in input |
 | Enter on empty input | Nothing |
 | Click a quotation mark of a quoted term | `unquoteTerm`; no edit mode. Quote marks are separate clickable elements named "Remove quotes" |
-| Click term text | Edit mode: the text becomes an input with the text selected |
+| Click term text | Edit mode: only the words become an input (no quotes, no tag), selected (FR-028) |
+| Enter in edit mode on a tagged term | Quotes re-applied by the space rule; the tag is kept |
+| + control on a term | Opens [tiab] and [Mesh]; choosing one appends it (FR-027) |
+| x on a field tag | Removes only the tag; the + control returns |
 | Enter in edit mode | `commitTerm` re-applied; empty text removes the term |
 | Escape in edit mode | Cancel edit |
 | Remove control (x) on a term | Term and its neighbouring "OR" removed |

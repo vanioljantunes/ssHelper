@@ -1,5 +1,5 @@
 import { newId } from './id';
-import { commitTerm, unquoteTerm, validateTerm } from './term';
+import { commitTerm, unquoteTerm, validateTerm, withTag } from './term';
 import type { Arm, Draft, Issue, Strategy } from './types';
 
 export const DEFAULT_ARM_COUNT = 3;
@@ -58,6 +58,21 @@ export function removeTerm(strategy: Strategy, armId: string, termId: string): S
   return updateArm(strategy, armId, (arm) => ({
     ...arm,
     terms: arm.terms.filter((term) => term.id !== termId),
+  }));
+}
+
+/** Sets or clears (empty tag) the field tag of one term (FR-027). */
+export function setTermTag(
+  strategy: Strategy,
+  armId: string,
+  termId: string,
+  tag: string,
+): Strategy {
+  return updateArm(strategy, armId, (arm) => ({
+    ...arm,
+    terms: arm.terms.map((term) =>
+      term.id === termId ? { ...term, text: withTag(term.text, tag) } : term,
+    ),
   }));
 }
 

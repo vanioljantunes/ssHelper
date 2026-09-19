@@ -119,9 +119,6 @@ test.describe('desktop', () => {
 
     // The sidebar stays in view while the page scrolls.
     await expect(nav).toBeInViewport();
-    // axe's target-size rule counts a field that is half hidden under the pinned bars as too
-    // small, so the audit runs with the page back at the top.
-    await page.evaluate(() => window.scrollTo(0, 0));
     await expectNoAxeViolations(page);
   });
 });

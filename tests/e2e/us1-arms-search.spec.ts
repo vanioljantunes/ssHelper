@@ -47,7 +47,7 @@ test('scenarios 2-7: build, unquote, requote, auto-commit, and get both counts',
   await expect(arm(page, 1).getByRole('textbox', { name: /Edit term/ })).toHaveCount(0);
 
   // 5
-  await terms(page, 1).nth(1).getByRole('button', { name: 'cardiac failure' }).click();
+  await terms(page, 1).nth(1).getByRole('button', { name: 'Edit term cardiac failure' }).click();
   await expect(arm(page, 1).getByRole('textbox', { name: /Edit term/ })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(terms(page, 1).nth(1)).toHaveAttribute('data-text', '"cardiac failure"');
@@ -138,13 +138,19 @@ test('accessibility: keyboard-only strategy entry and search with visible focus'
   await expect(input(page, 2)).toBeFocused();
   await page.keyboard.type('diabetes');
 
-  // Shift+Tab back to arm 1 term controls: remove, closing quote, text, opening quote.
+  // Shift+Tab back to arm 1 term controls: remove, add field tag, closing quote, text.
   await input(page, 1).focus();
   await page.keyboard.press('Shift+Tab');
   await expect(terms(page, 1).getByRole('button', { name: 'Remove term' })).toBeFocused();
   await page.keyboard.press('Shift+Tab');
+  await expect(
+    terms(page, 1).getByRole('button', { name: 'Add a field tag to heart failure' }),
+  ).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(terms(page, 1).getByRole('button', { name: 'heart failure' })).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(
+    terms(page, 1).getByRole('button', { name: 'Edit term heart failure' }),
+  ).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(arm(page, 1).getByRole('textbox', { name: /Edit term/ })).toBeFocused();
   await page.keyboard.press('Escape');

@@ -666,6 +666,10 @@ input {
   color: var(--muted);
   min-width: 24px;
   padding: 0.15rem 0.45rem;
+  /* Divider so the term's own remove control reads apart from a tag's x. */
+  margin-left: 0.15rem;
+  border-left: 1px solid var(--border);
+  border-radius: 0 3px 3px 0;
 }
 
 .term input {
@@ -674,6 +678,71 @@ input {
   border: none;
   background: var(--surface);
   min-width: 8rem;
+}
+
+/* Quotes shown while the words are edited: visible, never editable (FR-028). */
+.term .quote--static {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.15rem;
+}
+
+/* Field tag controls (FR-027): + opens [tiab] / [Mesh]; a set tag has its own x. */
+.term .add-tag {
+  min-width: 24px;
+  min-height: 24px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.term .add-tag[aria-expanded='true'] {
+  background: var(--accent-tint);
+}
+
+.term-tag-add {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tag-menu {
+  display: inline-flex;
+  gap: 0.2rem;
+  margin: 0 0.15rem;
+}
+
+.tag-menu button {
+  min-height: 24px;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.tag-menu button:hover {
+  background: var(--accent-tint);
+}
+
+.term-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.1rem;
+  padding-left: 0.35rem;
+  border-radius: 999px;
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+.term .term-tag-remove {
+  min-width: 24px;
+  min-height: 24px;
+  color: var(--muted);
+}
+
+.term button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
 }
 
 .term-input {

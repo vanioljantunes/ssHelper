@@ -28,6 +28,7 @@ import {
   setPending,
   toArmTerms,
   toDraft,
+  setTermTag,
   unquoteTermById,
   validateStrategy,
 } from '../core/strategy';
@@ -267,6 +268,9 @@ export function App({
                 onEditTerm={(armId, termId, raw) => update((s) => editTerm(s, armId, termId, raw))}
                 onRemoveTerm={(armId, termId) => update((s) => removeTerm(s, armId, termId))}
                 onUnquoteTerm={(armId, termId) => update((s) => unquoteTermById(s, armId, termId))}
+                onSetTermTag={(armId, termId, tag) =>
+                  update((s) => setTermTag(s, armId, termId, tag))
+                }
               />
             </section>
             <section className="panel" id="search" tabIndex={-1} aria-labelledby="search-heading">

@@ -199,13 +199,12 @@ describe('Search panel (contracts/ui.md)', () => {
     expect(within(results).getByTestId('meta-result-count')).toHaveTextContent('Error');
   });
 
-  it('lists PubMed warnings', async () => {
+  it('does not show PubMed warnings (FR-029)', async () => {
     const { user, input, searchButton } = renderApp(async () => ok(0, ['"zzqx qq"']));
     await user.type(input(1), 'zzqx qq{Enter}');
     await user.click(searchButton());
     await screen.findByTestId('search-results');
-    expect(screen.getByText('PubMed warnings')).toBeInTheDocument();
-    expect(screen.getByText('"zzqx qq"')).toBeInTheDocument();
+    expect(screen.queryByText('PubMed warnings')).toBeNull();
   });
 
   it('announces results in the polite live region', async () => {

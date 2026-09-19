@@ -55,6 +55,10 @@ export const en = {
   removeTerm: 'Remove term',
   quoteMark: '"',
   removeTermSymbol: 'x',
+  addTag: 'Add a field tag to {term}',
+  addTagSymbol: '+',
+  addTagOption: 'Add {tag} to {term}',
+  removeTag: 'Remove {tag} from {term}',
 
   issueUnbalancedParentheses: 'Term {term} has unbalanced parentheses.',
   issueUnbalancedQuotes: 'Term {term} has an odd number of quotation marks.',
@@ -92,7 +96,6 @@ export const en = {
   results: 'Results',
   resultsMeta: 'Results + meta-analysis',
   error: 'Error',
-  warningsHeading: 'PubMed warnings',
   bothFailed: 'Both PubMed requests failed. No history row was saved.',
   runTimeNotice:
     'Counts come from PubMed at the time of the run and can change as PubMed is updated. They help you develop a strategy; they do not show that it is complete and do not replace peer review of the search.',

@@ -256,6 +256,16 @@ confirm the rows are still there.
   24x24 px, and a visible focus outline; the icons are inline SVG with `aria-hidden="true"` (no
   icon library). Below 720px wide the card stacks under the intro. The hero passes axe at
   desktop and 390px widths.
+- **FR-027** (added 2026-09-19): Each committed term MUST offer a "+" control (accessible name
+  "Add a field tag to {words}") that opens the field tags [tiab] and [Mesh]; choosing one appends
+  it to the term (replacing any trailing tag). A tagged term shows the tag with its own remove
+  control ("Remove {tag} from {words}") that deletes only the tag; the "+" control shows again
+  once the tag is gone. Escape closes the options without a change.
+- **FR-028** (added 2026-09-19): Editing a term MUST expose only its words: no wrapping
+  quotation marks and no field tag. On commit the quotation rule of FR-003 decides the quotes
+  from the edited words (a space adds them, none drops them) and the field tag is kept.
+- **FR-029** (added 2026-09-19): The search panel MUST NOT show PubMed's warnings (phrases not
+  found, ignored terms). Counts, errors and the run-time notice are unchanged.
 
 ### Key Entities
 

@@ -58,16 +58,6 @@ export function SearchPanel({
   else if (isEmpty) hint = en.needTerm;
   else if (hasIssues) hint = en.fixIssues;
 
-  const warnings = last
-    ? Array.from(
-        new Set(
-          [last.result, last.metaResult].flatMap((outcome) =>
-            outcome.status === 'ok' ? outcome.warnings : [],
-          ),
-        ),
-      )
-    : [];
-
   return (
     <div>
       <span className="label" id="query-preview-label">
@@ -137,16 +127,6 @@ export function SearchPanel({
               <CountValue outcome={last.metaResult} testId="meta-result-count" />
             </div>
           </dl>
-          {warnings.length > 0 && (
-            <div className="warnings">
-              <h3>{en.warningsHeading}</h3>
-              <ul>
-                {warnings.map((warning) => (
-                  <li key={warning}>{warning}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       )}
       <p className="notice">{en.runTimeNotice}</p>

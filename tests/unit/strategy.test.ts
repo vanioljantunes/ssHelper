@@ -11,6 +11,7 @@ import {
   removeArm,
   removeTerm,
   setPending,
+  setTermTag,
   toArmTerms,
   toDraft,
   unquoteTermById,
@@ -167,5 +168,19 @@ describe('strategy operations', () => {
 
   it('fromDraft with no arms gives one empty arm', () => {
     expect(fromDraft({ arms: [] }).arms).toHaveLength(1);
+  });
+});
+
+describe('setTermTag (FR-027)', () => {
+  it('sets and clears the field tag of one term', () => {
+    const s = withTerms(['"heart failure"', 'diabetes']);
+    const id = armId(s, 0);
+    const termId = s.arms[0]!.terms[0]!.id;
+    const tagged = setTermTag(s, id, termId, '[tiab]');
+    expect(toArmTerms(tagged)[0]).toEqual(['"heart failure"[tiab]', 'diabetes']);
+    expect(toArmTerms(setTermTag(tagged, id, termId, ''))[0]).toEqual([
+      '"heart failure"',
+      'diabetes',
+    ]);
   });
 });

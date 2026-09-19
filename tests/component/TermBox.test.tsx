@@ -73,14 +73,14 @@ describe('TermBox interactions (contracts/ui.md)', () => {
     await user.click(
       within(arm(1)).getAllByRole('button', { name: 'Remove quotes' })[0] as HTMLElement,
     );
-    await user.click(within(arm(1)).getByRole('button', { name: 'cardiac failure' }));
+    await user.click(within(arm(1)).getByRole('button', { name: 'Edit term cardiac failure' }));
     const edit = within(arm(1)).getByRole('textbox', { name: 'Edit term cardiac failure' });
     expect(edit).toHaveFocus();
     expect(edit).toHaveValue('cardiac failure');
     await user.keyboard('{Enter}');
     expect(termTexts(1)).toEqual(['"cardiac failure"']);
 
-    await user.click(within(arm(1)).getByRole('button', { name: 'cardiac failure' }));
+    await user.click(within(arm(1)).getByRole('button', { name: 'Edit term cardiac failure' }));
     const edit2 = within(arm(1)).getByRole('textbox', { name: /Edit term/ });
     await user.clear(edit2);
     await user.type(edit2, 'heart{Enter}');
@@ -90,7 +90,7 @@ describe('TermBox interactions (contracts/ui.md)', () => {
   it('an empty edit removes the term', async () => {
     const { user, input, arm, termTexts } = renderApp();
     await user.type(input(1), 'a{Enter}b{Enter}');
-    await user.click(within(arm(1)).getByRole('button', { name: 'a' }));
+    await user.click(within(arm(1)).getByRole('button', { name: 'Edit term a' }));
     const edit = within(arm(1)).getByRole('textbox', { name: /Edit term/ });
     await user.clear(edit);
     await user.keyboard('{Enter}');
@@ -101,7 +101,7 @@ describe('TermBox interactions (contracts/ui.md)', () => {
   it('Escape cancels the edit', async () => {
     const { user, input, arm, termTexts } = renderApp();
     await user.type(input(1), 'diabetes{Enter}');
-    await user.click(within(arm(1)).getByRole('button', { name: 'diabetes' }));
+    await user.click(within(arm(1)).getByRole('button', { name: 'Edit term diabetes' }));
     const edit = within(arm(1)).getByRole('textbox', { name: /Edit term/ });
     await user.clear(edit);
     await user.type(edit, 'changed{Escape}');
@@ -127,6 +127,69 @@ describe('TermBox interactions (contracts/ui.md)', () => {
   });
 });
 
+describe('quotes are never edited by hand (FR-028)', () => {
+  it('edits only the words; the space rule puts the quotes back or drops them', async () => {
+    const { user, input, arm, termTexts } = renderApp();
+    await user.type(input(1), 'heart failure{Enter}');
+    await user.click(within(arm(1)).getByRole('button', { name: 'Edit term heart failure' }));
+    const edit = within(arm(1)).getByRole('textbox', { name: /Edit term/ });
+    expect(edit).toHaveValue('heart failure');
+    await user.clear(edit);
+    await user.type(edit, 'cardiac arrest{Enter}');
+    expect(termTexts(1)).toEqual(['"cardiac arrest"']);
+
+    await user.click(within(arm(1)).getByRole('button', { name: 'Edit term cardiac arrest' }));
+    const edit2 = within(arm(1)).getByRole('textbox', { name: /Edit term/ });
+    await user.clear(edit2);
+    await user.type(edit2, 'arrest{Enter}');
+    expect(termTexts(1)).toEqual(['arrest']);
+  });
+
+  it('keeps the field tag while the words are edited', async () => {
+    const { user, input, arm, termTexts } = renderApp();
+    await user.type(input(1), 'heart failure[[tiab]{Enter}');
+    await user.click(within(arm(1)).getByRole('button', { name: 'Edit term heart failure' }));
+    const edit = within(arm(1)).getByRole('textbox', { name: /Edit term/ });
+    expect(edit).toHaveValue('heart failure');
+    await user.clear(edit);
+    await user.type(edit, 'cardiac failure{Enter}');
+    expect(termTexts(1)).toEqual(['"cardiac failure"[tiab]']);
+  });
+});
+
+describe('field tag controls (FR-027)', () => {
+  it('the + button adds [tiab] or [Mesh]; the tag has its own remove button', async () => {
+    const { user, input, arm, termTexts } = renderApp();
+    await user.type(input(1), 'heart failure{Enter}');
+    const add = within(arm(1)).getByRole('button', { name: 'Add a field tag to heart failure' });
+    expect(add).toHaveAttribute('aria-expanded', 'false');
+    await user.click(add);
+    expect(add).toHaveAttribute('aria-expanded', 'true');
+    await user.click(within(arm(1)).getByRole('button', { name: 'Add [Mesh] to heart failure' }));
+    expect(termTexts(1)).toEqual(['"heart failure"[Mesh]']);
+    expect(within(arm(1)).queryByRole('button', { name: /Add a field tag/ })).toBeNull();
+
+    await user.click(
+      within(arm(1)).getByRole('button', { name: 'Remove [Mesh] from heart failure' }),
+    );
+    expect(termTexts(1)).toEqual(['"heart failure"']);
+    await user.click(
+      within(arm(1)).getByRole('button', { name: 'Add a field tag to heart failure' }),
+    );
+    await user.click(within(arm(1)).getByRole('button', { name: 'Add [tiab] to heart failure' }));
+    expect(termTexts(1)).toEqual(['"heart failure"[tiab]']);
+  });
+
+  it('Escape closes the tag options without adding a tag', async () => {
+    const { user, input, arm, termTexts } = renderApp();
+    await user.type(input(1), 'diabetes{Enter}');
+    await user.click(within(arm(1)).getByRole('button', { name: 'Add a field tag to diabetes' }));
+    await user.keyboard('{Escape}');
+    expect(within(arm(1)).queryByRole('button', { name: 'Add [tiab] to diabetes' })).toBeNull();
+    expect(termTexts(1)).toEqual(['diabetes']);
+  });
+});
+
 describe('TermBox rendering', () => {
   it('renders the tag after the closing quote and marks invalid terms', () => {
     render(
@@ -135,12 +198,13 @@ describe('TermBox rendering', () => {
         invalid
         onUnquote={() => {}}
         onEdit={() => {}}
+        onSetTag={() => {}}
         onRemove={() => {}}
       />,
     );
     const box = screen.getByTestId('term');
     expect(box).toHaveTextContent('"heart failure"[tiab]');
     expect(box).toHaveClass('invalid');
-    expect(screen.getByRole('button', { name: 'heart failure[tiab]' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit term heart failure' })).toBeInTheDocument();
   });
 });

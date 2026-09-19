@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { commitTerm, isQuoted, splitTag, unquoteTerm, validateTerm } from '../../src/core/term';
+import {
+  commitTerm,
+  editableBody,
+  FIELD_TAGS,
+  isQuoted,
+  splitTag,
+  unquoteTerm,
+  validateTerm,
+  withTag,
+} from '../../src/core/term';
 
 describe('commitTerm (contracts/query-builder.md)', () => {
   const rows: [string, string | null][] = [
@@ -89,5 +98,27 @@ describe('helpers', () => {
     expect(isQuoted('"heart failure"[tiab]')).toBe(true);
     expect(isQuoted('heart failure')).toBe(false);
     expect(isQuoted('"')).toBe(false);
+  });
+});
+
+describe('field tags (FR-027)', () => {
+  it('offers [tiab] and [Mesh]', () => {
+    expect(FIELD_TAGS).toEqual(['[tiab]', '[Mesh]']);
+  });
+
+  it('adds, replaces and removes the trailing tag and keeps the quotes', () => {
+    expect(withTag('"heart failure"', '[tiab]')).toBe('"heart failure"[tiab]');
+    expect(withTag('"heart failure"[tiab]', '[Mesh]')).toBe('"heart failure"[Mesh]');
+    expect(withTag('"heart failure"[tiab]', '')).toBe('"heart failure"');
+    expect(withTag('diabetes', '[Mesh]')).toBe('diabetes[Mesh]');
+  });
+});
+
+describe('editableBody (FR-028)', () => {
+  it('drops the wrapping quotes and the tag so only the words are edited', () => {
+    expect(editableBody('"heart failure"[tiab]')).toBe('heart failure');
+    expect(editableBody('"heart failure"')).toBe('heart failure');
+    expect(editableBody('diabetes[Mesh]')).toBe('diabetes');
+    expect(editableBody('diabetes')).toBe('diabetes');
   });
 });
