@@ -27,6 +27,23 @@ describe('SiteBar (same bar as vanioantunes.com)', () => {
     );
   });
 
+  it('shows Google Scholar, LinkedIn and X right after the name, opening in a new tab', () => {
+    render(<SiteBar />);
+    const profiles = within(screen.getByRole('banner')).getByRole('list', { name: 'Profiles' });
+    const links = within(profiles).getAllByRole('link');
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      'https://scholar.google.com/citations?user=JOZkTg0AAAAJ&hl=en',
+      'https://www.linkedin.com/in/vanio-antunes/',
+      'https://x.com/VanioAntunes',
+    ]);
+    expect(links.map((link) => link.getAttribute('aria-label'))).toEqual([
+      'Google Scholar (opens in a new tab)',
+      'LinkedIn (opens in a new tab)',
+      'X (opens in a new tab)',
+    ]);
+    for (const link of links) expect(link).toHaveAttribute('target', '_blank');
+  });
+
   it('is the only banner and sits above the tool in the app', () => {
     render(<App countQuery={vi.fn()} lookupLabel={vi.fn()} defaultContactEmail="" />);
     const bar = screen.getByRole('banner');

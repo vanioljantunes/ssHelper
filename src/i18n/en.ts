@@ -30,6 +30,9 @@ export const en = {
   siteBarAbout: 'Who am I',
   siteBarTools: 'Tools',
   siteBarPackages: 'R packages',
+  siteBarProfiles: 'Profiles',
+  siteBarProfileLink: '{network} (opens in a new tab)',
+  networkScholar: 'Google Scholar',
 
   sectionNavLabel: 'Page sections',
   sectionNavAbout: 'About',
