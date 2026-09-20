@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from 'react';
-import type { CountOutcome, SearchRun } from '../core/types';
-import { en } from '../i18n/en';
+import type { CountOutcome, RunStudies, SearchRun } from '../core/types';
+import { en, t } from '../i18n/en';
 import { pubmedSearchUrl } from '../pubmed/links';
 
 export interface HistoryTableProps {
@@ -50,6 +50,43 @@ function CountCell({
       <span id={reasonId} className="visually-hidden">
         {outcome.message}
       </span>
+    </td>
+  );
+}
+
+/** One line per outcome (FR-030): a check when every study was retrieved, names otherwise. */
+function StudiesCell({ studies, runId }: { studies: RunStudies | undefined; runId: string }) {
+  if (studies === undefined || studies.total === 0) {
+    return (
+      <td className="studies-cell" data-testid={`history-studies-${runId}`}>
+        <span className="hint">{en.historyStudiesNone}</span>
+      </td>
+    );
+  }
+  const complete = studies.notFound.length === 0 && studies.unresolved.length === 0;
+  return (
+    <td className="studies-cell" data-testid={`history-studies-${runId}`}>
+      {complete ? (
+        <span className="studies-complete">
+          <span aria-hidden="true">{en.historyStudiesCheck}</span>{' '}
+          {studies.total === 1
+            ? en.historyStudiesAllFoundOne
+            : t(en.historyStudiesAllFound, { total: studies.total })}
+        </span>
+      ) : (
+        <>
+          {studies.notFound.length > 0 && (
+            <span className="studies-missing">
+              {t(en.historyStudiesNotFound, { list: studies.notFound.join(en.listSeparator) })}
+            </span>
+          )}
+          {studies.unresolved.length > 0 && (
+            <span className="hint">
+              {t(en.historyStudiesUnresolved, { list: studies.unresolved.join(en.listSeparator) })}
+            </span>
+          )}
+        </>
+      )}
     </td>
   );
 }
@@ -122,6 +159,7 @@ export function HistoryTable({
               <th scope="col">{en.historyStrategy}</th>
               <th scope="col">{en.historyResults}</th>
               <th scope="col">{en.historyResultsMeta}</th>
+              <th scope="col">{en.historyStudies}</th>
               <th scope="col">{en.historyActions}</th>
             </tr>
           </thead>
@@ -143,6 +181,7 @@ export function HistoryTable({
                 </td>
                 <CountCell outcome={run.result} runId={run.id} label="result" />
                 <CountCell outcome={run.metaResult} runId={run.id} label="meta" />
+                <StudiesCell studies={run.studies} runId={run.id} />
                 <td>
                   <div className="row-actions">
                     <button type="button" onClick={() => load(run)}>

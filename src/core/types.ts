@@ -31,6 +31,17 @@ export interface ArmSnapshot {
   terms: string[];
 }
 
+/**
+ * What the known studies said about one run (FR-030). `notFound` and `unresolved` hold study
+ * names; a run with `found === total` and both lists empty was fully retrieved.
+ */
+export interface RunStudies {
+  total: number;
+  found: number;
+  notFound: string[];
+  unresolved: string[];
+}
+
 export interface SearchRun {
   id: string;
   createdAt: string;
@@ -39,6 +50,8 @@ export interface SearchRun {
   metaQuery: string;
   result: CountOutcome;
   metaResult: CountOutcome;
+  /** Known-study outcome, attached once the checks finish. Missing in runs saved before FR-030. */
+  studies?: RunStudies;
 }
 
 export interface DraftArm {

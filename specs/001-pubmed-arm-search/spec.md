@@ -266,6 +266,11 @@ confirm the rows are still there.
   from the edited words (a space adds them, none drops them) and the field tag is kept.
 - **FR-029** (added 2026-09-19): The search panel MUST NOT show PubMed's warnings (phrases not
   found, ignored terms). Counts, errors and the run-time notice are unchanged.
+- **FR-030** (added 2026-09-19): A history row MUST record the known-study outcome of that run:
+  the names of the studies the strategy did not retrieve, and separately the ones that could not
+  be resolved (DOI not in PubMed, not a DOI, or the check failed). When every checked study was
+  retrieved the row shows a check mark instead of a list. A run with no study checked shows that
+  no studies were checked; rows saved before this requirement keep that state.
 
 ### Key Entities
 

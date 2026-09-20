@@ -54,6 +54,7 @@ describe('HistoryTable (contracts/ui.md)', () => {
       'Search strategy',
       'Results',
       'Results + meta-analysis',
+      'Known studies',
       'Actions',
     ]);
   });
@@ -179,6 +180,7 @@ describe('App history wiring (T038)', () => {
     const historyStore = {
       list: () => [],
       add: () => ({ ok: false as const, reason: 'quota' as const }),
+      attachStudies: () => ({ ok: true as const }),
       remove: () => ({ ok: true as const }),
       clear: () => ({ ok: true as const }),
     };
@@ -220,3 +222,28 @@ describe('App history wiring (T038)', () => {
     expect(screen.getByRole('textbox', { name: 'New term for arm 3' })).toHaveValue('pending text');
   });
 });
+
+describe('known studies column (FR-030)', () => {
+  it('shows a check when every study was found, and the names when some were not', () => {
+    const allFound: SearchRun = {
+      ...newer,
+      id: 'all-found',
+      studies: { total: 3, found: 3, notFound: [], unresolved: [] },
+    };
+    const missing: SearchRun = {
+      ...older,
+      id: 'missing',
+      studies: { total: 3, found: 1, notFound: ['Brown, 2019'], unresolved: ['Chen, 2020'] },
+    };
+    const none: SearchRun = { ...older, id: 'no-studies' };
+    setup({ runs: [allFound, missing, none] });
+
+    expect(screen.getByRole('columnheader', { name: 'Known studies' })).toBeInTheDocument();
+    const cell = (id: string) => screen.getByTestId(`history-studies-${id}`);
+    expect(cell('all-found')).toHaveTextContent('All 3 studies found');
+    expect(cell('missing')).toHaveTextContent('Not found: Brown, 2019');
+    expect(cell('missing')).toHaveTextContent('Unresolved: Chen, 2020');
+    expect(cell('no-studies')).toHaveTextContent('No studies checked');
+  });
+});
+

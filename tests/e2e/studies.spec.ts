@@ -160,3 +160,29 @@ test('labels come from Crossref after a search and can be edited', async ({ page
   await expect(nameInput(page, 2)).toHaveValue('');
   await expectNoAxeViolations(page);
 });
+
+test('the history row records the studies not found, and a check when none is missing', async ({
+  page,
+}) => {
+  await mockPubmed(page, { count: 120, metaCount: 9, countFor });
+  await addTerm(page, 'heart failure');
+  await doiInput(page, 1).fill(FOUND);
+  await doiInput(page, 2).fill(MISSED);
+  await doiInput(page, 3).fill(ABSENT);
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+
+  const firstRow = historyRows(page).first();
+  await expect(firstRow).toContainText(`Not found: ${MISSED}`);
+  await expect(firstRow).toContainText(`Unresolved: ${ABSENT}`);
+
+  // Kept after a reload, and a run where every study is retrieved shows the check instead.
+  await page.reload();
+  await expect(historyRows(page).first()).toContainText(`Not found: ${MISSED}`);
+  await doiInput(page, 2).fill('');
+  await doiInput(page, 3).fill('');
+  await addTerm(page, 'cardiac failure');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(historyRows(page)).toHaveCount(2);
+  await expect(historyRows(page).first()).toContainText('The study was found');
+  await expectNoAxeViolations(page);
+});

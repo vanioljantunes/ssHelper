@@ -53,11 +53,15 @@ Search auto-commits pending text in all arms before validating.
 
 ## History table
 
-Columns: Date and time | Search strategy | Results | Results + meta-analysis | Actions.
+Columns: Date and time | Search strategy | Results | Results + meta-analysis | Known studies |
+Actions.
 
 - Date and time in local time per browser locale, to the minute (e.g. `16/09/2026 14:05`).
 - Counts with thousands separators; errors shown as "Error" with the reason available on hover
   and to screen readers.
+- Known studies (FR-030): a check mark plus "All {total} studies found" when every checked study
+  was retrieved; otherwise "Not found: {names}" and, when present, "Unresolved: {names}". A run
+  with no study checked shows "No studies checked".
 - Row actions: Load (asks for confirmation if the current draft has terms), Copy (copies
   `query`, shows "Copied"), Delete.
 - "Clear history" button with a confirmation dialog.

@@ -8,10 +8,12 @@ import {
   applyAutoLabel,
   checkStudy,
   fromDraftStudies,
+  type LabelledCheck,
   normalizeDoi,
   removeStudy,
   setStudyInput,
   setStudyLabel,
+  summarizeStudyChecks,
   toDraftStudies,
 } from '../core/study';
 import {
@@ -137,11 +139,14 @@ export function App({
     }
   };
 
-  /** Checks every non-empty study box in order through the throttled countQuery (FR-023). */
-  const checkStudies = async (checkedQuery: string, list: Study[]) => {
+  /**
+   * Checks every non-empty study box in order through the throttled countQuery (FR-023), and
+   * returns the outcomes named as in the boxes so the run can record them (FR-030).
+   */
+  const checkStudies = async (checkedQuery: string, list: Study[]): Promise<LabelledCheck[]> => {
     labelStudies(list);
     const targets = list.filter((study) => study.input.trim() !== '');
-    if (targets.length === 0) return;
+    if (targets.length === 0) return [];
     setCheckingStudies(true);
     setStudyResults((current) => {
       const next = { ...current };
@@ -150,14 +155,17 @@ export function App({
       }
       return next;
     });
+    const checks: LabelledCheck[] = [];
     try {
       for (const study of targets) {
         const check = await checkStudy(checkedQuery, study.input, countQuery);
         setStudyResults((current) => ({ ...current, [study.id]: { input: study.input, check } }));
+        checks.push({ label: study.label.trim() || study.input.trim(), check });
       }
     } finally {
       setCheckingStudies(false);
     }
+    return checks;
   };
 
   /**
@@ -215,7 +223,11 @@ export function App({
         setAnnouncement(
           t(en.resultsAnnouncement, { count: formatCount(result), meta: formatCount(metaResult) }),
         );
-        await checkStudies(outcome.run.query, studies);
+        const checks = await checkStudies(outcome.run.query, studies);
+        if (checks.length > 0) {
+          track(history.attachStudies(outcome.run.id, summarizeStudyChecks(checks)));
+          setRuns(history.list());
+        }
       } else if (outcome.status === 'failed') {
         const { result, metaResult } = outcome.failure;
         setLast({ status: 'failed', result, metaResult });

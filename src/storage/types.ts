@@ -1,4 +1,4 @@
-import type { Draft, SearchRun } from '../core/types';
+import type { Draft, RunStudies, SearchRun } from '../core/types';
 
 export type SaveResult =
   { ok: true } | { ok: false; reason: 'quota' | 'unavailable' | 'duplicate' };
@@ -9,6 +9,8 @@ export interface HistoryStore {
   list(): SearchRun[];
   /** Appends a run; never replaces an existing one (duplicate ids are rejected). */
   add(run: SearchRun): SaveResult;
+  /** Attaches the known-study outcome to a saved run (FR-030); an unknown id is not added. */
+  attachStudies(id: string, studies: RunStudies): SaveResult;
   remove(id: string): SaveResult;
   clear(): SaveResult;
 }

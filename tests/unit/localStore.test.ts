@@ -333,3 +333,23 @@ describe('SettingsStore (localStorage, FR-025)', () => {
     ).toEqual({ ok: false, reason: 'quota' });
   });
 });
+
+describe('history studies (FR-030)', () => {
+  const summary = { total: 2, found: 1, notFound: ['Brown, 2019'], unresolved: [] };
+
+  it('attaches the study summary to a saved run and keeps it after a reload', () => {
+    const storage = new MemoryStorage();
+    const store = createLocalHistoryStore(storage);
+    store.add(run('r1', '2026-09-19T10:00:00.000Z'));
+    expect(store.attachStudies('r1', summary)).toEqual({ ok: true });
+    expect(store.list()[0]?.studies).toEqual(summary);
+    expect(createLocalHistoryStore(storage).list()[0]?.studies).toEqual(summary);
+  });
+
+  it('reports an unknown run instead of adding one', () => {
+    const store = createLocalHistoryStore(new MemoryStorage());
+    expect(store.attachStudies('missing', summary)).toEqual({ ok: false, reason: 'unavailable' });
+    expect(store.list()).toEqual([]);
+  });
+});
+

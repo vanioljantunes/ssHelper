@@ -83,9 +83,20 @@ function isCountOutcome(value: unknown): value is CountOutcome {
   );
 }
 
+function isRunStudies(value: unknown): boolean {
+  return (
+    isObject(value) &&
+    typeof value.total === 'number' &&
+    typeof value.found === 'number' &&
+    isStringArray(value.notFound) &&
+    isStringArray(value.unresolved)
+  );
+}
+
 function isSearchRun(value: unknown): value is SearchRun {
   return (
     isObject(value) &&
+    (value.studies === undefined || isRunStudies(value.studies)) &&
     typeof value.id === 'string' &&
     typeof value.createdAt === 'string' &&
     typeof value.query === 'string' &&
@@ -170,6 +181,11 @@ export function createLocalHistoryStore(storage: Storage | null = browserStorage
       if (runs.some((existing) => existing.id === run.id))
         return { ok: false, reason: 'duplicate' };
       return writeRuns([...runs, run]);
+    },
+    attachStudies(id, studies) {
+      const runs = readRuns();
+      if (!runs.some((run) => run.id === id)) return { ok: false, reason: 'unavailable' };
+      return writeRuns(runs.map((run) => (run.id === id ? { ...run, studies } : run)));
     },
     remove(id) {
       return writeRuns(readRuns().filter((run) => run.id !== id));

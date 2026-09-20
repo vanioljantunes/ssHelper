@@ -8,13 +8,14 @@ import {
   fromDraftStudies,
   normalizeDoi,
   removeStudy,
+  summarizeStudyChecks,
   setStudyInput,
   setStudyLabel,
   studyQuery,
   toDraftStudies,
   toStudyInputs,
 } from '../../src/core/study';
-import type { CountOutcome } from '../../src/core/types';
+import type { CountOutcome, StudyCheck } from '../../src/core/types';
 
 const ok = (count: number): CountOutcome => ({
   status: 'ok',
@@ -241,3 +242,64 @@ describe('study labels (FR-024)', () => {
     expect(applyAutoLabel(studies, 's1', 'Akcay, 2021', doi)).toEqual(studies);
   });
 });
+
+describe('summarizeStudyChecks (FR-030)', () => {
+  const at = '2026-09-19T10:00:00.000Z';
+  const found = (doi = '10.1/a'): StudyCheck => ({ status: 'found', doi, query: 'q', checkedAt: at });
+  const notFound = (doi = '10.1/b'): StudyCheck => ({
+    status: 'not_found',
+    doi,
+    query: 'q',
+    checkedAt: at,
+  });
+  const notInPubmed = (doi = '10.1/c'): StudyCheck => ({
+    status: 'not_in_pubmed',
+    doi,
+    query: 'q',
+    checkedAt: at,
+  });
+  const invalid = (): StudyCheck => ({ status: 'invalid', doi: null, query: 'q', checkedAt: at });
+  const failed = (doi = '10.1/d'): StudyCheck => ({
+    status: 'error',
+    doi,
+    query: 'q',
+    checkedAt: at,
+    message: 'boom',
+  });
+
+  it('counts the studies and lists the ones not found', () => {
+    expect(
+      summarizeStudyChecks([
+        { label: 'Akcay, 2021', check: found() },
+        { label: 'Brown, 2019', check: notFound() },
+        { label: 'Chen, 2020', check: found() },
+      ]),
+    ).toEqual({ total: 3, found: 2, notFound: ['Brown, 2019'], unresolved: [] });
+  });
+
+  it('lists studies that could not be resolved apart from the ones not found', () => {
+    expect(
+      summarizeStudyChecks([
+        { label: 'Akcay, 2021', check: notInPubmed() },
+        { label: 'Brown, 2019', check: invalid() },
+        { label: 'Chen, 2020', check: failed() },
+        { label: 'Diaz, 2018', check: notFound() },
+      ]),
+    ).toEqual({
+      total: 4,
+      found: 0,
+      notFound: ['Diaz, 2018'],
+      unresolved: ['Akcay, 2021', 'Brown, 2019', 'Chen, 2020'],
+    });
+  });
+
+  it('marks every study found when none is missing', () => {
+    expect(summarizeStudyChecks([{ label: 'Akcay, 2021', check: found() }])).toEqual({
+      total: 1,
+      found: 1,
+      notFound: [],
+      unresolved: [],
+    });
+  });
+});
+

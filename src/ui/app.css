@@ -904,6 +904,23 @@ input {
   white-space: nowrap;
 }
 
+.history-table td.studies-cell {
+  min-width: 10rem;
+}
+
+.studies-cell > * {
+  display: block;
+}
+
+.studies-complete {
+  color: var(--success);
+  white-space: nowrap;
+}
+
+.studies-missing {
+  color: var(--danger);
+}
+
 .row-actions {
   display: flex;
   gap: 0.3rem;

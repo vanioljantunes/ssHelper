@@ -1,5 +1,5 @@
 import { newId } from './id';
-import type { CountOutcome, DraftStudy, Study, StudyCheck } from './types';
+import type { CountOutcome, DraftStudy, RunStudies, Study, StudyCheck } from './types';
 
 export const DEFAULT_STUDY_COUNT = 3;
 
@@ -119,3 +119,26 @@ export function fromDraftStudies(saved: (string | DraftStudy)[] | undefined): St
       : createStudy(item.input, item.label, item.labelEdited),
   );
 }
+
+export interface LabelledCheck {
+  label: string;
+  check: StudyCheck;
+}
+
+/**
+ * Condenses the checks of one run for the history (FR-030). A study is Unresolved when the DOI
+ * could not be matched at all (not in PubMed, not a DOI, or the check failed), which never means
+ * the strategy missed it.
+ */
+export function summarizeStudyChecks(checks: LabelledCheck[]): RunStudies {
+  const notFound: string[] = [];
+  const unresolved: string[] = [];
+  let found = 0;
+  for (const { label, check } of checks) {
+    if (check.status === 'found') found += 1;
+    else if (check.status === 'not_found') notFound.push(label);
+    else unresolved.push(label);
+  }
+  return { total: checks.length, found, notFound, unresolved };
+}
+

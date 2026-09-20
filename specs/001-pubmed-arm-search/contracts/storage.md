@@ -8,6 +8,7 @@ Interfaces are the seam for the accounts feature (Supabase). UI depends only on 
 interface HistoryStore {
   list(): SearchRun[];            // newest first
   add(run: SearchRun): SaveResult;
+  attachStudies(id: string, studies: RunStudies): SaveResult;  // FR-030
   remove(id: string): SaveResult;
   clear(): SaveResult;
 }
@@ -35,6 +36,9 @@ Rules:
 - Writes catch `QuotaExceededError` and access errors and return `{ ok: false }`; the UI shows
   "History could not be saved in this browser."
 - `add` never replaces an existing run; duplicate ids are rejected.
+- `attachStudies` sets `studies` on a saved run and returns `{ ok: false, reason: 'unavailable' }`
+  for an unknown id; it never adds a run. `SearchRun.studies` is optional, so history saved before
+  FR-030 stays readable.
 - No secrets are ever written.
 - Accounts feature: a Supabase implementation of the same interfaces, plus a one-time import of
   `sshelper:v1:history` into the signed-in account.
