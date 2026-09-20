@@ -36,6 +36,8 @@ export const en = {
   toolsNavLabel: 'Tools',
   toolsNavAll: 'All tools',
   toolsNavSsHelper: 'ssHelper',
+  toolsNavTriageHelper: 'triageHelper',
+  toolsNavBeta: 'beta',
   toolsNavDiagnostic: 'Diagnostic calculator',
   toolsNavCombine: 'Combine means and SDs',
   toolsNavMedian: 'Median to mean',

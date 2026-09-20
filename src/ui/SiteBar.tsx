@@ -31,6 +31,12 @@ const PROFILES = [
 const TOOLS = [
   { label: en.toolsNavAll, href: `${SITE}/tools/`, current: false },
   { label: en.toolsNavSsHelper, href: `${SITE}/tools/ssHelper/`, current: true },
+  {
+    label: en.toolsNavTriageHelper,
+    href: `${SITE}/tools/triageHelper/`,
+    current: false,
+    beta: true,
+  },
   { label: en.toolsNavDiagnostic, href: `${SITE}/tools/diagnostic/`, current: false },
   { label: en.toolsNavCombine, href: `${SITE}/tools/combine/`, current: false },
   { label: en.toolsNavMedian, href: `${SITE}/tools/median/`, current: false },
@@ -77,10 +83,11 @@ export function SiteBar() {
       </div>
       <nav className="site-subnav" aria-label={en.toolsNavLabel}>
         <ul className="site-subnav__links">
-          {TOOLS.map(({ label, href, current }) => (
+          {TOOLS.map(({ label, href, current, beta }) => (
             <li key={href}>
               <a href={href} aria-current={current ? 'page' : undefined}>
                 {label}
+                {beta && <span className="site-bar__beta">{en.toolsNavBeta}</span>}
               </a>
             </li>
           ))}

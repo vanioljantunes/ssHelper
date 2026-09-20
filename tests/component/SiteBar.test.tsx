@@ -51,6 +51,7 @@ describe('SiteBar (same bar as vanioantunes.com)', () => {
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['All tools', `${SITE}/tools/`],
       ['ssHelper', `${SITE}/tools/ssHelper/`],
+      ['triageHelperbeta', `${SITE}/tools/triageHelper/`],
       ['Diagnostic calculator', `${SITE}/tools/diagnostic/`],
       ['Combine means and SDs', `${SITE}/tools/combine/`],
       ['Median to mean', `${SITE}/tools/median/`],
