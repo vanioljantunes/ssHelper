@@ -11,10 +11,12 @@ const ok = (count: number, warnings: string[] = []): CountOutcome => ({
   warnings,
 });
 
+const noRecords = async () => ({ status: 'ok' as const, records: [], total: 0 });
+
 function renderApp(countQuery: (query: string) => Promise<CountOutcome> = async () => ok(1)) {
   const user = userEvent.setup();
   const spy = vi.fn(countQuery);
-  render(<App countQuery={spy} />);
+  render(<App countQuery={spy} listRecords={noRecords} />);
   const arms = () => screen.getAllByRole('group', { name: /^Arm \d+$/ });
   const input = (n: number) => screen.getByRole('textbox', { name: `New term for arm ${n}` });
   const searchButton = () => screen.getByRole('button', { name: /^Search/ });
@@ -133,7 +135,7 @@ describe('Search panel (contracts/ui.md)', () => {
     expect(within(results).getByTestId('result-count').textContent).toBe(
       new Intl.NumberFormat().format(1234),
     );
-    expect(within(results).getByTestId('meta-result-count')).toHaveTextContent('12');
+    expect(screen.getByTestId('prior-count')).toHaveTextContent('12');
   });
 
   it('shows the loading state and blocks a duplicate run', async () => {
@@ -177,10 +179,11 @@ describe('Search panel (contracts/ui.md)', () => {
     await user.click(searchButton());
     const results = await screen.findByTestId('search-results');
     expect(within(results).getByTestId('result-count')).toHaveTextContent('0');
-    const meta = within(results).getByTestId('meta-result-count');
-    expect(meta).toHaveTextContent('Error');
-    expect(meta).not.toHaveTextContent(/\d/);
-    expect(within(results).getByText('PubMed is busy. Try again shortly.')).toBeInTheDocument();
+    // The meta-analysis count failed, so the prior section reports it instead of a number.
+    expect(screen.queryByTestId('prior-count')).toBeNull();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'PubMed is busy. Try again shortly.',
+    );
   });
 
   it('shows a message and no counts when both requests fail', async () => {
@@ -196,7 +199,7 @@ describe('Search panel (contracts/ui.md)', () => {
     ).toBeInTheDocument();
     const results = screen.getByTestId('search-results');
     expect(within(results).getByTestId('result-count')).toHaveTextContent('Error');
-    expect(within(results).getByTestId('meta-result-count')).toHaveTextContent('Error');
+    expect(screen.queryByTestId('prior-count')).toBeNull();
   });
 
   it('does not show PubMed warnings (FR-029)', async () => {
@@ -215,7 +218,7 @@ describe('Search panel (contracts/ui.md)', () => {
     await user.click(searchButton());
     await screen.findByTestId('search-results');
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Search finished. Results: 40. Results + meta-analysis: 3.',
+      'Search finished. Results: 40. Prior meta-analyses: 3.',
     );
   });
 });

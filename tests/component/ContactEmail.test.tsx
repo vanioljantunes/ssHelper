@@ -31,6 +31,7 @@ function renderApp({
   render(
     <App
       countQuery={countQuery}
+      listRecords={async () => ({ status: 'ok' as const, records: [], total: 0 })}
       lookupLabel={lookupLabel}
       settingsStore={settings.store}
       defaultContactEmail={defaultContactEmail}

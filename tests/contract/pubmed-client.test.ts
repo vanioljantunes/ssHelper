@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPubmedClient, ESEARCH_URL } from '../../src/pubmed/client';
+import { createPubmedClient, ESEARCH_URL, ESUMMARY_URL } from '../../src/pubmed/client';
 import type { Throttle } from '../../src/pubmed/throttle';
 
 const fixtureDir = resolve(__dirname, '../fixtures/pubmed');
@@ -292,5 +292,65 @@ describe('countQuery (contracts/pubmed-client.md)', () => {
     });
     await client.countQuery('x');
     expect(scheduled).toBe(2);
+  });
+});
+
+describe('listRecords (prior meta-analyses)', () => {
+  const idlist = fixture('list-idlist.json');
+  const summary = fixture('list-summary.json');
+
+  it('asks esearch for PMIDs sorted by publication date, then esummary for those PMIDs', async () => {
+    const { client, fetchFn } = setup([
+      async () => response(idlist),
+      async () => response(summary),
+    ]);
+    const outcome = await client.listRecords('(diabetes) AND ("meta-analysis")', 3);
+
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    const search = new URL(String(fetchFn.mock.calls[0]?.[0]));
+    expect(`${search.origin}${search.pathname}`).toBe(ESEARCH_URL);
+    expect(search.searchParams.get('retmax')).toBe('3');
+    expect(search.searchParams.get('sort')).toBe('pub_date');
+    expect(search.searchParams.get('email')).toBe(EMAIL);
+
+    const ids = new URL(String(fetchFn.mock.calls[1]?.[0]));
+    expect(`${ids.origin}${ids.pathname}`).toBe(ESUMMARY_URL);
+    expect(ids.searchParams.get('id')).toBe('42498088,41816957,42812849');
+    expect(ids.searchParams.get('db')).toBe('pubmed');
+
+    expect(outcome.status).toBe('ok');
+    if (outcome.status !== 'ok') return;
+    expect(outcome.total).toBe(26667);
+    expect(outcome.records.map((record) => record.pmid)).toEqual([
+      '42498088',
+      '41816957',
+      '42812849',
+    ]);
+    expect(outcome.records[0]).toMatchObject({ author: 'Hassanpour H', year: 2027, pmcid: null });
+    expect(outcome.records[2]?.pmcid).toBe('PMC13620861');
+  });
+
+  it('skips esummary when the search finds nothing', async () => {
+    const { client, fetchFn } = setup([async () => response(notFound)]);
+    const outcome = await client.listRecords('nothing here', 3);
+
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(outcome).toEqual({ status: 'ok', records: [], total: 0 });
+  });
+
+  it('reports a malformed summary as an invalid response', async () => {
+    const { client } = setup([async () => response(idlist), async () => response(malformed)]);
+    const outcome = await client.listRecords('(diabetes)', 3);
+
+    expect(outcome).toMatchObject({ status: 'error', kind: 'invalid_response' });
+  });
+
+  it('refuses to call PubMed without a contact email', async () => {
+    const fetchFn = vi.fn<FetchFn>();
+    const client = createPubmedClient({ fetchFn, email: '  ' });
+    const outcome = await client.listRecords('(diabetes)');
+
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect(outcome).toMatchObject({ status: 'error', kind: 'no_email' });
   });
 });

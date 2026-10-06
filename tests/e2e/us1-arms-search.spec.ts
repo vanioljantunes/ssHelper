@@ -62,7 +62,7 @@ test('scenarios 2-7: build, unquote, requote, auto-commit, and get both counts',
   // 7 (counts from the mocked PubMed; comparison with pubmed.ncbi.nlm.nih.gov is manual/live)
   const results = page.getByTestId('search-results');
   await expect(results.getByTestId('result-count')).toHaveText(/^2[^0-9]?014[^0-9]?896$/);
-  await expect(results.getByTestId('meta-result-count')).toHaveText(/^7[^0-9]?977$/);
+  await expect(page.getByTestId('prior-count')).toHaveText(/^7[^0-9]?977$/);
   expect(requested).toEqual([query, `${query} AND ("meta-analysis")`]);
 });
 
@@ -101,7 +101,7 @@ test('scenario 13: offline shows a message and no counts', async ({ page }) => {
   );
   const results = page.getByTestId('search-results');
   await expect(results.getByTestId('result-count')).toHaveText('Error');
-  await expect(results.getByTestId('meta-result-count')).toHaveText('Error');
+  await expect(page.getByTestId('prior-count')).toHaveCount(0);
 });
 
 test('accessibility: axe on empty, filled, invalid, and result states', async ({ page }) => {
@@ -157,8 +157,8 @@ test('accessibility: keyboard-only strategy entry and search with visible focus'
 
   await searchButton(page).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByTestId('meta-result-count')).toHaveText('3');
+  await expect(page.getByTestId('prior-count')).toHaveText('3');
   await expect(page.getByRole('status')).toHaveText(
-    'Search finished. Results: 42. Results + meta-analysis: 3.',
+    'Search finished. Results: 42. Prior meta-analyses: 3.',
   );
 });

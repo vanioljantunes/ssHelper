@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isValidContactEmail } from '../core/email';
 import { newId } from '../core/id';
-import { buildQuery } from '../core/query';
+import { defaultMinYear, yearOptions } from '../core/prior';
+import { buildQuery, withYearFloor } from '../core/query';
 import { runSearch } from '../core/run';
 import {
   addStudy,
@@ -37,7 +38,7 @@ import {
 import type { CountOutcome, SearchRun, Strategy, Study } from '../core/types';
 import { createAppCrossrefClient, type LabelOutcome } from '../crossref/client';
 import { en, t } from '../i18n/en';
-import { createAppPubmedClient } from '../pubmed/client';
+import { createAppPubmedClient, type RecordsOutcome } from '../pubmed/client';
 import {
   createLocalDraftStore,
   createLocalHistoryStore,
@@ -49,6 +50,7 @@ import { Hero } from './Hero';
 import { HistoryTable } from './HistoryTable';
 import { ImportStrategy } from './ImportStrategy';
 import { Packages } from './Packages';
+import { PriorPanel, type PriorState } from './PriorPanel';
 import { CONTACT_EMAIL_HINT_ID, formatCount, SearchPanel, type LastSearch } from './SearchPanel';
 import { SectionNav } from './SectionNav';
 import { SiteBar } from './SiteBar';
@@ -57,6 +59,8 @@ import './app.css';
 
 export interface AppProps {
   countQuery?: (query: string) => Promise<CountOutcome>;
+  /** Prior meta-analysis records for a query; defaults to the PubMed client. */
+  listRecords?: (query: string) => Promise<RecordsOutcome>;
   /** Study label lookup by DOI (FR-024); defaults to the Crossref client. */
   lookupLabel?: (doi: string) => Promise<LabelOutcome>;
   historyStore?: HistoryStore;
@@ -68,6 +72,7 @@ export interface AppProps {
 
 export function App({
   countQuery: countQueryProp,
+  listRecords: listRecordsProp,
   lookupLabel: lookupLabelProp,
   historyStore,
   draftStore,
@@ -92,6 +97,7 @@ export function App({
   });
   const countQuery = countQueryProp ?? ((query: string) => clients.pubmed.countQuery(query));
   const lookupLabel = lookupLabelProp ?? ((doi: string) => clients.crossref.fetchStudyLabel(doi));
+  const listRecords = listRecordsProp ?? ((query: string) => clients.pubmed.listRecords(query));
   const [initialDraft] = useState(() => drafts.load());
   const [strategy, setStrategy] = useState<Strategy>(() =>
     initialDraft ? fromDraft(initialDraft) : createDefaultStrategy(),
@@ -103,6 +109,13 @@ export function App({
   const [running, setRunning] = useState(false);
   const [last, setLast] = useState<LastSearch | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  // The meta-analysis query of the last run; the year filter is added to it on each load.
+  const [priorQuery, setPriorQuery] = useState<string | null>(null);
+  const [priorCount, setPriorCount] = useState<number | null>(null);
+  const [priorMinYear, setPriorMinYear] = useState<number | null>(null);
+  const [priorState, setPriorState] = useState<PriorState>({ status: 'idle' });
+  // Only the newest load may write its records: an older one can still be in flight.
+  const priorLoadRef = useRef(0);
   const [saveFailed, setSaveFailed] = useState(false);
   const runningRef = useRef(false);
 
@@ -113,6 +126,25 @@ export function App({
   useEffect(() => {
     track(drafts.save({ ...toDraft(strategy), studies: toDraftStudies(studies) }));
   }, [drafts, strategy, studies, track]);
+
+  /** Lists the meta-analyses of `baseQuery`, from `year` onwards when a year is chosen. */
+  const loadPrior = async (baseQuery: string, year: number | null) => {
+    const load = priorLoadRef.current + 1;
+    priorLoadRef.current = load;
+    setPriorState({ status: 'loading' });
+    const outcome = await listRecords(year === null ? baseQuery : withYearFloor(baseQuery, year));
+    if (priorLoadRef.current !== load) return;
+    setPriorState(
+      outcome.status === 'ok'
+        ? { status: 'ready', records: outcome.records, total: outcome.total }
+        : { status: 'error', message: outcome.message },
+    );
+  };
+
+  const handleMinYearChange = (year: number | null) => {
+    setPriorMinYear(year);
+    if (priorQuery !== null) void loadPrior(priorQuery, year);
+  };
 
   const update = useCallback((change: (current: Strategy) => Strategy) => {
     setStrategy((current) => change(current));
@@ -223,6 +255,16 @@ export function App({
         setAnnouncement(
           t(en.resultsAnnouncement, { count: formatCount(result), meta: formatCount(metaResult) }),
         );
+        setPriorQuery(outcome.run.metaQuery);
+        if (metaResult.status === 'ok') {
+          const year = defaultMinYear(metaResult.count, new Date());
+          setPriorCount(metaResult.count);
+          setPriorMinYear(year);
+          void loadPrior(outcome.run.metaQuery, year);
+        } else {
+          setPriorCount(null);
+          setPriorState({ status: 'error', message: metaResult.message });
+        }
         const checks = await checkStudies(outcome.run.query, studies);
         if (checks.length > 0) {
           track(history.attachStudies(outcome.run.id, summarizeStudyChecks(checks)));
@@ -231,7 +273,9 @@ export function App({
       } else if (outcome.status === 'failed') {
         const { result, metaResult } = outcome.failure;
         setLast({ status: 'failed', result, metaResult });
-        // The role=alert message in SearchPanel announces this failure.
+        setPriorCount(null);
+        // Both requests failed: the role=alert message in SearchPanel is the only report needed.
+        setPriorState({ status: 'idle' });
         setAnnouncement('');
       }
     } finally {
@@ -297,6 +341,16 @@ export function App({
                 emailValid={emailValid}
                 onContactEmailChange={handleContactEmailChange}
                 onSearch={() => void handleSearch()}
+              />
+            </section>
+            <section className="panel" id="prior" tabIndex={-1} aria-labelledby="prior-heading">
+              <PriorPanel
+                headingId="prior-heading"
+                state={priorState}
+                count={priorCount}
+                minYear={priorMinYear}
+                years={yearOptions(new Date())}
+                onMinYearChange={handleMinYearChange}
               />
             </section>
             <section className="panel" id="studies" tabIndex={-1} aria-labelledby="studies-heading">

@@ -9,3 +9,11 @@ export function buildQuery(arms: string[][]): string | null {
 export function withMetaAnalysisArm(query: string): string {
   return `${query} AND ${META_ANALYSIS_ARM}`;
 }
+
+/**
+ * The same query restricted to records published in `year` or later, using the PubMed date
+ * range field. `3000` is the open upper bound PubMed accepts for "up to now".
+ */
+export function withYearFloor(query: string, year: number): string {
+  return `${query} AND ("${year}"[dp] : "3000"[dp])`;
+}

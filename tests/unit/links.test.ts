@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { doiOrgUrl, pubmedDoiUrl, pubmedSearchUrl } from '../../src/pubmed/links';
+import {
+  doiOrgUrl,
+  pmcUrl,
+  pubmedArticleUrl,
+  pubmedDoiUrl,
+  pubmedSearchUrl,
+} from '../../src/pubmed/links';
 
 describe('pubmedSearchUrl', () => {
   it('builds a PubMed search URL with the exact query encoded', () => {
@@ -31,5 +37,15 @@ describe('study links', () => {
     expect(doiOrgUrl('10.1002/(SICI)1097-0258<2::AID>3.0.CO;2-Z')).toBe(
       'https://doi.org/10.1002/(SICI)1097-0258%3C2%3A%3AAID%3E3.0.CO%3B2-Z',
     );
+  });
+});
+
+describe('article and PMC links', () => {
+  it('opens a PubMed record by PMID', () => {
+    expect(pubmedArticleUrl('42498088')).toBe('https://pubmed.ncbi.nlm.nih.gov/42498088/');
+  });
+
+  it('opens the free full text on PubMed Central', () => {
+    expect(pmcUrl('PMC13620861')).toBe('https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13620861/');
   });
 });

@@ -122,10 +122,6 @@ export function SearchPanel({
               <dt>{en.results}</dt>
               <CountValue outcome={last.result} testId="result-count" />
             </div>
-            <div>
-              <dt>{en.resultsMeta}</dt>
-              <CountValue outcome={last.metaResult} testId="meta-result-count" />
-            </div>
           </dl>
         </div>
       )}

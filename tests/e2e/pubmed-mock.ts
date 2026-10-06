@@ -18,6 +18,13 @@ export const CROSSREF_FIXTURES: Record<string, string> = {
 export const CROSSREF_PATTERN = 'https://api.crossref.org/works/**';
 
 export const ESEARCH_PATTERN = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi**';
+export const ESUMMARY_PATTERN = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi**';
+
+/** Prior meta-analyses the mocked PubMed returns, newest first. */
+export const PRIOR_RECORDS = [
+  { pmid: '42498088', author: 'Hassanpour H', pubdate: '2026/03/14 00:00', pmcid: null },
+  { pmid: '41816957', author: 'Thomas SM', pubdate: '2023/12/31 00:00', pmcid: 'PMC13620861' },
+] as const;
 
 /** Contact email seeded for e2e runs, so tests never depend on a local .env.local (FR-025). */
 export const E2E_CONTACT_EMAIL = 'e2e@example.org';
@@ -83,9 +90,53 @@ export async function mockPubmed(page: Page, options: MockOptions = {}): Promise
   const terms: string[] = [];
   // Study label lookups must never reach the real Crossref API from tests.
   await mockCrossref(page);
+  await page.route(ESUMMARY_PATTERN, async (route) => {
+    const url = new URL(route.request().url());
+    const asked = (url.searchParams.get('id') ?? '').split(',').filter((id) => id !== '');
+    const result: Record<string, unknown> = { uids: asked };
+    for (const pmid of asked) {
+      const record = PRIOR_RECORDS.find((item) => item.pmid === pmid);
+      if (!record) continue;
+      result[pmid] = {
+        uid: pmid,
+        sortfirstauthor: record.author,
+        sortpubdate: record.pubdate,
+        title: `Meta-analysis ${pmid}`,
+        articleids: record.pmcid === null ? [] : [{ idtype: 'pmc', value: record.pmcid }],
+      };
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ header: { type: 'esummary', version: '0.3' }, result }),
+    });
+  });
   await page.route(ESEARCH_PATTERN, async (route) => {
     const url = new URL(route.request().url());
     const term = url.searchParams.get('term') ?? '';
+    // A list request carries sort=pub_date and asks for PMIDs; it is not one of the counted runs.
+    if (url.searchParams.get('sort') === 'pub_date') {
+      const from = /"(\d{4})"\[dp\]/.exec(term);
+      const minYear = from ? Number(from[1]) : null;
+      const shown = PRIOR_RECORDS.filter(
+        (record) => minYear === null || Number(record.pubdate.slice(0, 4)) >= minYear,
+      );
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({
+          ...countOk,
+          esearchresult: {
+            ...countOk.esearchresult,
+            count: String(shown.length),
+            idlist: shown.map((record) => record.pmid),
+          },
+        }),
+      });
+      return;
+    }
     terms.push(term);
     const isMeta = term.endsWith(' AND ("meta-analysis")');
     const count =

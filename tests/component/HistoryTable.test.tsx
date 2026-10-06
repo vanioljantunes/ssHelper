@@ -53,7 +53,7 @@ describe('HistoryTable (contracts/ui.md)', () => {
       'Date and time',
       'Search strategy',
       'Results',
-      'Results + meta-analysis',
+      'Prior meta-analyses',
       'Known studies',
       'Actions',
     ]);
@@ -188,6 +188,7 @@ describe('App history wiring (T038)', () => {
       <App
         historyStore={historyStore}
         countQuery={async () => ({ status: 'ok', count: 1, queryTranslation: '', warnings: [] })}
+        listRecords={async () => ({ status: 'ok' as const, records: [], total: 0 })}
       />,
     );
     await user.type(screen.getByRole('textbox', { name: 'New term for arm 1' }), 'diabetes{Enter}');
@@ -206,7 +207,8 @@ describe('App history wiring (T038)', () => {
       queryTranslation: '',
       warnings: [],
     });
-    const { unmount } = render(<App countQuery={countQuery} />);
+    const listRecords = async () => ({ status: 'ok' as const, records: [], total: 0 });
+    const { unmount } = render(<App countQuery={countQuery} listRecords={listRecords} />);
     await user.type(
       screen.getByRole('textbox', { name: 'New term for arm 2' }),
       'heart failure{Enter}',
@@ -216,7 +218,7 @@ describe('App history wiring (T038)', () => {
     await user.type(screen.getByRole('textbox', { name: 'New term for arm 3' }), 'pending text');
     unmount();
 
-    render(<App countQuery={countQuery} />);
+    render(<App countQuery={countQuery} listRecords={listRecords} />);
     expect(screen.getByRole('cell', { name: '("heart failure")' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Arm 2' })).toHaveTextContent('"heart failure"');
     expect(screen.getByRole('textbox', { name: 'New term for arm 3' })).toHaveValue('pending text');
@@ -246,4 +248,3 @@ describe('known studies column (FR-030)', () => {
     expect(cell('no-studies')).toHaveTextContent('No studies checked');
   });
 });
-

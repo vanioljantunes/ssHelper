@@ -8,6 +8,7 @@ export const PAGE_SECTIONS = [
   { id: 'about', label: en.sectionNavAbout },
   { id: 'strategy', label: en.armsHeading },
   { id: 'search', label: en.searchHeading },
+  { id: 'prior', label: en.priorHeading },
   { id: 'studies', label: en.studiesHeading },
   { id: 'history', label: en.historyHeading },
 ] as const;

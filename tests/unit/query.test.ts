@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildQuery, withMetaAnalysisArm } from '../../src/core/query';
+import { buildQuery, withMetaAnalysisArm, withYearFloor } from '../../src/core/query';
 
 describe('buildQuery (contracts/query-builder.md)', () => {
   const rows: [string[][], string | null][] = [
@@ -39,5 +39,11 @@ describe('withMetaAnalysisArm (contracts/query-builder.md)', () => {
 
   it('is deterministic', () => {
     expect(withMetaAnalysisArm('(a) AND (b)')).toBe(withMetaAnalysisArm('(a) AND (b)'));
+  });
+});
+
+describe('withYearFloor', () => {
+  it('adds a publication date range open at the top', () => {
+    expect(withYearFloor('(a) AND (b)', 2021)).toBe('(a) AND (b) AND ("2021"[dp] : "3000"[dp])');
   });
 });

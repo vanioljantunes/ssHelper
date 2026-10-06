@@ -8,6 +8,7 @@ const SECTIONS = [
   { name: 'About', href: '#about' },
   { name: 'Search strategy', href: '#strategy' },
   { name: 'Search', href: '#search' },
+  { name: 'Prior meta-analyses', href: '#prior' },
   { name: 'Known studies', href: '#studies' },
   { name: 'History', href: '#history' },
 ];
