@@ -1,9 +1,12 @@
 /**
  * Parses a pasted PubMed strategy into arms.
  * Supported shape: groups joined by AND, each group a list of terms joined by OR, with optional
- * parentheses. Terms are kept exactly as written. Anything else is rejected as a whole so a
- * strategy is never imported partially.
+ * parentheses. Every term goes through the commit rule, so a body with a space comes out quoted
+ * exactly as it would if it had been typed into a term box. Anything else is rejected as a whole
+ * so a strategy is never imported partially.
  */
+
+import { commitTerm } from './term';
 
 export type ParseError =
   | 'empty'
@@ -171,7 +174,7 @@ export function parseStrategy(text: string): ParseResult {
     const { pieces, ops } = splitTopLevel(body);
     if (ops.includes('AND') && ops.includes('OR')) return { ok: false, error: 'mixed_operators' };
     const arms = ops.includes('AND') ? pieces.map(parseArm) : [parseArm(body)];
-    return { ok: true, arms };
+    return { ok: true, arms: arms.map((arm) => arm.map((term) => commitTerm(term) ?? term)) };
   } catch (error) {
     if (error instanceof ParseFailure) return { ok: false, error: error.code };
     throw error;

@@ -61,10 +61,24 @@ describe('parseStrategy', () => {
     expect(parseStrategy('((a OR b) AND (c))')).toEqual({ ok: true, arms: [['a', 'b'], ['c']] });
   });
 
-  it('keeps unquoted multi-word terms as written', () => {
+  it('quotes a multi-word body by the commit rule', () => {
     expect(parseStrategy('(heart failure OR hf) AND sglt2')).toEqual({
       ok: true,
-      arms: [['heart failure', 'hf'], ['sglt2']],
+      arms: [['"heart failure"', 'hf'], ['sglt2']],
+    });
+  });
+
+  it('quotes a multi-word body and keeps its field tag outside the quotes', () => {
+    expect(parseStrategy('(heart failure[tiab] OR hf[tiab]) AND sglt2[tiab]')).toEqual({
+      ok: true,
+      arms: [['"heart failure"[tiab]', 'hf[tiab]'], ['sglt2[tiab]']],
+    });
+  });
+
+  it('never quotes twice', () => {
+    expect(parseStrategy('"heart failure"[Mesh Terms] AND sglt2')).toEqual({
+      ok: true,
+      arms: [['"heart failure"[Mesh Terms]'], ['sglt2']],
     });
   });
 
