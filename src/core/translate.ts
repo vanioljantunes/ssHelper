@@ -1,9 +1,12 @@
 import { splitTag } from './term';
 
 /** The databases a PubMed strategy can be rewritten for. */
-export type TargetDatabase = 'cochrane' | 'embase';
+export type TargetDatabase = 'cochrane' | 'embase' | 'scopus';
 
-export const TARGET_DATABASES = ['cochrane', 'embase'] as const;
+export const TARGET_DATABASES = ['cochrane', 'embase', 'scopus'] as const;
+
+/** The databases checked when the page opens (FR-032). */
+export const DEFAULT_TARGET_DATABASES: TargetDatabase[] = ['cochrane', 'embase'];
 
 export interface Translation {
   /** The rewritten strategy, or null when every arm is empty. */
@@ -20,17 +23,19 @@ export interface Translation {
 }
 
 /**
- * What each PubMed field tag becomes. A `field` mapping is the suffix the database appends to
- * the words; `heading` means the term is a subject heading and gets the exploded form.
+ * What each PubMed field tag becomes. In Cochrane and Embase a `field` mapping is the suffix the
+ * database appends to the words; Scopus wraps the words in a field function instead. `heading`
+ * means the term is a subject heading and gets the exploded form.
  */
-type Mapping = { kind: 'field'; cochrane: string; embase: string } | { kind: 'heading' };
+type Mapping =
+  { kind: 'field'; cochrane: string; embase: string; scopus: string } | { kind: 'heading' };
 
 const MAPPINGS: Record<string, Mapping> = {
-  tiab: { kind: 'field', cochrane: ':ti,ab,kw', embase: ':ti,ab' },
-  tw: { kind: 'field', cochrane: ':ti,ab,kw', embase: ':ti,ab,kw' },
-  ti: { kind: 'field', cochrane: ':ti', embase: ':ti' },
-  title: { kind: 'field', cochrane: ':ti', embase: ':ti' },
-  ab: { kind: 'field', cochrane: ':ab', embase: ':ab' },
+  tiab: { kind: 'field', cochrane: ':ti,ab,kw', embase: ':ti,ab', scopus: 'TITLE-ABS-KEY' },
+  tw: { kind: 'field', cochrane: ':ti,ab,kw', embase: ':ti,ab,kw', scopus: 'TITLE-ABS-KEY' },
+  ti: { kind: 'field', cochrane: ':ti', embase: ':ti', scopus: 'TITLE' },
+  title: { kind: 'field', cochrane: ':ti', embase: ':ti', scopus: 'TITLE' },
+  ab: { kind: 'field', cochrane: ':ab', embase: ':ab', scopus: 'ABS' },
   mesh: { kind: 'heading' },
   mh: { kind: 'heading' },
   majr: { kind: 'heading' },
@@ -48,7 +53,7 @@ function bareWords(body: string): string {
 
 /** Quotes the words whether or not they are a phrase, as a subject heading needs. */
 function quoteAlways(words: string, database: TargetDatabase): string {
-  if (database === 'cochrane') return `"${words}"`;
+  if (database === 'cochrane' || database === 'scopus') return `"${words}"`;
   // Embase accepts either quote; double quotes keep an apostrophe inside the phrase intact.
   return words.includes("'") ? `"${words}"` : `'${words}'`;
 }
@@ -78,10 +83,12 @@ export function translateTerm(text: string, database: TargetDatabase): string {
   if (mapping === undefined) return quotePhrase(words, database);
   if (mapping.kind === 'heading') {
     // Emtree terms are written in lower case; MeSH terms are capitalised.
-    return database === 'cochrane'
-      ? `[mh ${quoteAlways(words, 'cochrane')}]`
-      : `${quoteAlways(words.toLowerCase(), 'embase')}/exp`;
+    if (database === 'cochrane') return `[mh ${quoteAlways(words, 'cochrane')}]`;
+    // Scopus indexes with terms of its own, so the words go to the index field as written.
+    if (database === 'scopus') return `INDEXTERMS(${quoteAlways(words, 'scopus')})`;
+    return `${quoteAlways(words.toLowerCase(), 'embase')}/exp`;
   }
+  if (database === 'scopus') return `${mapping.scopus}(${quotePhrase(words, 'scopus')})`;
   return quotePhrase(words, database) + mapping[database];
 }
 

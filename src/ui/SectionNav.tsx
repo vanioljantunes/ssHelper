@@ -11,6 +11,7 @@ export const PAGE_SECTIONS = [
   { id: 'prior', label: en.priorHeading },
   { id: 'studies', label: en.studiesHeading },
   { id: 'translate', label: en.translateHeading },
+  { id: 'export', label: en.exportHeading },
   { id: 'history', label: en.historyHeading },
 ] as const;
 

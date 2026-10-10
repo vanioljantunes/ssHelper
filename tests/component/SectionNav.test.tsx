@@ -11,6 +11,7 @@ const SECTIONS = [
   { name: 'Prior meta-analyses', href: '#prior' },
   { name: 'Known studies', href: '#studies' },
   { name: 'Other databases', href: '#translate' },
+  { name: 'PDF table', href: '#export' },
   { name: 'History', href: '#history' },
 ];
 

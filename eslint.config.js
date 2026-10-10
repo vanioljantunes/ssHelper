@@ -18,7 +18,8 @@ export default tseslint.config(
   },
   {
     files: ['scripts/**/*.mjs'],
-    languageOptions: { globals: { ...globals.node } },
+    // Browser globals too: a script can carry code that runs inside page.evaluate.
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
     files: ['src/core/**/*.ts'],

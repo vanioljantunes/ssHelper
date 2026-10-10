@@ -352,4 +352,3 @@ describe('history studies (FR-030)', () => {
     expect(store.list()).toEqual([]);
   });
 });
-

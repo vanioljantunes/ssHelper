@@ -290,6 +290,18 @@ confirm the rows are still there.
   of the target database. Everything inexact MUST be named under the two lines: the subject
   headings to confirm in Emtree, the terms whose truncation can expand differently, and any
   field tag with no counterpart, whose words are kept as free text.
+- **FR-032** (added 2026-10-10): The translation panel MUST offer one checkbox per target
+  database, with Cochrane CENTRAL and Embase checked when the page opens and Scopus available
+  unchecked, and MUST show only the translations of the checked databases. Scopus follows the
+  same rule-based rewrite: `[tiab]` and `[tw]` become `TITLE-ABS-KEY(...)`, `[ti]` becomes
+  `TITLE(...)`, `[ab]` becomes `ABS(...)`, and a subject heading becomes `INDEXTERMS(...)`,
+  which is an index of Scopus's own, not MeSH, so it is listed with the headings to confirm.
+- **FR-033** (added 2026-10-10): Between the translations and the history the application MUST
+  offer a PDF of the current strategy: one table with two columns, Database and Search strategy,
+  a first row for PubMed and one row per checked database, no result counts. The file MUST be
+  produced in the browser with no network request, MUST carry the strategy text as it is shown
+  on the page, and MUST download under a name that carries the date of the export. The button
+  MUST be disabled while the strategy has no term.
 
 ### Key Entities
 

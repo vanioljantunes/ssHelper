@@ -141,4 +141,3 @@ export function summarizeStudyChecks(checks: LabelledCheck[]): RunStudies {
   }
   return { total: checks.length, found, notFound, unresolved };
 }
-

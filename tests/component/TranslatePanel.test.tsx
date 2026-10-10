@@ -1,16 +1,34 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { DEFAULT_TARGET_DATABASES, type TargetDatabase } from '../../src/core/translate';
 import { en } from '../../src/i18n/en';
 import { TranslatePanel } from '../../src/ui/TranslatePanel';
 
 const arms = [['"heart failure"[tiab]', '"Heart Failure"[Mesh]'], ['sacubitril[tiab]']];
 
-function renderPanel(over: Partial<React.ComponentProps<typeof TranslatePanel>> = {}) {
-  const copyText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
-  render(
-    <TranslatePanel headingId="translate-heading" arms={arms} copyText={copyText} {...over} />,
+type PanelProps = React.ComponentProps<typeof TranslatePanel>;
+
+/** The checkboxes are controlled by the page, so the test holds the selection itself. */
+function Harness(props: Omit<PanelProps, 'selected' | 'onToggle'>) {
+  const [selected, setSelected] = useState<TargetDatabase[]>(DEFAULT_TARGET_DATABASES);
+  return (
+    <TranslatePanel
+      {...props}
+      selected={selected}
+      onToggle={(database, checked) =>
+        setSelected((current) =>
+          checked ? [...current, database] : current.filter((item) => item !== database),
+        )
+      }
+    />
   );
+}
+
+function renderPanel(over: Partial<PanelProps> = {}) {
+  const copyText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
+  render(<Harness headingId="translate-heading" arms={arms} copyText={copyText} {...over} />);
   return { copyText };
 }
 
@@ -31,8 +49,12 @@ describe('TranslatePanel', () => {
       'id',
       'translate-heading',
     );
-    expect(screen.getByText(en.translateCochraneLabel)).toBeInTheDocument();
-    expect(screen.getByText(en.translateEmbaseLabel)).toBeInTheDocument();
+    expect(document.getElementById('translate-cochrane-label')?.textContent).toBe(
+      en.translateCochraneLabel,
+    );
+    expect(document.getElementById('translate-embase-label')?.textContent).toBe(
+      en.translateEmbaseLabel,
+    );
   });
 
   it('copies one translation and reports it, without copying the other', async () => {
@@ -49,7 +71,7 @@ describe('TranslatePanel', () => {
     renderPanel({ arms: [[], []] });
     expect(screen.getByTestId('translate-cochrane').textContent).toBe(en.translateEmpty);
     expect(screen.getByTestId('translate-embase').textContent).toBe(en.translateEmpty);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button', { name: /copy/i })).toBeNull();
   });
 
   it('names the field tags it had to leave out', () => {
@@ -80,5 +102,40 @@ describe('TranslatePanel', () => {
   it('says nothing about truncation when no term is truncated', () => {
     renderPanel();
     expect(screen.queryByTestId('translate-wildcards')).toBeNull();
+  });
+});
+
+describe('TranslatePanel database checkboxes (FR-032)', () => {
+  it('checks Cochrane and Embase but not Scopus when the page opens', () => {
+    renderPanel();
+    expect(screen.getByRole('checkbox', { name: en.translateCochraneLabel })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: en.translateEmbaseLabel })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: en.translateScopusLabel })).not.toBeChecked();
+    expect(screen.queryByTestId('translate-scopus')).toBeNull();
+  });
+
+  it('shows the Scopus translation once it is checked', async () => {
+    renderPanel();
+    await userEvent.click(screen.getByRole('checkbox', { name: en.translateScopusLabel }));
+    expect(screen.getByTestId('translate-scopus').textContent).toBe(
+      '(TITLE-ABS-KEY("heart failure") OR INDEXTERMS("Heart Failure")) AND ' +
+        '(TITLE-ABS-KEY(sacubitril))',
+    );
+    expect(screen.getByTestId('translate-scopus-headings').textContent).toContain('INDEXTERMS');
+  });
+
+  it('hides a translation when its database is unchecked', async () => {
+    renderPanel();
+    await userEvent.click(screen.getByRole('checkbox', { name: en.translateEmbaseLabel }));
+    expect(screen.queryByTestId('translate-embase')).toBeNull();
+    expect(screen.getByTestId('translate-cochrane')).toBeInTheDocument();
+  });
+
+  it('asks for a database when none is checked', async () => {
+    renderPanel();
+    await userEvent.click(screen.getByRole('checkbox', { name: en.translateCochraneLabel }));
+    await userEvent.click(screen.getByRole('checkbox', { name: en.translateEmbaseLabel }));
+    expect(screen.getByText(en.translateNoneChecked)).toBeInTheDocument();
+    expect(screen.queryByTestId('translate-cochrane')).toBeNull();
   });
 });

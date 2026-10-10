@@ -101,7 +101,7 @@ test.describe('desktop', () => {
     await expect(nav).toBeVisible();
     const navBox = (await nav.boundingBox())!;
     expect(navBox.x + navBox.width).toBeLessThanOrEqual(title.x);
-    await expect(nav.getByRole('link')).toHaveCount(7);
+    await expect(nav.getByRole('link')).toHaveCount(8);
 
     await expectNoHorizontalScroll(page, 1440);
     await expectNoAxeViolations(page);

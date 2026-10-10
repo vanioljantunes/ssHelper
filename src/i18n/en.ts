@@ -173,10 +173,15 @@ export const en = {
 
   translateHeading: 'Other databases',
   translateHint:
-    'The same strategy written for Cochrane CENTRAL and Embase, by syntax rules only. Field tags are mapped and subject headings are exploded. Read each one as a draft and review it before you run the search.',
+    'The same strategy written for the databases you check, by syntax rules only. Field tags are mapped and subject headings are exploded. Read each one as a draft and review it before you run the search.',
   translateEmpty: 'Add at least one term to see the translations.',
   translateCochraneLabel: 'Cochrane CENTRAL (advanced search)',
   translateEmbaseLabel: 'Embase (Emtree, advanced search)',
+  translateScopusLabel: 'Scopus (advanced search)',
+  translateDatabasesLabel: 'Databases to translate to',
+  translateNoneChecked: 'Check a database to see the strategy written for it.',
+  translateScopusHeadings:
+    'Scopus indexes with terms of its own. These subject headings went to INDEXTERMS as written and have to be checked in Scopus: {headings}.',
   translateCopyHidden: 'Copy the {database} translation',
   translateDroppedTags:
     'These field tags have no counterpart and were left out; their words were kept as free text: {tags}.',
@@ -184,6 +189,24 @@ export const en = {
     'MeSH and Emtree are different thesauri. These subject headings were carried over word for word and have to be checked in Emtree before you run the Embase search: {headings}.',
   translateWildcards:
     'Truncation does not expand to the same words in every database. Check what these terms match: {terms}.',
+
+  exportHeading: 'PDF table',
+  exportHint:
+    'One table with the strategy for PubMed and for each database checked above, with no result counts, for the methods section or the appendix. The file is written in your browser and sent nowhere.',
+  exportButton: 'Download PDF',
+  exportEmpty: 'Add at least one term to export the strategies.',
+  exportDone: 'PDF downloaded.',
+  exportFailed: 'The PDF could not be saved in this browser.',
+  exportRowsLabel: 'Rows in the table',
+  exportPdfTitle: 'Search strategies',
+  exportPdfSubtitle: 'Exported {date}',
+  exportFileName: 'search-strategies-{date}.pdf',
+  exportColumnDatabase: 'Database',
+  exportColumnStrategy: 'Search strategy',
+  databasePubmed: 'PubMed',
+  databaseCochrane: 'Cochrane CENTRAL',
+  databaseEmbase: 'Embase',
+  databaseScopus: 'Scopus',
 
   historyHeading: 'History',
   historyDateTime: 'Date and time',

@@ -35,6 +35,7 @@ import {
   unquoteTermById,
   validateStrategy,
 } from '../core/strategy';
+import { DEFAULT_TARGET_DATABASES, type TargetDatabase } from '../core/translate';
 import type { CountOutcome, SearchRun, Strategy, Study } from '../core/types';
 import { createAppCrossrefClient, type LabelOutcome } from '../crossref/client';
 import { en, t } from '../i18n/en';
@@ -52,6 +53,7 @@ import { ImportStrategy } from './ImportStrategy';
 import { Packages } from './Packages';
 import { PriorPanel, type PriorState } from './PriorPanel';
 import { CONTACT_EMAIL_HINT_ID, formatCount, SearchPanel, type LastSearch } from './SearchPanel';
+import { ExportPanel } from './ExportPanel';
 import { SectionNav } from './SectionNav';
 import { SiteBar } from './SiteBar';
 import { StudiesPanel, type StudyRowState } from './StudiesPanel';
@@ -153,6 +155,7 @@ export function App({
 
   const issues = useMemo(() => validateStrategy(strategy), [strategy]);
   const query = useMemo(() => buildQuery(previewArmTerms(strategy)), [strategy]);
+  const [targets, setTargets] = useState<TargetDatabase[]>(DEFAULT_TARGET_DATABASES);
   const isEmpty = isStrategyEmpty(strategy);
 
   /**
@@ -378,7 +381,24 @@ export function App({
               tabIndex={-1}
               aria-labelledby="translate-heading"
             >
-              <TranslatePanel headingId="translate-heading" arms={previewArmTerms(strategy)} />
+              <TranslatePanel
+                headingId="translate-heading"
+                arms={previewArmTerms(strategy)}
+                selected={targets}
+                onToggle={(database, checked) =>
+                  setTargets((current) =>
+                    checked ? [...current, database] : current.filter((item) => item !== database),
+                  )
+                }
+              />
+            </section>
+            <section className="panel" id="export" tabIndex={-1} aria-labelledby="export-heading">
+              <ExportPanel
+                headingId="export-heading"
+                arms={previewArmTerms(strategy)}
+                query={query}
+                selected={targets}
+              />
             </section>
             <section className="panel" id="history" tabIndex={-1} aria-labelledby="history-heading">
               <h2 id="history-heading">{en.historyHeading}</h2>

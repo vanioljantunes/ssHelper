@@ -97,3 +97,30 @@ describe('translate', () => {
     expect(translate(arms, 'cochrane').wildcards).toEqual([]);
   });
 });
+
+describe('translateTerm for Scopus', () => {
+  it('wraps the words in the Scopus field, not a suffix', () => {
+    expect(translateTerm('"heart failure"[tiab]', 'scopus')).toBe('TITLE-ABS-KEY("heart failure")');
+    expect(translateTerm('sacubitril[tiab]', 'scopus')).toBe('TITLE-ABS-KEY(sacubitril)');
+    expect(translateTerm('stroke[ti]', 'scopus')).toBe('TITLE(stroke)');
+    expect(translateTerm('stroke[ab]', 'scopus')).toBe('ABS(stroke)');
+    expect(translateTerm('stroke[tw]', 'scopus')).toBe('TITLE-ABS-KEY(stroke)');
+  });
+
+  it('sends a subject heading to the Scopus index terms, keeping the words as written', () => {
+    expect(translateTerm('"Heart Failure"[Mesh]', 'scopus')).toBe('INDEXTERMS("Heart Failure")');
+    expect(translateTerm('Stroke[majr]', 'scopus')).toBe('INDEXTERMS("Stroke")');
+  });
+
+  it('keeps an untagged term, a dropped tag and a wildcard as free text', () => {
+    expect(translateTerm('"heart failure"', 'scopus')).toBe('"heart failure"');
+    expect(translateTerm('english[la]', 'scopus')).toBe('english');
+    expect(translateTerm('cardiomyopath*[tiab]', 'scopus')).toBe('TITLE-ABS-KEY(cardiomyopath*)');
+  });
+
+  it('joins the arms the same way as the other databases', () => {
+    expect(translate([['"heart failure"[tiab]', 'hf'], ['sacubitril[tiab]']], 'scopus').query).toBe(
+      '(TITLE-ABS-KEY("heart failure") OR hf) AND (TITLE-ABS-KEY(sacubitril))',
+    );
+  });
+});

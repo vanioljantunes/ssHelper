@@ -245,7 +245,12 @@ describe('study labels (FR-024)', () => {
 
 describe('summarizeStudyChecks (FR-030)', () => {
   const at = '2026-09-19T10:00:00.000Z';
-  const found = (doi = '10.1/a'): StudyCheck => ({ status: 'found', doi, query: 'q', checkedAt: at });
+  const found = (doi = '10.1/a'): StudyCheck => ({
+    status: 'found',
+    doi,
+    query: 'q',
+    checkedAt: at,
+  });
   const notFound = (doi = '10.1/b'): StudyCheck => ({
     status: 'not_found',
     doi,
@@ -302,4 +307,3 @@ describe('summarizeStudyChecks (FR-030)', () => {
     });
   });
 });
-
