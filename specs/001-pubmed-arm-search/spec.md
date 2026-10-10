@@ -203,9 +203,19 @@ confirm the rows are still there.
 - **FR-021**: The page MUST offer an empty box where a prior strategy can be pasted. "Fill arms"
   MUST turn groups joined by AND into arms and the OR-joined terms of each group into term boxes,
   keeping every term exactly as written (quotes, truncation, field tags). If the current arms
-  contain terms, the researcher confirms first. Strategies with NOT, groups inside groups, AND
+  contain terms, the researcher confirms first. Strategies with groups inside groups, AND
   and OR mixed without parentheses, or unbalanced quotes or parentheses MUST show an explanation
   and import nothing.
+- **FR-021a**: Four kinds of pasted part MUST be dropped on import rather than rejected, because
+  they lower the sensitivity of a systematic review search or cannot be resolved from the paste:
+  a NOT operator together with the operand that follows it; methodological filters (the field
+  tags `[lang]`, `[la]`, `[pt]`, `[ptyp]`, `[sb]`, `[filter]`, and the MeSH checks humans,
+  animals, male and female); date limits (`[dp]`, `[pdat]`, `[edat]`, including a date range);
+  and PubMed history line references of the form `#n`. "Fill arms" MUST then show a warning that
+  names each dropped part and its kind, says these parts are not advised and will be dropped, and
+  MUST import nothing until the researcher confirms; Cancel leaves the arms and the box unchanged.
+  An arm left with no term is dropped with the parts; if nothing is left, the import MUST be
+  refused with an explanation instead.
 - **FR-022**: The query text in the search panel and each history row's strategy MUST be a link
   that opens the PubMed website search for that exact query in a new tab.
 - **FR-023**: The page MUST offer a "Known studies" panel with three DOI boxes by default; boxes

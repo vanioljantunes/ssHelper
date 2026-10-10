@@ -53,10 +53,34 @@ test('pasting a strategy fills arms with the terms as written and searches it', 
 });
 
 test('an unsupported strategy shows an error and leaves the arms unchanged', async ({ page }) => {
-  await box(page).fill('bladder cancer NOT review');
+  await box(page).fill('(a OR (b AND c)) AND d');
   await fillArms(page).click();
-  await expect(page.getByRole('alert')).toContainText('NOT is not supported');
+  await expect(page.getByRole('alert')).toContainText('Groups inside groups');
   await expect(arms(page)).toHaveCount(3);
+});
+
+test('a NOT and a filter are warned about, then dropped on confirmation', async ({ page }) => {
+  await box(page).fill('("bladder cancer" OR bladder) AND english[lang] NOT review[pt]');
+  await fillArms(page).click();
+
+  const dialog = page.getByRole('alertdialog');
+  await expect(dialog).toContainText('not advised');
+  await expect(dialog).toContainText('NOT review[pt]');
+  await expect(dialog).toContainText('english[lang]');
+  await expectNoAxeViolations(page);
+
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(arms(page)).toHaveCount(3);
+  await expect(box(page)).toHaveValue(
+    '("bladder cancer" OR bladder) AND english[lang] NOT review[pt]',
+  );
+
+  await fillArms(page).click();
+  await page.getByRole('button', { name: 'Confirm' }).click();
+  await expect(arms(page)).toHaveCount(1);
+  await expect(terms(page, 1)).toHaveCount(2);
+  await expect(page.getByText('Dropped 2 parts.')).toBeVisible();
+  await expect(page.getByTestId('query-preview')).toHaveText('("bladder cancer" OR bladder)');
 });
 
 test('replacing existing terms asks for confirmation first', async ({ page }) => {

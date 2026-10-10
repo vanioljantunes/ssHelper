@@ -70,12 +70,24 @@ export const en = {
     'Groups joined by AND, terms inside each group joined by OR. Each group becomes one arm; terms are kept as written.',
   importButton: 'Fill arms',
   importDone: 'Filled {arms} arms with {terms} terms.',
+  importDoneDropped: 'Filled {arms} arms with {terms} terms. Dropped {dropped} parts.',
+  importDoneDroppedOne: 'Filled {arms} arms with {terms} terms. Dropped 1 part.',
+  importWarnLead:
+    'These parts are not advised in a systematic review search. They will be dropped from the import:',
+  importWarnNot: 'NOT excludes records and can drop relevant studies from the results: {list}.',
+  importWarnFilter: 'Filters lower the sensitivity of the search: {list}.',
+  importWarnDateLimit:
+    'Date limits hide older studies that the review still has to screen: {list}.',
+  importWarnLineReference:
+    'History line references carry no terms and cannot be resolved from a paste: {list}.',
+  importWarnQuestion: 'Import the rest of the strategy without them?',
   confirmImport:
     'Replace the current arms with the pasted strategy? Your current terms will be lost.',
   importErrorEmpty: 'Paste a search strategy first.',
   importErrorUnbalancedQuotes: 'The strategy has an odd number of quotation marks.',
   importErrorUnbalancedParentheses: 'The strategy has unbalanced parentheses or brackets.',
-  importErrorNotSupported: 'NOT is not supported yet. Remove the NOT part and paste again.',
+  importErrorAllDropped:
+    'Every part of this strategy would be dropped, so nothing is left to import.',
   importErrorNestedGroups:
     'Groups inside groups are not supported. Use groups of terms joined by OR, and join groups with AND.',
   importErrorMixedOperators:

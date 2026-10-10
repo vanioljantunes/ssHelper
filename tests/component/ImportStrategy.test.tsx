@@ -38,11 +38,64 @@ describe('ImportStrategy', () => {
   it('shows an error and imports nothing when the strategy is not supported', async () => {
     const { onImport, user, box, button } = setup();
     await user.click(box);
-    await user.paste('a NOT b');
+    await user.paste('(a OR (b AND c)) AND d');
     await user.click(button);
     expect(onImport).not.toHaveBeenCalled();
-    expect(screen.getByRole('alert')).toHaveTextContent(/NOT is not supported/i);
-    expect(box).toHaveValue('a NOT b');
+    expect(screen.getByRole('alert')).toHaveTextContent(/groups inside groups/i);
+    expect(box).toHaveValue('(a OR (b AND c)) AND d');
+  });
+
+  it('warns about every discouraged part before importing the rest', async () => {
+    const { onImport, user, box, button } = setup();
+    await user.click(box);
+    await user.paste('#1 AND (a OR b) AND english[lang] AND 2015:2020[pdat] NOT review[pt]');
+    await user.click(button);
+
+    expect(onImport).not.toHaveBeenCalled();
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toHaveTextContent(/not advised/i);
+    expect(dialog).toHaveTextContent(/NOT review\[pt\]/);
+    expect(dialog).toHaveTextContent(/english\[lang\]/);
+    expect(dialog).toHaveTextContent(/2015:2020\[pdat\]/);
+    expect(dialog).toHaveTextContent(/#1/);
+
+    await user.click(screen.getByRole('button', { name: /confirm/i }));
+    expect(onImport).toHaveBeenCalledWith([['a', 'b']]);
+    expect(screen.getByText(/Dropped 4 parts\./)).toBeInTheDocument();
+    expect(box).toHaveValue('');
+  });
+
+  it('keeps the paste and the arms when the warning is cancelled', async () => {
+    const { onImport, user, box, button } = setup();
+    const pastedWithNot = '(a OR b) AND c NOT review[pt]';
+    await user.click(box);
+    await user.paste(pastedWithNot);
+    await user.click(button);
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onImport).not.toHaveBeenCalled();
+    expect(box).toHaveValue(pastedWithNot);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('warns about the replacement and the dropped parts in the same dialog', async () => {
+    const { onImport, user, box, button } = setup(true);
+    await user.click(box);
+    await user.paste('(a OR b) AND c NOT review[pt]');
+    await user.click(button);
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toHaveTextContent(/not advised/i);
+    expect(dialog).toHaveTextContent(/current terms will be lost/i);
+    await user.click(screen.getByRole('button', { name: /confirm/i }));
+    expect(onImport).toHaveBeenCalledWith([['a', 'b'], ['c']]);
+  });
+
+  it('refuses the import when every part would be dropped', async () => {
+    const { onImport, user, box, button } = setup();
+    await user.click(box);
+    await user.paste('#1 AND #2');
+    await user.click(button);
+    expect(onImport).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent(/nothing is left to import/i);
   });
 
   it('asks for confirmation before replacing existing terms', async () => {

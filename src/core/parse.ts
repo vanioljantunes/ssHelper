@@ -4,27 +4,43 @@
  * parentheses. Every term goes through the commit rule, so a body with a space comes out quoted
  * exactly as it would if it had been typed into a term box. Anything else is rejected as a whole
  * so a strategy is never imported partially.
+ *
+ * Four kinds of part are dropped instead of rejected (FR-021a), because they lower the
+ * sensitivity of a systematic review search or cannot be resolved from the paste: a NOT and the
+ * operand after it, methodological filters, date limits, and history line references. Each one
+ * comes back as an advisory so the page can name it before the researcher confirms the import.
  */
 
-import { commitTerm } from './term';
+import { commitTerm, splitTag } from './term';
 
 export type ParseError =
   | 'empty'
   | 'unbalanced_quotes'
   | 'unbalanced_parentheses'
-  | 'not_supported'
+  | 'all_dropped'
   | 'nested_groups'
   | 'mixed_operators'
   | 'missing_term'
   | 'missing_operator';
 
-export type ParseResult = { ok: true; arms: string[][] } | { ok: false; error: ParseError };
+export type AdvisoryKind = 'not_clause' | 'filter' | 'date_limit' | 'line_reference';
+
+/** One dropped part of the paste, written as it appeared. */
+export interface Advisory {
+  kind: AdvisoryKind;
+  text: string;
+}
+
+export type ParseResult =
+  { ok: true; arms: string[][]; advisories: Advisory[] } | { ok: false; error: ParseError };
 
 type Token =
   | { kind: 'open' }
   | { kind: 'close' }
   | { kind: 'op'; value: 'AND' | 'OR' | 'NOT' }
   | { kind: 'term'; value: string };
+
+type Split = { pieces: Token[][]; ops: string[] };
 
 class ParseFailure extends Error {
   constructor(readonly code: ParseError) {
@@ -35,6 +51,15 @@ class ParseFailure extends Error {
 const fail = (code: ParseError): never => {
   throw new ParseFailure(code);
 };
+
+/** Field tags that restrict the search by method or record type rather than by topic. */
+const FILTER_TAGS = ['lang', 'la', 'pt', 'ptyp', 'sb', 'filter'];
+/** Field tags that restrict the search by date. */
+const DATE_TAGS = ['dp', 'pdat', 'edat'];
+/** Subject headings used as filters rather than as topic terms. */
+const MESH_CHECKS = ['humans', 'animals', 'male', 'female'];
+const LINE_REFERENCE = /^#\d+$/;
+const TAGS_IN_TERM = /\[([^\]]+)\]/g;
 
 function isSpace(char: string): boolean {
   return /\s/.test(char);
@@ -83,6 +108,24 @@ function tokenize(text: string): Token[] {
   return tokens;
 }
 
+/** The tokens written back out, so a dropped part can be named as it was pasted. */
+function renderTokens(tokens: Token[]): string {
+  let out = '';
+  for (const token of tokens) {
+    const piece =
+      token.kind === 'open'
+        ? '('
+        : token.kind === 'close'
+          ? ')'
+          : token.kind === 'op'
+            ? token.value
+            : token.value;
+    const joined = out !== '' && !out.endsWith('(') && piece !== ')';
+    out += (joined ? ' ' : '') + piece;
+  }
+  return out;
+}
+
 function matchingClose(tokens: Token[], openIndex: number): number {
   let depth = 0;
   for (let i = openIndex; i < tokens.length; i += 1) {
@@ -111,7 +154,7 @@ function stripOuter(tokens: Token[]): { tokens: Token[]; stripped: boolean } {
 }
 
 /** Splits at operators outside parentheses; returns pieces and the operators found. */
-function splitTopLevel(tokens: Token[]): { pieces: Token[][]; ops: string[] } {
+function splitTopLevel(tokens: Token[]): Split {
   const pieces: Token[][] = [[]];
   const ops: string[] = [];
   let depth = 0;
@@ -128,14 +171,33 @@ function splitTopLevel(tokens: Token[]): { pieces: Token[][]; ops: string[] } {
   return { pieces, ops };
 }
 
-function termsOfPiece(piece: Token[]): string[] {
+/** The same split with every NOT and the operand after it removed and recorded. */
+function splitOutsideNot(tokens: Token[], advisories: Advisory[]): Split {
+  const split = splitTopLevel(tokens);
+  const pieces: Token[][] = [];
+  const ops: string[] = [];
+  split.pieces.forEach((piece, index) => {
+    if (index > 0) {
+      const op = split.ops[index - 1] ?? '';
+      if (op === 'NOT') {
+        advisories.push({ kind: 'not_clause', text: `NOT ${renderTokens(piece)}` });
+        return;
+      }
+      ops.push(op);
+    }
+    pieces.push(piece);
+  });
+  return { pieces, ops };
+}
+
+function termsOfPiece(piece: Token[], advisories: Advisory[]): string[] {
   if (piece.length === 0) return fail('missing_term');
   const only = piece[0];
   if (piece.length === 1 && only?.kind === 'term') return [only.value];
   if (!isWrapped(piece)) return fail('missing_operator');
   const inner = piece.slice(1, -1);
   if (inner.some((token) => token.kind === 'open')) return fail('nested_groups');
-  const { pieces, ops } = splitTopLevel(inner);
+  const { pieces, ops } = splitOutsideNot(inner, advisories);
   if (ops.includes('AND')) return fail('mixed_operators');
   return pieces.map((part) => {
     const term = part[0];
@@ -144,24 +206,41 @@ function termsOfPiece(piece: Token[]): string[] {
   });
 }
 
-function parseArm(segment: Token[]): string[] {
+function armOfSplit(split: Split, advisories: Advisory[]): string[] {
+  if (split.ops.includes('AND')) return fail('mixed_operators');
+  return split.pieces.flatMap((piece) => termsOfPiece(piece, advisories));
+}
+
+function parseArm(segment: Token[], advisories: Advisory[]): string[] {
   if (segment.length === 0) return fail('missing_term');
   const { tokens, stripped } = stripOuter(segment);
   if (tokens.length === 0) return fail('missing_term');
   if (stripped && tokens.some((token) => token.kind === 'open')) return fail('nested_groups');
-  const { pieces, ops } = splitTopLevel(tokens);
-  if (ops.includes('AND')) return fail('mixed_operators');
-  return pieces.flatMap(termsOfPiece);
+  return armOfSplit(splitOutsideNot(tokens, advisories), advisories);
+}
+
+/** The reason this term is dropped rather than imported, or null when it is a topic term. */
+export function advisoryKindOf(text: string): AdvisoryKind | null {
+  if (LINE_REFERENCE.test(text)) return 'line_reference';
+  const tags = Array.from(text.matchAll(TAGS_IN_TERM)).map((match) =>
+    (match[1] ?? '').trim().toLowerCase(),
+  );
+  if (tags.some((tag) => DATE_TAGS.includes(tag))) return 'date_limit';
+  if (tags.some((tag) => FILTER_TAGS.includes(tag))) return 'filter';
+  const { body, tag } = splitTag(text);
+  const word = body.replace(/^"/, '').replace(/"$/, '').trim().toLowerCase();
+  const heading = tag.replace(/[[\]]/g, '').trim().toLowerCase();
+  const isHeading = heading === 'mh' || heading.startsWith('mesh');
+  if (isHeading && MESH_CHECKS.includes(word)) return 'filter';
+  return null;
 }
 
 export function parseStrategy(text: string): ParseResult {
   if (text.trim() === '') return { ok: false, error: 'empty' };
   if ((text.split('"').length - 1) % 2 !== 0) return { ok: false, error: 'unbalanced_quotes' };
+  const advisories: Advisory[] = [];
   try {
     const tokens = tokenize(text);
-    if (tokens.some((token) => token.kind === 'op' && token.value === 'NOT')) {
-      return { ok: false, error: 'not_supported' };
-    }
     let depth = 0;
     for (const token of tokens) {
       if (token.kind === 'open') depth += 1;
@@ -171,10 +250,30 @@ export function parseStrategy(text: string): ParseResult {
     if (depth !== 0) return { ok: false, error: 'unbalanced_parentheses' };
 
     const { tokens: body } = stripOuter(tokens);
-    const { pieces, ops } = splitTopLevel(body);
-    if (ops.includes('AND') && ops.includes('OR')) return { ok: false, error: 'mixed_operators' };
-    const arms = ops.includes('AND') ? pieces.map(parseArm) : [parseArm(body)];
-    return { ok: true, arms: arms.map((arm) => arm.map((term) => commitTerm(term) ?? term)) };
+    const split = splitOutsideNot(body, advisories);
+    if (split.ops.includes('AND') && split.ops.includes('OR')) {
+      return { ok: false, error: 'mixed_operators' };
+    }
+    const parsed = split.ops.includes('AND')
+      ? split.pieces.map((piece) => parseArm(piece, advisories))
+      : [armOfSplit(split, advisories)];
+
+    const arms: string[][] = [];
+    for (const arm of parsed) {
+      const kept: string[] = [];
+      for (const raw of arm) {
+        const term = commitTerm(raw) ?? raw;
+        const kind = advisoryKindOf(term);
+        if (kind) {
+          advisories.push({ kind, text: term });
+          continue;
+        }
+        kept.push(term);
+      }
+      if (kept.length > 0) arms.push(kept);
+    }
+    if (arms.length === 0) return { ok: false, error: 'all_dropped' };
+    return { ok: true, arms, advisories };
   } catch (error) {
     if (error instanceof ParseFailure) return { ok: false, error: error.code };
     throw error;
