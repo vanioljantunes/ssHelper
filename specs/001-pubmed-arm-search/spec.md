@@ -271,6 +271,15 @@ confirm the rows are still there.
   be resolved (DOI not in PubMed, not a DOI, or the check failed). When every checked study was
   retrieved the row shows a check mark instead of a list. A run with no study checked shows that
   no studies were checked; rows saved before this requirement keep that state.
+- **FR-031** (added 2026-10-10): Below the known studies and above the history, the application
+  MUST show the current strategy, pending text included, written for Cochrane CENTRAL and for
+  Embase, each copyable in one click. The rewrite MUST be rule-based and deterministic (no
+  network, no AI): `[tiab]` becomes `:ti,ab,kw` in Cochrane and `:ti,ab` in Embase, `[ti]`,
+  `[ab]` and `[tw]` map to their equivalents, and a subject heading (`[Mesh]`, `[mh]`, `[majr]`)
+  becomes `[mh "Term"]` in Cochrane and `'term'/exp` in Embase. Phrases take the quotation marks
+  of the target database. Everything inexact MUST be named under the two lines: the subject
+  headings to confirm in Emtree, the terms whose truncation can expand differently, and any
+  field tag with no counterpart, whose words are kept as free text.
 
 ### Key Entities
 

@@ -23,6 +23,10 @@ information specialist's judgment, and it is not a substitute for peer review of
   `("meta-analysis")` arm.
 - Each visitor types a **contact email** once (sent to PubMed and Crossref, saved only in that
   browser); Search stays disabled until it is set.
+- The **Other databases** panel writes the same strategy for Cochrane CENTRAL and for Embase by
+  syntax rules only, ready to copy. Field tags are mapped, subject headings are exploded, and
+  anything inexact is named below the two lines: headings to confirm in Emtree, truncated terms,
+  and field tags that had to be dropped.
 - Every run is kept in a **history** table (date and time, query, both counts) that survives
   page reloads and can be loaded back, copied, or deleted.
 

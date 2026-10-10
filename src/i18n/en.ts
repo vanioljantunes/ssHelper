@@ -159,6 +159,20 @@ export const en = {
   labelErrorInvalidResponse: 'Crossref returned an unexpected response.',
   labelErrorNoAuthor: 'Crossref has no author name for this DOI.',
 
+  translateHeading: 'Other databases',
+  translateHint:
+    'The same strategy written for Cochrane CENTRAL and Embase, by syntax rules only. Field tags are mapped and subject headings are exploded. Read each one as a draft and review it before you run the search.',
+  translateEmpty: 'Add at least one term to see the translations.',
+  translateCochraneLabel: 'Cochrane CENTRAL (advanced search)',
+  translateEmbaseLabel: 'Embase (Emtree, advanced search)',
+  translateCopyHidden: 'Copy the {database} translation',
+  translateDroppedTags:
+    'These field tags have no counterpart and were left out; their words were kept as free text: {tags}.',
+  translateHeadingsReview:
+    'MeSH and Emtree are different thesauri. These subject headings were carried over word for word and have to be checked in Emtree before you run the Embase search: {headings}.',
+  translateWildcards:
+    'Truncation does not expand to the same words in every database. Check what these terms match: {terms}.',
+
   historyHeading: 'History',
   historyDateTime: 'Date and time',
   historyStrategy: 'Search strategy',

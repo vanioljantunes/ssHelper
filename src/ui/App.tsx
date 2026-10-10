@@ -55,6 +55,7 @@ import { CONTACT_EMAIL_HINT_ID, formatCount, SearchPanel, type LastSearch } from
 import { SectionNav } from './SectionNav';
 import { SiteBar } from './SiteBar';
 import { StudiesPanel, type StudyRowState } from './StudiesPanel';
+import { TranslatePanel } from './TranslatePanel';
 import './app.css';
 
 export interface AppProps {
@@ -370,6 +371,14 @@ export function App({
                 onRemove={(id) => setStudies((current) => removeStudy(current, id))}
                 onCheck={() => void handleCheckStudies()}
               />
+            </section>
+            <section
+              className="panel"
+              id="translate"
+              tabIndex={-1}
+              aria-labelledby="translate-heading"
+            >
+              <TranslatePanel headingId="translate-heading" arms={previewArmTerms(strategy)} />
             </section>
             <section className="panel" id="history" tabIndex={-1} aria-labelledby="history-heading">
               <h2 id="history-heading">{en.historyHeading}</h2>

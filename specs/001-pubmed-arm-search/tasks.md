@@ -180,6 +180,15 @@ Write each test task before its implementation task and confirm it fails first.
 
 ---
 
+## Phase 11: Addendum - Cochrane and Embase translation (FR-031, added 2026-10-10)
+
+- [X] T080 [P] Unit tests in `tests/unit/translate.test.ts`: each field tag per database, subject headings exploded, quoting per database, an apostrophe inside an Embase phrase, an unmappable tag kept as free text, arms joined with OR and AND, and the reported headings, truncated terms and dropped tags
+- [X] T081 [P] Component tests in `tests/component/TranslatePanel.test.tsx`: both lines rendered and labelled, copy of one line only, the empty-strategy state with no copy button, and each of the three review notes shown only when it applies
+- [X] T082 Implement `src/core/translate.ts` (rule-based, no React, fetch or storage) and `src/ui/TranslatePanel.tsx`, strings in `src/i18n/en.ts`, styles in `src/ui/app.css`, wired in `src/ui/App.tsx` between the known studies and the history, with the section added to `src/ui/SectionNav.tsx`
+- [X] T083 Docs: spec.md FR-031, README.md
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

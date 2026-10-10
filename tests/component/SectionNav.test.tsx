@@ -10,6 +10,7 @@ const SECTIONS = [
   { name: 'Search', href: '#search' },
   { name: 'Prior meta-analyses', href: '#prior' },
   { name: 'Known studies', href: '#studies' },
+  { name: 'Other databases', href: '#translate' },
   { name: 'History', href: '#history' },
 ];
 
