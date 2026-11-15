@@ -63,7 +63,9 @@ describe('SiteBar (same bar as vanioantunes.com)', () => {
   });
 
   it('is the only banner and sits above the tool in the app', () => {
-    render(<App countQuery={vi.fn()} lookupLabel={vi.fn()} defaultContactEmail="" />);
+    render(
+      <App openAllSections countQuery={vi.fn()} lookupLabel={vi.fn()} defaultContactEmail="" />,
+    );
     const bar = screen.getByRole('banner');
     const title = screen.getByRole('heading', { level: 1, name: 'ssHelper' });
     expect(bar.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

@@ -100,7 +100,7 @@ export function SearchPanel({
       <div className="search-row">
         <button
           type="button"
-          className="primary"
+          className="primary action"
           disabled={disabled}
           aria-busy={running || undefined}
           aria-describedby={emailHintId}

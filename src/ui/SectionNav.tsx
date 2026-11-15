@@ -6,6 +6,7 @@ import { useMediaQuery } from './useMediaQuery';
 /** Page sections in order; each id is set on the matching element in Hero and App. */
 export const PAGE_SECTIONS = [
   { id: 'about', label: en.sectionNavAbout },
+  { id: 'prompt', label: en.promptNav },
   { id: 'strategy', label: en.armsHeading },
   { id: 'search', label: en.searchHeading },
   { id: 'prior', label: en.priorHeading },
@@ -22,7 +23,15 @@ const SECTION_IDS = PAGE_SECTIONS.map((section) => section.id);
  * Links are plain anchors; with script they scroll smoothly (unless reduced motion is preferred),
  * move focus to the section and mark it with aria-current.
  */
-export function SectionNav() {
+export interface SectionNavProps {
+  /** Called before scrolling, so a folded section opens first. */
+  onSelect?: (id: string) => void;
+  /** Whether every section is open; with onToggleAll, adds an Expand all / Collapse all button. */
+  allOpen?: boolean;
+  onToggleAll?: () => void;
+}
+
+export function SectionNav({ onSelect, allOpen = false, onToggleAll }: SectionNavProps = {}) {
   const { active, select } = useActiveSection(SECTION_IDS);
   const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)', false);
   const listRef = useRef<HTMLUListElement>(null);
@@ -40,6 +49,7 @@ export function SectionNav() {
     const target = document.getElementById(id);
     if (!target) return;
     event.preventDefault();
+    onSelect?.(id);
     select(id);
     if (typeof target.scrollIntoView === 'function') {
       target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
@@ -62,6 +72,13 @@ export function SectionNav() {
             </a>
           </li>
         ))}
+        {onToggleAll && (
+          <li className="section-nav-all">
+            <button type="button" className="link-button" onClick={onToggleAll}>
+              {allOpen ? en.sectionsCollapseAll : en.sectionsExpandAll}
+            </button>
+          </li>
+        )}
       </ul>
     </nav>
   );

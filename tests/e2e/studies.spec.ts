@@ -37,7 +37,7 @@ test('search checks each DOI: found, not found, not in PubMed', async ({ page })
   await doiInput(page, 2).fill(`doi:${MISSED}`);
   await doiInput(page, 3).fill(ABSENT);
 
-  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.locator('#search-body').getByRole('button', { name: 'Search', exact: true }).click();
   await expect(page.getByTestId('studies-summary')).toContainText('Found 1 of 2 studies.');
   await expect(page.getByTestId('studies-summary')).toContainText('1 DOI not in PubMed');
 
@@ -112,6 +112,7 @@ test('add and remove study boxes; inputs persist after reload', async ({ page })
 
   await doiInput(page, 1).fill(MISSED);
   await page.reload();
+  await page.getByRole('button', { name: 'Expand all' }).click();
   await expect(studyRows(page)).toHaveCount(1);
   await expect(doiInput(page, 1)).toHaveValue(MISSED);
   await expectNoAxeViolations(page);
@@ -131,7 +132,7 @@ test('labels come from Crossref after a search and can be edited', async ({ page
   await expect(nameInput(page, 1)).toHaveAttribute('placeholder', 'Study 1');
   await expect(nameInput(page, 1)).toHaveValue('');
 
-  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.locator('#search-body').getByRole('button', { name: 'Search', exact: true }).click();
   for (const [i, label] of labels.entries())
     await expect(nameInput(page, i + 1)).toHaveValue(label);
   await expect(studyRows(page).nth(0)).toHaveAttribute('data-status', 'found');
@@ -144,6 +145,7 @@ test('labels come from Crossref after a search and can be edited', async ({ page
   await expect(page.getByTestId('studies-summary')).toContainText('Found 5 of 5 studies.');
   await expect(nameInput(page, 1)).toHaveValue('Custom, 2020');
   await page.reload();
+  await page.getByRole('button', { name: 'Expand all' }).click();
   await expect(nameInput(page, 1)).toHaveValue('Custom, 2020');
   await expect(nameInput(page, 2)).toHaveValue('Gong, 2024');
 
@@ -169,7 +171,7 @@ test('the history row records the studies not found, and a check when none is mi
   await doiInput(page, 1).fill(FOUND);
   await doiInput(page, 2).fill(MISSED);
   await doiInput(page, 3).fill(ABSENT);
-  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.locator('#search-body').getByRole('button', { name: 'Search', exact: true }).click();
 
   const firstRow = historyRows(page).first();
   await expect(firstRow).toContainText(`Not found: ${MISSED}`);
@@ -177,11 +179,12 @@ test('the history row records the studies not found, and a check when none is mi
 
   // Kept after a reload, and a run where every study is retrieved shows the check instead.
   await page.reload();
+  await page.getByRole('button', { name: 'Expand all' }).click();
   await expect(historyRows(page).first()).toContainText(`Not found: ${MISSED}`);
   await doiInput(page, 2).fill('');
   await doiInput(page, 3).fill('');
   await addTerm(page, 'cardiac failure');
-  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.locator('#search-body').getByRole('button', { name: 'Search', exact: true }).click();
   await expect(historyRows(page)).toHaveCount(2);
   await expect(historyRows(page).first()).toContainText('The study was found');
   await expectNoAxeViolations(page);

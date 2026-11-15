@@ -16,10 +16,13 @@ const noRecords = async () => ({ status: 'ok' as const, records: [], total: 0 })
 function renderApp(countQuery: (query: string) => Promise<CountOutcome> = async () => ok(1)) {
   const user = userEvent.setup();
   const spy = vi.fn(countQuery);
-  render(<App countQuery={spy} listRecords={noRecords} />);
+  render(<App openAllSections countQuery={spy} listRecords={noRecords} />);
   const arms = () => screen.getAllByRole('group', { name: /^Arm \d+$/ });
   const input = (n: number) => screen.getByRole('textbox', { name: `New term for arm ${n}` });
-  const searchButton = () => screen.getByRole('button', { name: /^Search/ });
+  const searchButton = () =>
+    within(document.getElementById('search-body') as HTMLElement).getByRole('button', {
+      name: /^Search/,
+    });
   return { user, spy, arms, input, searchButton };
 }
 

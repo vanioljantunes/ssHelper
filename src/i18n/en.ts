@@ -45,6 +45,32 @@ export const en = {
   sectionNavLabel: 'Page sections',
   sectionNavAbout: 'About',
 
+  sectionExpand: 'Show',
+  sectionCollapse: 'Hide',
+  sectionsExpandAll: 'Expand all',
+  sectionsCollapseAll: 'Collapse all',
+
+  promptHeading: 'No search strategy yet?',
+  promptNav: 'No strategy yet?',
+  promptHint:
+    'Write one concept per arm. ssHelper turns them into a prompt; paste it in Vera Health, then paste the strategy it gives you into Search strategy below.',
+  promptConceptsLabel: 'Concepts, one per arm',
+  promptConceptLabel: 'Concept {n}',
+  promptConceptPlaceholder: 'e.g. {example}',
+  promptExample1: 'Edinburgh criteria',
+  promptExample2: 'computed tomography',
+  promptExample3: 'children',
+  promptRemoveConcept: 'Remove concept {n}',
+  promptAddConcept: 'Add concept',
+  promptPreviewLabel: 'Prompt',
+  promptEmpty: 'Write at least one concept to build the prompt.',
+  promptCopy: 'Copy prompt',
+  promptCopyFailed: 'Copy failed. Select the prompt and copy it by hand.',
+  promptOpenVera: 'Open Vera Health',
+  promptOpenVeraHidden: '(opens in a new tab)',
+  promptNextStep: 'Got the strategy?',
+  promptGoPaste: 'Paste it in Search strategy',
+
   armsHeading: 'Search strategy',
   armLabel: 'Arm {n}',
   deleteArm: 'Delete arm {n}',
@@ -233,6 +259,21 @@ export const en = {
   historyEmpty: 'No searches yet.',
   historySaveFailed: 'History could not be saved in this browser.',
 } as const;
+
+/** Wording of the Vera Health prompt; built by `buildStrategyPrompt` in core/prompt. */
+export const promptText = {
+  intro: 'Please make a search strategy for PubMed with this structure:',
+  single: 'The parenthesis should be about "{concept}".',
+  first: 'The {ordinal} parenthesis should be about "{concept}"',
+  next: 'the {ordinal} about "{concept}"',
+  and: 'and',
+  rules:
+    "Please don't use keywords like MeSH or [tiab], and don't create more parentheses or ANDs. Just increase the number of synonyms inside each ().",
+  outro: 'Give me a single result so I can paste it in PubMed.',
+  ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'],
+} as const;
+
+export const VERA_HEALTH_URL = 'https://www.verahealth.ai/';
 
 export type MessageKey = keyof typeof en;
 

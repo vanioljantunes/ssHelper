@@ -6,7 +6,8 @@ const arm = (page: Page, n: number) => page.getByRole('group', { name: `Arm ${n}
 const input = (page: Page, n: number) =>
   page.getByRole('textbox', { name: `New term for arm ${n}` });
 const terms = (page: Page, n: number) => arm(page, n).getByTestId('term');
-const searchButton = (page: Page) => page.getByRole('button', { name: 'Search', exact: true });
+const searchButton = (page: Page) =>
+  page.locator('#search-body').getByRole('button', { name: 'Search', exact: true });
 
 test.beforeEach(async ({ page }) => {
   await resetStorage(page);

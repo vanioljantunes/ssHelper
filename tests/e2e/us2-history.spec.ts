@@ -6,7 +6,8 @@ const input = (page: Page, n: number) =>
   page.getByRole('textbox', { name: `New term for arm ${n}` });
 const arm = (page: Page, n: number) => page.getByRole('group', { name: `Arm ${n}`, exact: true });
 const historyRows = (page: Page) => page.locator('.history-table tbody tr');
-const searchButton = (page: Page) => page.getByRole('button', { name: 'Search', exact: true });
+const searchButton = (page: Page) =>
+  page.locator('#search-body').getByRole('button', { name: 'Search', exact: true });
 
 async function addTerm(page: Page, armNumber: number, text: string) {
   await input(page, armNumber).fill(text);
@@ -49,6 +50,7 @@ test('scenarios 8-10: row added, persists after reload, copy gives exact query',
 
   // 9
   await page.reload();
+  await page.getByRole('button', { name: 'Expand all' }).click();
   await expect(historyRows(page)).toHaveCount(1);
   await expect(historyRows(page).first().locator('td').nth(1)).toHaveText(query);
   await expect(arm(page, 1).getByTestId('term')).toHaveCount(2);
@@ -99,6 +101,7 @@ test('scenarios 14-15: load an older row, delete a row, clear history', async ({
   await page.getByRole('alertdialog').getByRole('button', { name: 'Confirm' }).click();
   await expect(page.getByText('No searches yet.')).toBeVisible();
   await page.reload();
+  await page.getByRole('button', { name: 'Expand all' }).click();
   await expect(page.getByText('No searches yet.')).toBeVisible();
 });
 

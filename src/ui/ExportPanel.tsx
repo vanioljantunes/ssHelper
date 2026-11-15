@@ -11,8 +11,6 @@ const SHORT_NAMES: Record<TargetDatabase, string> = {
 };
 
 export interface ExportPanelProps {
-  /** Heading id, so the section can label itself with it. */
-  headingId: string;
   /** Terms of each arm, as the PubMed preview uses them. */
   arms: string[][];
   /** The PubMed query exactly as the search panel shows it, or null when no term is entered. */
@@ -61,7 +59,6 @@ export function exportRows(
  * result counts. The file is written in the browser; nothing is sent anywhere.
  */
 export function ExportPanel({
-  headingId,
   arms,
   query,
   selected,
@@ -89,7 +86,6 @@ export function ExportPanel({
 
   return (
     <div>
-      <h2 id={headingId}>{en.exportHeading}</h2>
       <p className="hint">{en.exportHint}</p>
       {rows.length > 0 && (
         <ul className="export-rows" aria-label={en.exportRowsLabel}>

@@ -23,7 +23,7 @@ const authorCard = (page: Page) => page.getByRole('complementary', { name: /made
 const packages = (page: Page) => page.getByRole('region', { name: 'R packages by Vanio' });
 const sectionNav = (page: Page) => page.getByRole('navigation', { name: 'Page sections' });
 const strategyHeading = (page: Page) =>
-  page.getByRole('heading', { level: 2, name: 'Search strategy', exact: true });
+  page.getByRole('heading', { level: 2, name: 'No search strategy yet?', exact: true });
 
 async function expectHero(page: Page) {
   await expect(page.getByRole('heading', { level: 1, name: 'ssHelper' })).toBeVisible();
@@ -64,7 +64,7 @@ async function expectNoHorizontalScroll(page: Page, width: number) {
 async function headingTop(page: Page) {
   // Page coordinates: bounding box top plus the current scroll (expected to be 0).
   return page.evaluate(() => {
-    const heading = document.getElementById('arms-heading')!;
+    const heading = document.getElementById('prompt-heading')!;
     return heading.getBoundingClientRect().top + window.scrollY;
   });
 }
@@ -101,7 +101,7 @@ test.describe('desktop', () => {
     await expect(nav).toBeVisible();
     const navBox = (await nav.boundingBox())!;
     expect(navBox.x + navBox.width).toBeLessThanOrEqual(title.x);
-    await expect(nav.getByRole('link')).toHaveCount(8);
+    await expect(nav.getByRole('link')).toHaveCount(9);
 
     await expectNoHorizontalScroll(page, 1440);
     await expectNoAxeViolations(page);

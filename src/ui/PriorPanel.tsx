@@ -10,11 +10,7 @@ export type PriorState =
   | { status: 'error'; message: string };
 
 export interface PriorPanelProps {
-  /** Heading id, so the section can label itself with it. */
-  headingId: string;
   state: PriorState;
-  /** Meta-analyses the strategy retrieves in total, before the year filter; null before a run. */
-  count: number | null;
   /** Oldest publication year shown; null lists every year. */
   minYear: number | null;
   years: number[];
@@ -112,29 +108,24 @@ function Body({ state, minYear }: { state: PriorState; minYear: number | null })
   }
 }
 
+/** The meta-analysis count the strategy retrieves, shown on the section heading row. */
+export function PriorCount({ count }: { count: number | null }) {
+  if (count === null) return null;
+  return (
+    <span className="prior-count">
+      <span className="visually-hidden">{en.priorCountLabel}: </span>
+      <span data-testid="prior-count">{numberFormat.format(count)}</span>
+    </span>
+  );
+}
+
 /**
- * Prior meta-analyses: the count on the heading row, a minimum-year filter, and one row per
+ * Prior meta-analyses (the count sits on the section heading row, see PriorCount): a minimum-year filter, and one row per
  * meta-analysis with its PubMed page and, when there is one, its free full text.
  */
-export function PriorPanel({
-  headingId,
-  state,
-  count,
-  minYear,
-  years,
-  onMinYearChange,
-}: PriorPanelProps) {
+export function PriorPanel({ state, minYear, years, onMinYearChange }: PriorPanelProps) {
   return (
     <div>
-      <div className="prior-head">
-        <h2 id={headingId}>{en.priorHeading}</h2>
-        {count !== null && (
-          <span className="prior-count">
-            <span className="visually-hidden">{en.priorCountLabel}: </span>
-            <span data-testid="prior-count">{numberFormat.format(count)}</span>
-          </span>
-        )}
-      </div>
       <p className="hint">{en.priorHint}</p>
       <div className="prior-filter">
         <label className="label" htmlFor="prior-min-year">

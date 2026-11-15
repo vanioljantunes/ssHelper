@@ -6,7 +6,8 @@ const HINT = 'Enter your email to search. PubMed asks every tool to identify a c
 const TYPED = 'visitor@example.org';
 
 const emailInput = (page: Page) => page.getByRole('textbox', { name: /^Your email/ });
-const searchButton = (page: Page) => page.getByRole('button', { name: 'Search', exact: true });
+const searchButton = (page: Page) =>
+  page.locator('#search-body').getByRole('button', { name: 'Search', exact: true });
 const checkButton = (page: Page) => page.getByRole('button', { name: 'Check studies' });
 
 async function addTerm(page: Page, text: string) {
@@ -46,6 +47,8 @@ test('entering an email enables Search and it persists after reload', async ({ p
   await expectNoAxeViolations(page);
 
   await page.reload();
+
+  await page.getByRole('button', { name: 'Expand all' }).click();
   await expect(emailInput(page)).toHaveValue(TYPED);
   await expect(searchButton(page)).toBeEnabled();
 });

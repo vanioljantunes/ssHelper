@@ -6,6 +6,7 @@ import { SectionNav } from '../../src/ui/SectionNav';
 
 const SECTIONS = [
   { name: 'About', href: '#about' },
+  { name: 'No strategy yet?', href: '#prompt' },
   { name: 'Search strategy', href: '#strategy' },
   { name: 'Search', href: '#search' },
   { name: 'Prior meta-analyses', href: '#prior' },
@@ -16,7 +17,9 @@ const SECTIONS = [
 ];
 
 function renderApp() {
-  return render(<App countQuery={vi.fn()} lookupLabel={vi.fn()} defaultContactEmail="" />);
+  return render(
+    <App openAllSections countQuery={vi.fn()} lookupLabel={vi.fn()} defaultContactEmail="" />,
+  );
 }
 
 describe('SectionNav (FR-026)', () => {

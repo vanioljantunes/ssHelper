@@ -51,14 +51,21 @@ import { Hero } from './Hero';
 import { HistoryTable } from './HistoryTable';
 import { ImportStrategy } from './ImportStrategy';
 import { Packages } from './Packages';
-import { PriorPanel, type PriorState } from './PriorPanel';
+import { PriorCount, PriorPanel, type PriorState } from './PriorPanel';
+import { PromptPanel } from './PromptPanel';
 import { CONTACT_EMAIL_HINT_ID, formatCount, SearchPanel, type LastSearch } from './SearchPanel';
 import { ExportPanel } from './ExportPanel';
-import { SectionNav } from './SectionNav';
+import { Section } from './Section';
+import { PAGE_SECTIONS, SectionNav } from './SectionNav';
 import { SiteBar } from './SiteBar';
 import { StudiesPanel, type StudyRowState } from './StudiesPanel';
 import { TranslatePanel } from './TranslatePanel';
 import './app.css';
+
+/** Every collapsible section; the About block above them always stays open. */
+const TOOL_SECTION_IDS: readonly string[] = PAGE_SECTIONS.map((section) => section.id).filter(
+  (id) => id !== 'about',
+);
 
 export interface AppProps {
   countQuery?: (query: string) => Promise<CountOutcome>;
@@ -71,6 +78,8 @@ export interface AppProps {
   settingsStore?: SettingsStore;
   /** Pre-filled contact email when none is saved; defaults to the optional build variable. */
   defaultContactEmail?: string;
+  /** Starts with every section open instead of folded (tests). */
+  openAllSections?: boolean;
 }
 
 export function App({
@@ -81,6 +90,7 @@ export function App({
   draftStore,
   settingsStore,
   defaultContactEmail = import.meta.env.VITE_NCBI_CONTACT_EMAIL ?? '',
+  openAllSections = false,
 }: AppProps) {
   const [history] = useState(() => historyStore ?? createLocalHistoryStore());
   const [drafts] = useState(() => draftStore ?? createLocalDraftStore());
@@ -121,6 +131,37 @@ export function App({
   const priorLoadRef = useRef(0);
   const [saveFailed, setSaveFailed] = useState(false);
   const runningRef = useRef(false);
+  // Sections start folded; a link to one (#search) opens it on arrival.
+  const [openSections, setOpenSections] = useState<ReadonlySet<string>>(() => {
+    if (openAllSections) return new Set(TOOL_SECTION_IDS);
+    const hash = window.location.hash.slice(1);
+    return new Set(TOOL_SECTION_IDS.includes(hash) ? [hash] : []);
+  });
+  const allOpen = openSections.size === TOOL_SECTION_IDS.length;
+
+  const openSection = useCallback((id: string) => {
+    setOpenSections((current) => (current.has(id) ? current : new Set(current).add(id)));
+  }, []);
+
+  const toggleSection = useCallback((id: string) => {
+    setOpenSections((current) => {
+      const next = new Set(current);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }, []);
+
+  /** Opens Search strategy and puts the cursor in its paste box. */
+  const handleGoPaste = () => {
+    openSection('strategy');
+    // The box is already in the DOM; wait one frame for its section to unhide.
+    window.requestAnimationFrame(() => {
+      const box = document.querySelector<HTMLTextAreaElement>('#strategy .import-box');
+      if (!box) return;
+      box.scrollIntoView?.({ block: 'center' });
+      box.focus({ preventScroll: true });
+    });
+  };
 
   const track = useCallback((result: SaveResult) => {
     if (!result.ok && result.reason !== 'duplicate') setSaveFailed(true);
@@ -260,6 +301,7 @@ export function App({
           t(en.resultsAnnouncement, { count: formatCount(result), meta: formatCount(metaResult) }),
         );
         setPriorQuery(outcome.run.metaQuery);
+        openSection('prior');
         if (metaResult.status === 'ok') {
           const year = defaultMinYear(metaResult.count, new Date());
           setPriorCount(metaResult.count);
@@ -290,6 +332,7 @@ export function App({
 
   const handleLoad = (run: SearchRun) => {
     setStrategy(fromDraft({ arms: run.arms.map((arm) => ({ terms: arm.terms, pending: '' })) }));
+    openSection('strategy');
   };
 
   const handleDelete = (id: string) => {
@@ -308,10 +351,28 @@ export function App({
       <div className="app">
         <Hero />
         <div className="tool">
-          <SectionNav />
+          <SectionNav
+            onSelect={openSection}
+            allOpen={allOpen}
+            onToggleAll={() => setOpenSections(allOpen ? new Set() : new Set(TOOL_SECTION_IDS))}
+          />
           <main>
-            <section className="panel" id="strategy" tabIndex={-1} aria-labelledby="arms-heading">
-              <h2 id="arms-heading">{en.armsHeading}</h2>
+            <Section
+              id="prompt"
+              headingId="prompt-heading"
+              title={en.promptHeading}
+              open={openSections.has('prompt')}
+              onToggle={toggleSection}
+            >
+              <PromptPanel onGoPaste={handleGoPaste} />
+            </Section>
+            <Section
+              id="strategy"
+              headingId="arms-heading"
+              title={en.armsHeading}
+              open={openSections.has('strategy')}
+              onToggle={toggleSection}
+            >
               <ImportStrategy
                 needsConfirmation={!isEmpty}
                 onImport={(arms) =>
@@ -332,9 +393,14 @@ export function App({
                   update((s) => setTermTag(s, armId, termId, tag))
                 }
               />
-            </section>
-            <section className="panel" id="search" tabIndex={-1} aria-labelledby="search-heading">
-              <h2 id="search-heading">{en.searchHeading}</h2>
+            </Section>
+            <Section
+              id="search"
+              headingId="search-heading"
+              title={en.searchHeading}
+              open={openSections.has('search')}
+              onToggle={toggleSection}
+            >
               <SearchPanel
                 query={query}
                 isEmpty={isEmpty}
@@ -346,19 +412,29 @@ export function App({
                 onContactEmailChange={handleContactEmailChange}
                 onSearch={() => void handleSearch()}
               />
-            </section>
-            <section className="panel" id="prior" tabIndex={-1} aria-labelledby="prior-heading">
+            </Section>
+            <Section
+              id="prior"
+              headingId="prior-heading"
+              title={en.priorHeading}
+              open={openSections.has('prior')}
+              onToggle={toggleSection}
+              badge={<PriorCount count={priorCount} />}
+            >
               <PriorPanel
-                headingId="prior-heading"
                 state={priorState}
-                count={priorCount}
                 minYear={priorMinYear}
                 years={yearOptions(new Date())}
                 onMinYearChange={handleMinYearChange}
               />
-            </section>
-            <section className="panel" id="studies" tabIndex={-1} aria-labelledby="studies-heading">
-              <h2 id="studies-heading">{en.studiesHeading}</h2>
+            </Section>
+            <Section
+              id="studies"
+              headingId="studies-heading"
+              title={en.studiesHeading}
+              open={openSections.has('studies')}
+              onToggle={toggleSection}
+            >
               <StudiesPanel
                 studies={studies}
                 results={studyResults}
@@ -374,15 +450,15 @@ export function App({
                 onRemove={(id) => setStudies((current) => removeStudy(current, id))}
                 onCheck={() => void handleCheckStudies()}
               />
-            </section>
-            <section
-              className="panel"
+            </Section>
+            <Section
               id="translate"
-              tabIndex={-1}
-              aria-labelledby="translate-heading"
+              headingId="translate-heading"
+              title={en.translateHeading}
+              open={openSections.has('translate')}
+              onToggle={toggleSection}
             >
               <TranslatePanel
-                headingId="translate-heading"
                 arms={previewArmTerms(strategy)}
                 selected={targets}
                 onToggle={(database, checked) =>
@@ -391,17 +467,23 @@ export function App({
                   )
                 }
               />
-            </section>
-            <section className="panel" id="export" tabIndex={-1} aria-labelledby="export-heading">
-              <ExportPanel
-                headingId="export-heading"
-                arms={previewArmTerms(strategy)}
-                query={query}
-                selected={targets}
-              />
-            </section>
-            <section className="panel" id="history" tabIndex={-1} aria-labelledby="history-heading">
-              <h2 id="history-heading">{en.historyHeading}</h2>
+            </Section>
+            <Section
+              id="export"
+              headingId="export-heading"
+              title={en.exportHeading}
+              open={openSections.has('export')}
+              onToggle={toggleSection}
+            >
+              <ExportPanel arms={previewArmTerms(strategy)} query={query} selected={targets} />
+            </Section>
+            <Section
+              id="history"
+              headingId="history-heading"
+              title={en.historyHeading}
+              open={openSections.has('history')}
+              onToggle={toggleSection}
+            >
               {saveFailed && <p className="alert">{en.historySaveFailed}</p>}
               <HistoryTable
                 runs={runs}
@@ -410,7 +492,7 @@ export function App({
                 onDelete={handleDelete}
                 onClear={handleClear}
               />
-            </section>
+            </Section>
           </main>
         </div>
         <Packages />

@@ -11,7 +11,7 @@ const neverCalled = async (): Promise<CountOutcome> => {
 
 function renderApp() {
   const user = userEvent.setup();
-  render(<App countQuery={neverCalled} />);
+  render(<App openAllSections countQuery={neverCalled} />);
   const arm = (n: number) => screen.getByRole('group', { name: `Arm ${n}` });
   const input = (n: number) => screen.getByRole('textbox', { name: `New term for arm ${n}` });
   const termTexts = (n: number) =>

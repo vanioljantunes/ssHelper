@@ -3,8 +3,6 @@ import { translate, TARGET_DATABASES, type TargetDatabase } from '../core/transl
 import { en, t } from '../i18n/en';
 
 export interface TranslatePanelProps {
-  /** Heading id, so the section can label itself with it. */
-  headingId: string;
   /** Terms of each arm, as the PubMed preview uses them. */
   arms: string[][];
   /** The databases whose translation is shown (FR-032). */
@@ -30,7 +28,6 @@ export const DATABASE_LABELS: Record<TargetDatabase, string> = {
  * anywhere: the researcher copies each line into the database.
  */
 export function TranslatePanel({
-  headingId,
   arms,
   selected,
   onToggle,
@@ -71,7 +68,6 @@ export function TranslatePanel({
 
   return (
     <div>
-      <h2 id={headingId}>{en.translateHeading}</h2>
       <p className="hint">{en.translateHint}</p>
       <fieldset className="database-picker">
         <legend>{en.translateDatabasesLabel}</legend>

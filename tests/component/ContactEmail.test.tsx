@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { CountOutcome } from '../../src/core/types';
@@ -30,6 +30,7 @@ function renderApp({
   const lookupLabel = vi.fn(async () => ({ status: 'error' as const, message: 'x' }));
   render(
     <App
+      openAllSections
       countQuery={countQuery}
       listRecords={async () => ({ status: 'ok' as const, records: [], total: 0 })}
       lookupLabel={lookupLabel}
@@ -38,7 +39,10 @@ function renderApp({
     />,
   );
   const emailInput = () => screen.getByRole('textbox', { name: LABEL });
-  const searchButton = () => screen.getByRole('button', { name: 'Search' });
+  const searchButton = () =>
+    within(document.getElementById('search-body') as HTMLElement).getByRole('button', {
+      name: 'Search',
+    });
   const checkButton = () => screen.getByRole('button', { name: 'Check studies' });
   const addTerm = () =>
     user.type(screen.getByRole('textbox', { name: 'New term for arm 1' }), 'diabetes{Enter}');

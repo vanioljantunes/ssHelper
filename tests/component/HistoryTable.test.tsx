@@ -186,13 +186,18 @@ describe('App history wiring (T038)', () => {
     };
     render(
       <App
+        openAllSections
         historyStore={historyStore}
         countQuery={async () => ({ status: 'ok', count: 1, queryTranslation: '', warnings: [] })}
         listRecords={async () => ({ status: 'ok' as const, records: [], total: 0 })}
       />,
     );
     await user.type(screen.getByRole('textbox', { name: 'New term for arm 1' }), 'diabetes{Enter}');
-    await user.click(screen.getByRole('button', { name: 'Search' }));
+    await user.click(
+      within(document.getElementById('search-body') as HTMLElement).getByRole('button', {
+        name: 'Search',
+      }),
+    );
     expect(
       await screen.findByText('History could not be saved in this browser.'),
     ).toBeInTheDocument();
@@ -208,17 +213,23 @@ describe('App history wiring (T038)', () => {
       warnings: [],
     });
     const listRecords = async () => ({ status: 'ok' as const, records: [], total: 0 });
-    const { unmount } = render(<App countQuery={countQuery} listRecords={listRecords} />);
+    const { unmount } = render(
+      <App openAllSections countQuery={countQuery} listRecords={listRecords} />,
+    );
     await user.type(
       screen.getByRole('textbox', { name: 'New term for arm 2' }),
       'heart failure{Enter}',
     );
-    await user.click(screen.getByRole('button', { name: 'Search' }));
+    await user.click(
+      within(document.getElementById('search-body') as HTMLElement).getByRole('button', {
+        name: 'Search',
+      }),
+    );
     expect(await screen.findByRole('cell', { name: '("heart failure")' })).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'New term for arm 3' }), 'pending text');
     unmount();
 
-    render(<App countQuery={countQuery} listRecords={listRecords} />);
+    render(<App openAllSections countQuery={countQuery} listRecords={listRecords} />);
     expect(screen.getByRole('cell', { name: '("heart failure")' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Arm 2' })).toHaveTextContent('"heart failure"');
     expect(screen.getByRole('textbox', { name: 'New term for arm 3' })).toHaveValue('pending text');

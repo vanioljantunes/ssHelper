@@ -44,6 +44,8 @@ export async function resetStorage(page: Page, contactEmail = E2E_CONTACT_EMAIL)
     [SETTINGS_KEY, contactEmail] as const,
   );
   await page.reload();
+  // Sections start folded; the flows under test need them open.
+  await page.getByRole('button', { name: 'Expand all' }).click();
 }
 
 export interface MockOptions {

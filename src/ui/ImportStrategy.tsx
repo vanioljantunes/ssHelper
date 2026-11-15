@@ -136,7 +136,12 @@ export function ImportStrategy({ needsConfirmation, onImport }: ImportStrategyPr
           </div>
         </div>
       ) : (
-        <button type="button" onClick={submit} disabled={text.trim() === ''}>
+        <button
+          type="button"
+          className="primary action"
+          onClick={submit}
+          disabled={text.trim() === ''}
+        >
           {en.importButton}
         </button>
       )}

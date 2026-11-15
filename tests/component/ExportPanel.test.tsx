@@ -13,7 +13,6 @@ function setup(over: Partial<React.ComponentProps<typeof ExportPanel>> = {}) {
   const selected: TargetDatabase[] = ['cochrane', 'embase'];
   render(
     <ExportPanel
-      headingId="export-heading"
       arms={arms}
       query={query}
       selected={selected}

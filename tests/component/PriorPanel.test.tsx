@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PriorRecord } from '../../src/core/prior';
 import { pmcUrl, pubmedArticleUrl } from '../../src/pubmed/links';
-import { PriorPanel, type PriorState } from '../../src/ui/PriorPanel';
+import { PriorCount, PriorPanel, type PriorState } from '../../src/ui/PriorPanel';
 
 const records: PriorRecord[] = [
   {
@@ -29,9 +29,7 @@ function renderPanel(over: Partial<React.ComponentProps<typeof PriorPanel>> = {}
   const onMinYearChange = vi.fn();
   render(
     <PriorPanel
-      headingId="prior-heading"
       state={{ status: 'ready', records, total: records.length }}
-      count={97}
       minYear={2021}
       years={years}
       onMinYearChange={onMinYearChange}
@@ -42,10 +40,11 @@ function renderPanel(over: Partial<React.ComponentProps<typeof PriorPanel>> = {}
 }
 
 describe('PriorPanel', () => {
-  it('shows the count on the heading row', () => {
-    renderPanel();
-    expect(screen.getByRole('heading', { name: /prior meta-analyses/i })).toBeInTheDocument();
+  it('shows the count for the heading row, and nothing before a run', () => {
+    const { rerender } = render(<PriorCount count={97} />);
     expect(screen.getByTestId('prior-count')).toHaveTextContent('97');
+    rerender(<PriorCount count={null} />);
+    expect(screen.queryByTestId('prior-count')).toBeNull();
   });
 
   it('names each row "Author, Year" without the initials', () => {
@@ -107,27 +106,17 @@ describe('PriorPanel', () => {
   it('asks for a run before anything is listed, and reports a failure', () => {
     const { rerender } = render(
       <PriorPanel
-        headingId="prior-heading"
         state={{ status: 'idle' }}
-        count={null}
         minYear={null}
         years={years}
         onMinYearChange={() => undefined}
       />,
     );
     expect(screen.getByText(/run the search to list the meta-analyses/i)).toBeInTheDocument();
-    expect(screen.queryByTestId('prior-count')).toBeNull();
 
     const failed: PriorState = { status: 'error', message: 'Could not reach PubMed.' };
     rerender(
-      <PriorPanel
-        headingId="prior-heading"
-        state={failed}
-        count={null}
-        minYear={null}
-        years={years}
-        onMinYearChange={() => undefined}
-      />,
+      <PriorPanel state={failed} minYear={null} years={years} onMinYearChange={() => undefined} />,
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Could not reach PubMed.');
   });
@@ -137,9 +126,7 @@ describe('PriorPanel', () => {
       const [minYear, setMinYear] = useState<number | null>(2021);
       return (
         <PriorPanel
-          headingId="prior-heading"
           state={{ status: 'loading' }}
-          count={97}
           minYear={minYear}
           years={years}
           onMinYearChange={setMinYear}

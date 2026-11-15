@@ -28,7 +28,7 @@ function Harness(props: Omit<PanelProps, 'selected' | 'onToggle'>) {
 
 function renderPanel(over: Partial<PanelProps> = {}) {
   const copyText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
-  render(<Harness headingId="translate-heading" arms={arms} copyText={copyText} {...over} />);
+  render(<Harness arms={arms} copyText={copyText} {...over} />);
   return { copyText };
 }
 
@@ -43,12 +43,8 @@ describe('TranslatePanel', () => {
     );
   });
 
-  it('labels each translation and heads the panel with the given id', () => {
+  it('labels each translation', () => {
     renderPanel();
-    expect(screen.getByRole('heading', { name: en.translateHeading })).toHaveAttribute(
-      'id',
-      'translate-heading',
-    );
     expect(document.getElementById('translate-cochrane-label')?.textContent).toBe(
       en.translateCochraneLabel,
     );

@@ -45,7 +45,7 @@ test('pasting a strategy fills arms with the terms as written and searches it', 
     '"Diffusion-weighted MRI" OR "Diffusion weighted MRI")';
   await expect(page.getByTestId('query-preview')).toHaveText(expectedQuery);
 
-  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await page.locator('#search-body').getByRole('button', { name: 'Search', exact: true }).click();
   await expect(page.getByTestId('search-results')).toContainText('431');
   expect(requested[0]).toBe(expectedQuery);
 

@@ -252,7 +252,7 @@ export function StudiesPanel({
         </button>
         <button
           type="button"
-          className="primary"
+          className="primary action"
           disabled={!canCheck || checking}
           aria-busy={checking || undefined}
           aria-describedby={describedBy}
