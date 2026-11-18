@@ -151,6 +151,7 @@ export const en = {
   priorEmpty: 'The strategy retrieves no meta-analysis.',
   priorEmptyFromYear: 'No meta-analysis from {year} onwards.',
   priorTruncated: 'Showing the {shown} most recent of {total}.',
+  priorCheck: 'Checked {label}',
   priorOpenPubmed: 'PubMed',
   priorOpenPubmedHidden: ' article page for {label} (opens in a new tab)',
   priorOpenPmc: 'Free full text',

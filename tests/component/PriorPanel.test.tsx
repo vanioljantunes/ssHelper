@@ -137,4 +137,36 @@ describe('PriorPanel', () => {
     expect(screen.getByText(/loading meta-analyses/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/from year/i)).toBeEnabled();
   });
+
+  it('checks a row off with a line through its name, and remembers it', async () => {
+    window.localStorage.clear();
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <PriorPanel
+        state={{ status: 'ready', records, total: records.length }}
+        minYear={2021}
+        years={years}
+        onMinYearChange={vi.fn()}
+      />,
+    );
+    const [first, second] = screen.getAllByTestId('prior-row');
+    const box = within(first!).getByRole('checkbox', { name: /Hassanpour, 2027/ });
+    expect(box).not.toBeChecked();
+    expect(first).not.toHaveClass('is-checked');
+
+    await user.click(box);
+    expect(box).toBeChecked();
+    expect(first).toHaveClass('is-checked');
+    expect(second).not.toHaveClass('is-checked');
+
+    unmount();
+    renderPanel();
+    const again = screen.getAllByTestId('prior-row')[0]!;
+    expect(within(again).getByRole('checkbox')).toBeChecked();
+    expect(again).toHaveClass('is-checked');
+
+    await user.click(within(again).getByRole('checkbox'));
+    expect(again).not.toHaveClass('is-checked');
+    window.localStorage.clear();
+  });
 });

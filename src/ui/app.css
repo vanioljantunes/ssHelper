@@ -1219,6 +1219,21 @@ input {
   white-space: nowrap;
 }
 
+.prior-check {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.prior.is-checked .prior-name {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
 .prior-link {
   flex: none;
   display: inline-flex;
@@ -1248,7 +1263,7 @@ input {
 /* On a phone the name takes its own line so both buttons stay side by side. */
 @media (max-width: 480px) {
   .prior-name {
-    flex: 1 1 100%;
+    flex: 1 1 calc(100% - 24px - 0.75rem);
   }
 }
 

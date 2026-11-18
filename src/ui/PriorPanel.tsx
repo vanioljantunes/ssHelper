@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { recordLabel, type PriorRecord } from '../core/prior';
 import { en, t } from '../i18n/en';
 import { pmcUrl, pubmedArticleUrl } from '../pubmed/links';
@@ -20,6 +21,39 @@ export interface PriorPanelProps {
 const numberFormat = new Intl.NumberFormat();
 
 const ALL_YEARS = 'all';
+
+/** PMIDs the visitor has checked off, kept in this browser only. */
+export const PRIOR_CHECKED_KEY = 'sshelper:v1:prior-checked';
+
+function readChecked(): Set<string> {
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(PRIOR_CHECKED_KEY) ?? '[]');
+    return new Set(Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeChecked(checked: Set<string>) {
+  try {
+    window.localStorage.setItem(PRIOR_CHECKED_KEY, JSON.stringify([...checked]));
+  } catch {
+    // Storage blocked or full: the checks still hold for this visit.
+  }
+}
+
+function useChecked() {
+  const [checked, setChecked] = useState(readChecked);
+  const toggle = (pmid: string) =>
+    setChecked((current) => {
+      const next = new Set(current);
+      if (next.has(pmid)) next.delete(pmid);
+      else next.add(pmid);
+      writeChecked(next);
+      return next;
+    });
+  return { checked, toggle };
+}
 
 function PubmedLink({ pmid, label }: { pmid: string; label: string }) {
   return (
@@ -58,6 +92,7 @@ function PmcLink({ pmcid, label }: { pmcid: string | null; label: string }) {
 }
 
 function Body({ state, minYear }: { state: PriorState; minYear: number | null }) {
+  const { checked, toggle } = useChecked();
   switch (state.status) {
     case 'idle':
       return <p className="hint">{en.priorRunFirst}</p>;
@@ -83,8 +118,20 @@ function Body({ state, minYear }: { state: PriorState; minYear: number | null })
           <ol className="prior-list">
             {state.records.map((record) => {
               const label = recordLabel(record);
+              const isChecked = checked.has(record.pmid);
               return (
-                <li key={record.pmid} className="prior" data-testid="prior-row">
+                <li
+                  key={record.pmid}
+                  className={isChecked ? 'prior is-checked' : 'prior'}
+                  data-testid="prior-row"
+                >
+                  <input
+                    type="checkbox"
+                    className="prior-check"
+                    checked={isChecked}
+                    onChange={() => toggle(record.pmid)}
+                    aria-label={t(en.priorCheck, { label })}
+                  />
                   <span className="prior-name" title={record.title || undefined}>
                     {label}
                   </span>

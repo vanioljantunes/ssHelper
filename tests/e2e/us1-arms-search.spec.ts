@@ -163,3 +163,36 @@ test('accessibility: keyboard-only strategy entry and search with visible focus'
     'Search finished. Results: 42. Prior meta-analyses: 3.',
   );
 });
+
+test('a prior meta-analysis can be checked off, and stays checked after a reload', async ({
+  page,
+}) => {
+  await mockPubmed(page, { count: 42, metaCount: 3 });
+  await input(page, 1).fill('heart failure');
+  await input(page, 1).press('Enter');
+  await searchButton(page).click();
+  const rows = page.getByTestId('prior-row');
+  await expect(rows.nth(1)).toBeVisible();
+
+  const box = rows.first().getByRole('checkbox');
+  await box.check();
+  await expect(rows.first()).toHaveClass(/is-checked/);
+  await expect(rows.first().locator('.prior-name')).toHaveCSS(
+    'text-decoration-line',
+    'line-through',
+  );
+  await expect(rows.nth(1)).not.toHaveClass(/is-checked/);
+  await expectNoAxeViolations(page);
+  if (process.env.SHOT_DIR) {
+    await rows.first().locator('xpath=ancestor::ol').screenshot({
+      path: `${process.env.SHOT_DIR}/prior-${page.viewportSize()?.width}.png`,
+    });
+  }
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Expand all' }).click();
+  await input(page, 1).fill('heart failure');
+  await input(page, 1).press('Enter');
+  await searchButton(page).click();
+  await expect(page.getByTestId('prior-row').first().getByRole('checkbox')).toBeChecked();
+});
